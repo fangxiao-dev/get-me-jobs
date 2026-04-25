@@ -102,14 +102,27 @@ function jobKey(source, item) {
   return `${source}:text:${normalizeText(item.companyName)}|${normalizeText(item.title)}|${normalizeText(item.location)}`;
 }
 
-function latestBatchDate() {
+function batchIdFromFile(filePath) {
+  return path.basename(filePath, ".json");
+}
+
+function latestRawFile() {
   const rawDir = path.join(rootDir, "raw");
   const files = fs.existsSync(rawDir) ? fs.readdirSync(rawDir) : [];
-  return files
-    .map((name) => name.match(/^(\d{4}-\d{2}-\d{2})\.json$/)?.[1])
-    .filter(Boolean)
+  const latestName = files
+    .filter((name) => /^\d{4}-\d{2}-\d{2}(?:-\d{4})?\.json$/.test(name))
     .sort()
     .at(-1);
+  return latestName ? path.join(rawDir, latestName) : null;
+}
+
+function resolveDataFile(filePath, fallbackDir) {
+  if (!filePath) return null;
+  const resolved = path.resolve(rootDir, filePath);
+  const fallbackResolved = path.resolve(fallbackDir, path.basename(filePath));
+  if (fs.existsSync(resolved)) return resolved;
+  if (fs.existsSync(fallbackResolved)) return fallbackResolved;
+  return resolved;
 }
 
 function annotationPath(date, source) {
@@ -149,22 +162,28 @@ function annotationsById(annotationFile) {
   return Object.fromEntries((annotationFile.items ?? []).map((item) => [String(item.id), item]));
 }
 
-function loadReviewState(date, source) {
-  const rawPath = path.join(rootDir, "raw", `${date}.json`);
-  const selectedPath = path.join(rootDir, "selected", `${date}.json`);
-  const annotationsPath = annotationPath(date, source);
+function loadReviewState(options) {
+  const { batchId, source, rawFile, selectedFile } = options;
+  const rawPath = rawFile
+    ? resolveDataFile(rawFile, path.join(rootDir, "raw"))
+    : path.join(rootDir, "raw", `${batchId}.json`);
+  const selectedPath = selectedFile
+    ? resolveDataFile(selectedFile, path.join(rootDir, "selected"))
+    : path.join(rootDir, "selected", `${batchIdFromFile(rawPath)}.json`);
+  const effectiveBatchId = batchId ?? batchIdFromFile(rawPath);
+  const annotationsPath = annotationPath(effectiveBatchId, source);
   const accepted = loadAcceptedJobs();
   const acceptedKeys = new Set((accepted.items ?? []).map((item) => item.jobKey));
 
   const raw = readJson(rawPath);
   if (!raw) {
-    const error = new Error(`Missing raw file: raw/${date}.json`);
+    const error = new Error(`Missing raw file: ${path.relative(rootDir, rawPath)}`);
     error.statusCode = 404;
     throw error;
   }
 
   const selected = readJson(selectedPath, { items: [] });
-  const annotationFile = readAnnotationFile(annotationsPath, date, source);
+  const annotationFile = readAnnotationFile(annotationsPath, effectiveBatchId, source);
   const selectedIds = new Set((selected.items ?? []).map(safeJobId));
   const rawItems = raw.items ?? [];
   function withReviewMeta(item) {
@@ -189,7 +208,8 @@ function loadReviewState(date, source) {
   const annotationMap = annotationsById(annotationFile);
 
   return {
-    date,
+    date: effectiveBatchId,
+    batchId: effectiveBatchId,
     source,
     files: {
       raw: path.relative(rootDir, rawPath),
@@ -284,13 +304,16 @@ function serveStatic(req, res, pathname) {
 
 async function handleApi(req, res, url) {
   if (req.method === "GET" && url.pathname === "/api/state") {
-    const date = url.searchParams.get("date") ?? latestBatchDate();
-    if (!date) {
+    const source = url.searchParams.get("source") ?? "linkedin";
+    const rawFile = url.searchParams.get("rawFile");
+    const selectedFile = url.searchParams.get("selectedFile");
+    const latest = rawFile ? null : latestRawFile();
+    const batchId = url.searchParams.get("batch") ?? url.searchParams.get("date") ?? (latest ? batchIdFromFile(latest) : null);
+    if (!batchId && !rawFile) {
       sendError(res, 404, "No raw batches found");
       return;
     }
-    const source = url.searchParams.get("source") ?? "linkedin";
-    sendJson(res, 200, loadReviewState(date, source));
+    sendJson(res, 200, loadReviewState({ batchId, source, rawFile, selectedFile }));
     return;
   }
 

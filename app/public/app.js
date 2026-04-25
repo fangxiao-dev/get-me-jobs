@@ -1,7 +1,9 @@
 const params = new URLSearchParams(window.location.search);
 const state = {
-  date: params.get("date"),
+  date: params.get("batch") ?? params.get("date"),
   source: params.get("source") ?? "linkedin",
+  rawFile: params.get("rawFile"),
+  selectedFile: params.get("selectedFile"),
   activeTab: "selected",
   data: null,
   saveTimers: new Map(),
@@ -38,7 +40,9 @@ function createEl(tag, className, content) {
 
 async function loadState() {
   const query = new URLSearchParams({ source: state.source });
-  if (state.date) query.set("date", state.date);
+  if (state.date) query.set("batch", state.date);
+  if (state.rawFile) query.set("rawFile", state.rawFile);
+  if (state.selectedFile) query.set("selectedFile", state.selectedFile);
   const response = await fetch(`/api/state?${query.toString()}`);
   if (!response.ok) throw new Error((await response.json()).error ?? "Failed to load state");
   state.data = await response.json();

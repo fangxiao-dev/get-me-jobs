@@ -8,6 +8,8 @@ const rootDir = path.resolve(__dirname, "..");
 const publicDir = path.join(__dirname, "public");
 const host = "127.0.0.1";
 const port = Number(process.env.PORT ?? 4173);
+const acceptedJobsPath = path.join(rootDir, "data", "accepted-jobs.json");
+const applicationsPath = path.join(rootDir, "data", "applications.json");
 
 const mimeTypes = new Map([
   [".html", "text/html; charset=utf-8"],
@@ -40,8 +42,74 @@ function writeJson(filePath, value) {
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
 }
 
+function readStore(filePath, fallback) {
+  try {
+    return readJson(filePath, fallback);
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      const backupPath = `${filePath}.bak.${new Date().toISOString().replace(/[:.]/g, "-")}`;
+      fs.mkdirSync(path.dirname(filePath), { recursive: true });
+      fs.copyFileSync(filePath, backupPath);
+      return fallback;
+    }
+    throw error;
+  }
+}
+
+function emptyAcceptedJobs() {
+  return { version: 1, items: [] };
+}
+
+function emptyApplications() {
+  return { version: 1, items: [] };
+}
+
+function loadAcceptedJobs() {
+  return readStore(acceptedJobsPath, emptyAcceptedJobs());
+}
+
+function loadApplications() {
+  return readStore(applicationsPath, emptyApplications());
+}
+
 function safeJobId(item) {
   return String(item?.id ?? item?.sourceJobId ?? item?.link ?? item?.url ?? "");
+}
+
+function normalizeText(value) {
+  return String(value ?? "").trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+function canonicalUrl(value) {
+  try {
+    const url = new URL(value);
+    url.hash = "";
+    for (const key of [...url.searchParams.keys()]) {
+      if (["refId", "trackingId", "trk", "position", "pageNum"].includes(key)) {
+        url.searchParams.delete(key);
+      }
+    }
+    return url.toString();
+  } catch {
+    return normalizeText(value);
+  }
+}
+
+function jobKey(source, item) {
+  if (item?.id) return `${source}:${item.id}`;
+  if (item?.sourceJobId) return `${source}:${item.sourceJobId}`;
+  if (item?.link || item?.url) return `${source}:url:${canonicalUrl(item.link ?? item.url)}`;
+  return `${source}:text:${normalizeText(item.companyName)}|${normalizeText(item.title)}|${normalizeText(item.location)}`;
+}
+
+function latestBatchDate() {
+  const rawDir = path.join(rootDir, "raw");
+  const files = fs.existsSync(rawDir) ? fs.readdirSync(rawDir) : [];
+  return files
+    .map((name) => name.match(/^(\d{4}-\d{2}-\d{2})\.json$/)?.[1])
+    .filter(Boolean)
+    .sort()
+    .at(-1);
 }
 
 function annotationPath(date, source) {
@@ -85,6 +153,8 @@ function loadReviewState(date, source) {
   const rawPath = path.join(rootDir, "raw", `${date}.json`);
   const selectedPath = path.join(rootDir, "selected", `${date}.json`);
   const annotationsPath = annotationPath(date, source);
+  const accepted = loadAcceptedJobs();
+  const acceptedKeys = new Set((accepted.items ?? []).map((item) => item.jobKey));
 
   const raw = readJson(rawPath);
   if (!raw) {
@@ -97,8 +167,25 @@ function loadReviewState(date, source) {
   const annotationFile = readAnnotationFile(annotationsPath, date, source);
   const selectedIds = new Set((selected.items ?? []).map(safeJobId));
   const rawItems = raw.items ?? [];
-  const selectedItems = selected.items ?? [];
-  const rejectedItems = rawItems.filter((item) => !selectedIds.has(safeJobId(item)));
+  function withReviewMeta(item) {
+    const key = jobKey(source, item);
+    return {
+      ...item,
+      _reviewMeta: {
+        jobKey: key,
+        duplicateAccepted: acceptedKeys.has(key),
+      },
+    };
+  }
+
+  const selectedItems = (selected.items ?? [])
+    .map(withReviewMeta)
+    .filter((item) => !item._reviewMeta.duplicateAccepted);
+  const rejectedItems = rawItems
+    .filter((item) => !selectedIds.has(safeJobId(item)))
+    .map(withReviewMeta)
+    .filter((item) => !item._reviewMeta.duplicateAccepted);
+  const duplicateAccepted = rawItems.filter((item) => acceptedKeys.has(jobKey(source, item))).length;
   const annotationMap = annotationsById(annotationFile);
 
   return {
@@ -110,14 +197,13 @@ function loadReviewState(date, source) {
       annotations: path.relative(rootDir, annotationsPath),
     },
     counts: {
-      raw: rawItems.length,
       selected: selectedItems.length,
       rejected: rejectedItems.length,
+      duplicateAccepted,
       annotations: Object.keys(annotationMap).length,
     },
     items: {
       selected: selectedItems,
-      raw: rawItems,
       rejected: rejectedItems,
     },
     annotations: annotationMap,
@@ -198,7 +284,11 @@ function serveStatic(req, res, pathname) {
 
 async function handleApi(req, res, url) {
   if (req.method === "GET" && url.pathname === "/api/state") {
-    const date = url.searchParams.get("date") ?? new Date().toISOString().slice(0, 10);
+    const date = url.searchParams.get("date") ?? latestBatchDate();
+    if (!date) {
+      sendError(res, 404, "No raw batches found");
+      return;
+    }
     const source = url.searchParams.get("source") ?? "linkedin";
     sendJson(res, 200, loadReviewState(date, source));
     return;

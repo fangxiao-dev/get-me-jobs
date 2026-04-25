@@ -43,7 +43,8 @@ a {
 .eyebrow,
 .summary,
 .meta,
-.save-status {
+.save-status,
+.badge {
   color: var(--muted);
 }
 
@@ -112,7 +113,8 @@ h2 {
 
 .decisions,
 .links,
-.tags {
+.tags,
+.badges {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -147,6 +149,7 @@ h2 {
 }
 
 .links,
+.badges,
 .selection,
 .description,
 .tags,
@@ -157,6 +160,16 @@ h2 {
 
 .selection {
   color: var(--muted);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #f9fafb;
+  padding: 2px 8px;
+  font-size: 12px;
 }
 
 .description p {

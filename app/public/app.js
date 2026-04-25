@@ -8,10 +8,12 @@ const state = {
   activeTab: "selected",
   reviewCities: [],
   reviewStates: [],
+  reviewCompanies: [],
   dashboardStatus: "all",
   dashboardSearch: "",
   dashboardCities: [],
   dashboardStates: [],
+  dashboardCompanies: [],
   dashboardAction: null,
   data: null,
   dashboard: null,
@@ -268,14 +270,16 @@ function renderReview(focusFilter) {
 
 function renderReviewToolbar(baseItems, visibleCount) {
   const toolbar = createEl("section", "review-toolbar");
-  toolbar.append(renderLocationFilters({
+  toolbar.append(renderJobFilters({
     items: baseItems,
     cityValues: state.reviewCities,
     stateValues: state.reviewStates,
+    companyValues: state.reviewCompanies,
     prefix: "review",
     onChange: (kind, values) => {
       if (kind === "city") state.reviewCities = values;
-      else state.reviewStates = values;
+      else if (kind === "state") state.reviewStates = values;
+      else state.reviewCompanies = values;
       renderReview();
     },
   }));
@@ -291,17 +295,21 @@ function locationParts(location) {
   };
 }
 
-function locationOptions(items) {
+function jobFilterOptions(items) {
   const cities = new Map();
   const states = new Map();
+  const companies = new Map();
   for (const item of items) {
-    const location = locationParts(item.job?.location ?? item.location);
+    const job = item.job ?? item;
+    const location = locationParts(job.location);
     if (location.city) cities.set(normalizeOption(location.city), location.city);
     if (location.state) states.set(normalizeOption(location.state), location.state);
+    if (job.companyName) companies.set(normalizeOption(job.companyName), job.companyName);
   }
   return {
     city: [...cities].map(([value, label]) => ({ value, label })).sort(optionSort),
     state: [...states].map(([value, label]) => ({ value, label })).sort(optionSort),
+    company: [...companies].map(([value, label]) => ({ value, label })).sort(optionSort),
   };
 }
 
@@ -313,9 +321,9 @@ function optionSort(a, b) {
   return a.label.localeCompare(b.label);
 }
 
-function renderLocationFilters({ items, cityValues, stateValues, prefix, onChange }) {
-  const wrap = createEl("div", "location-filters");
-  const options = locationOptions(items);
+function renderJobFilters({ items, cityValues, stateValues, companyValues, prefix, onChange }) {
+  const wrap = createEl("div", "job-filters");
+  const options = jobFilterOptions(items);
   wrap.append(
     renderMultiSelectFilter({
       key: `${prefix}-city`,
@@ -330,6 +338,13 @@ function renderLocationFilters({ items, cityValues, stateValues, prefix, onChang
       options: options.state,
       selected: stateValues,
       onChange: (values) => onChange("state", values),
+    }),
+    renderMultiSelectFilter({
+      key: `${prefix}-company`,
+      label: "Company",
+      options: options.company,
+      selected: companyValues,
+      onChange: (values) => onChange("company", values),
     }),
   );
   return wrap;
@@ -377,14 +392,17 @@ function baseReviewItems() {
 function filteredReviewItems() {
   return baseReviewItems().filter((job) => {
     const parts = locationParts(job.location);
-    return locationMatches(parts, state.reviewCities, state.reviewStates);
+    return jobFilterMatches(job, parts, state.reviewCities, state.reviewStates, state.reviewCompanies);
   });
 }
 
-function locationMatches(parts, cities, states) {
+function jobFilterMatches(job, parts, cities, states, companies) {
   const city = normalizeOption(parts.city);
   const region = normalizeOption(parts.state);
-  return (!cities.length || cities.includes(city)) && (!states.length || states.includes(region));
+  const company = normalizeOption(job.companyName);
+  return (!cities.length || cities.includes(city))
+    && (!states.length || states.includes(region))
+    && (!companies.length || companies.includes(company));
 }
 
 function restoreReviewFilterFocus(key) {
@@ -428,14 +446,16 @@ function renderDashboard(focusFilter) {
     renderDashboard("dashboard-search");
   });
   const filters = createEl("div", "dashboard-filters");
-  filters.append(renderLocationFilters({
+  filters.append(renderJobFilters({
     items: dashboardBaseItems(),
     cityValues: state.dashboardCities,
     stateValues: state.dashboardStates,
+    companyValues: state.dashboardCompanies,
     prefix: "dashboard",
     onChange: (kind, values) => {
       if (kind === "city") state.dashboardCities = values;
-      else state.dashboardStates = values;
+      else if (kind === "state") state.dashboardStates = values;
+      else state.dashboardCompanies = values;
       renderDashboard();
     },
   }));
@@ -467,7 +487,7 @@ function dashboardBaseItems() {
 function filteredDashboardItems() {
   return dashboardBaseItems().filter(({ job }) => {
     const parts = locationParts(job.location);
-    return locationMatches(parts, state.dashboardCities, state.dashboardStates);
+    return jobFilterMatches(job, parts, state.dashboardCities, state.dashboardStates, state.dashboardCompanies);
   });
 }
 

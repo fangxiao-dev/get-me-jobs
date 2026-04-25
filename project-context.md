@@ -38,6 +38,11 @@ Then use annotations to infer preference improvements, proposed by a separate `p
 
 Accepted jobs are deduped across batches and collected into the dashboard. The dashboard tracks application status and timeline events.
 
+Preference learning and market feedback are separate loops:
+
+- Preference loop: user intent signals such as `accept`, `reject`, `maybe`, `applied`, Dashboard `reject`, and subjective notes. This can propose changes to `config/preferences.linkedin.json`.
+- Market-fit loop: employer/market response signals such as interview stages, employer agreement, rejection, or no response. This is for future analysis and must not directly update input filters.
+
 ## Repository Facts
 
 - `.env`: local Apify token and Task IDs. Do not commit.
@@ -47,6 +52,7 @@ Accepted jobs are deduped across batches and collected into the dashboard. The d
 - `scripts/select-jobs.mjs`: deterministic filtering script.
 - `docs/plans/2026-04-25-review-ui-preference-analysis-design.md`: approved workflow design.
 - `docs/plans/2026-04-25-review-ui-preference-analysis.md`: implementation plan.
+- `docs/plans/2026-04-25-feedback-loops-design.md`: preference vs market-fit signal boundary.
 - `data/accepted-jobs.json`: runtime accepted-job registry, created by the UI.
 - `data/applications.json`: runtime application timeline store, created by the UI.
 

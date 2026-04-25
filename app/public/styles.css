@@ -126,9 +126,9 @@ h2 {
   margin-bottom: 16px;
 }
 
-.location-filters {
+.job-filters {
   display: grid;
-  grid-template-columns: repeat(2, minmax(140px, 1fr));
+  grid-template-columns: repeat(3, minmax(140px, 1fr));
   gap: 10px;
 }
 
@@ -400,7 +400,7 @@ h2 {
   .dashboard-toolbar,
   .review-toolbar,
   .dashboard-filters,
-  .location-filters,
+  .job-filters,
   .action-form {
     grid-template-columns: 1fr;
   }

@@ -6,6 +6,8 @@ const state = {
   rawFile: params.get("rawFile"),
   selectedFile: params.get("selectedFile"),
   activeTab: "selected",
+  reviewCity: "",
+  reviewState: "",
   dashboardStatus: "all",
   dashboardSearch: "",
   dashboardAction: null,
@@ -52,61 +54,47 @@ function createEl(tag, className, content) {
   return el;
 }
 
-function normalizeDescriptionText(value) {
-  return String(value ?? "")
-    .replace(/[ \t]+\n/g, "\n")
-    .replace(/\n[ \t]+/g, "\n")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+function renderDescriptionBody(job) {
+  const body = createEl("div", "description-body");
+  if (job.descriptionHtml) {
+    const doc = new DOMParser().parseFromString(String(job.descriptionHtml), "text/html");
+    for (const child of doc.body.childNodes) {
+      const rendered = renderSafeDescriptionNode(child);
+      if (rendered) body.append(rendered);
+    }
+  } else if (job.descriptionText) {
+    body.textContent = String(job.descriptionText).trim();
+  } else {
+    body.textContent = "No description";
+  }
+  return body;
 }
 
-function htmlToReadableText(html) {
-  if (!html) return "";
-  const doc = new DOMParser().parseFromString(String(html), "text/html");
-  const parts = [];
-
-  function appendText(value) {
-    const compact = String(value ?? "").replace(/\s+/g, " ").trim();
-    if (compact) parts.push(compact);
+function renderSafeDescriptionNode(node) {
+  if (node.nodeType === Node.TEXT_NODE) {
+    const compact = String(node.nodeValue ?? "").replace(/\s+/g, " ");
+    return compact.trim() ? document.createTextNode(compact) : null;
   }
 
-  function appendBreak() {
-    if (parts.at(-1) !== "\n") parts.push("\n");
+  if (node.nodeType !== Node.ELEMENT_NODE) return null;
+  const tag = node.tagName.toLowerCase();
+  const allowedTags = new Set(["br", "p", "div", "section", "ul", "ol", "li", "strong", "b", "em", "i", "h1", "h2", "h3", "h4"]);
+  if (!allowedTags.has(tag)) {
+    const fragment = document.createDocumentFragment();
+    for (const child of node.childNodes) {
+      const rendered = renderSafeDescriptionNode(child);
+      if (rendered) fragment.append(rendered);
+    }
+    return fragment;
   }
 
-  function walk(node) {
-    if (node.nodeType === Node.TEXT_NODE) {
-      appendText(node.nodeValue);
-      return;
-    }
-
-    if (node.nodeType !== Node.ELEMENT_NODE) return;
-    const tag = node.tagName.toLowerCase();
-    if (tag === "br") {
-      appendBreak();
-      return;
-    }
-
-    if (tag === "li") {
-      appendBreak();
-      parts.push("-");
-      for (const child of node.childNodes) walk(child);
-      appendBreak();
-      return;
-    }
-
-    const blockTags = new Set(["p", "div", "section", "article", "ul", "ol", "h1", "h2", "h3", "h4", "strong"]);
-    if (blockTags.has(tag)) appendBreak();
-    for (const child of node.childNodes) walk(child);
-    if (blockTags.has(tag)) appendBreak();
+  const mappedTag = tag === "b" ? "strong" : tag === "i" ? "em" : ["h1", "h2", "h3", "h4"].includes(tag) ? "h3" : tag;
+  const el = document.createElement(mappedTag);
+  for (const child of node.childNodes) {
+    const rendered = renderSafeDescriptionNode(child);
+    if (rendered) el.append(rendered);
   }
-
-  for (const child of doc.body.childNodes) walk(child);
-  return normalizeDescriptionText(parts.join(" "));
-}
-
-function readableDescription(job) {
-  return htmlToReadableText(job.descriptionHtml) || normalizeDescriptionText(job.descriptionText) || "No description";
+  return el;
 }
 
 function setUrlView(view) {
@@ -228,7 +216,7 @@ function renderShell(title, subtitle) {
   return app;
 }
 
-function renderReview() {
+function renderReview(focusFilter) {
   const app = renderShell("Job Review", `${state.source} / ${state.date}`);
   const summary = createEl("p", "summary", `${state.data.counts.selected} selected · ${state.data.counts.rejected} rejected · ${state.data.counts.annotations} annotated`);
   app.querySelector(".page-header").insertBefore(summary, app.querySelector(".error-banner"));
@@ -245,11 +233,71 @@ function renderReview() {
   }
   app.append(tabList);
 
+  const reviewItems = filteredReviewItems();
+  app.append(renderReviewToolbar(reviewItems.length));
+
   const list = createEl("section", "job-list");
-  for (const job of state.data.items[state.activeTab]) {
+  for (const job of reviewItems) {
     list.append(renderJobCard(job));
   }
+  if (!reviewItems.length) {
+    list.append(createEl("p", "empty", "No jobs match the current filters."));
+  }
   app.append(list);
+  restoreReviewFilterFocus(focusFilter);
+}
+
+function renderReviewToolbar(visibleCount) {
+  const toolbar = createEl("section", "review-toolbar");
+  const city = renderReviewFilter("city", "City", "Filter city", state.reviewCity, (value) => {
+    state.reviewCity = value;
+    renderReview("city");
+  });
+  const region = renderReviewFilter("state", "State", "Filter state or region", state.reviewState, (value) => {
+    state.reviewState = value;
+    renderReview("state");
+  });
+  toolbar.append(city, region);
+  toolbar.append(createEl("p", "filter-count", `${visibleCount} visible`));
+  return toolbar;
+}
+
+function renderReviewFilter(key, labelText, placeholder, value, onInput) {
+  const label = createEl("label", "filter-field");
+  label.append(createEl("span", null, labelText));
+  const input = createEl("input", "review-filter");
+  input.type = "search";
+  input.dataset.filter = key;
+  input.placeholder = placeholder;
+  input.value = value;
+  input.addEventListener("input", () => onInput(input.value));
+  label.append(input);
+  return label;
+}
+
+function locationParts(location) {
+  const parts = String(location ?? "").split(",").map((part) => part.trim().toLowerCase());
+  return {
+    city: parts[0] ?? "",
+    state: parts[1] ?? "",
+  };
+}
+
+function filteredReviewItems() {
+  const city = state.reviewCity.trim().toLowerCase();
+  const region = state.reviewState.trim().toLowerCase();
+  return (state.data.items[state.activeTab] ?? []).filter((job) => {
+    const parts = locationParts(job.location);
+    return (!city || parts.city.includes(city)) && (!region || parts.state.includes(region));
+  });
+}
+
+function restoreReviewFilterFocus(key) {
+  if (!key) return;
+  const input = document.querySelector(`[data-filter="${CSS.escape(key)}"]`);
+  if (!input) return;
+  input.focus();
+  input.setSelectionRange(input.value.length, input.value.length);
 }
 
 function renderDashboard() {
@@ -326,8 +374,7 @@ function renderJobCard(job) {
 
   const description = createEl("details", "description");
   const summary = createEl("summary", null, "Description");
-  const body = createEl("p", null, readableDescription(job));
-  description.append(summary, body);
+  description.append(summary, renderDescriptionBody(job));
   article.append(description);
 
   article.append(renderTagControls(id, annotation.tags ?? []));

@@ -94,7 +94,7 @@ h2 {
 .tabs {
   display: flex;
   gap: 8px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   border-bottom: 1px solid var(--border);
 }
 
@@ -116,6 +116,33 @@ h2 {
 .job-list {
   display: grid;
   gap: 12px;
+}
+
+.review-toolbar {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(180px, 260px)) 1fr;
+  gap: 10px;
+  align-items: end;
+  margin-bottom: 16px;
+}
+
+.filter-field {
+  display: grid;
+  gap: 4px;
+  color: var(--muted);
+}
+
+.review-filter {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+  padding: 7px 8px;
+}
+
+.filter-count {
+  color: var(--muted);
+  justify-self: end;
 }
 
 .job-card,
@@ -196,11 +223,43 @@ h2 {
   color: var(--muted);
 }
 
-.description p {
+.description-body {
   margin-top: 8px;
-  white-space: pre-wrap;
   max-height: 260px;
   overflow: auto;
+}
+
+.description-body :is(p, div, section) {
+  margin: 0 0 10px;
+}
+
+.description-body :is(h1, h2, h3, h4),
+.description-body strong {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.description-body > strong {
+  display: block;
+  margin: 14px 0 6px;
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.description-body :is(h1, h2, h3, h4) {
+  margin: 14px 0 6px;
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.description-body ul,
+.description-body ol {
+  margin: 8px 0 12px;
+  padding-left: 22px;
+}
+
+.description-body li {
+  margin: 4px 0;
 }
 
 .tag {
@@ -292,8 +351,13 @@ h2 {
 @media (max-width: 760px) {
   .job-title-row,
   .dashboard-toolbar,
+  .review-toolbar,
   .action-form {
     grid-template-columns: 1fr;
+  }
+
+  .filter-count {
+    justify-self: start;
   }
 
   .status-pill {

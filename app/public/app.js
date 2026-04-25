@@ -88,7 +88,7 @@ function render() {
   const header = createEl("header", "page-header");
   header.append(createEl("div", "eyebrow", `${state.source} / ${state.date}`));
   header.append(createEl("h1", null, "Job Review"));
-  header.append(createEl("p", "summary", `${state.data.counts.selected} selected · ${state.data.counts.rejected} rejected · ${state.data.counts.duplicateAccepted} accepted before · ${state.data.counts.annotations} annotated`));
+  header.append(createEl("p", "summary", `${state.data.counts.selected} selected · ${state.data.counts.rejected} rejected · ${state.data.counts.annotations} annotated`));
   header.append(createEl("div", "error-banner"));
   app.append(header);
 
@@ -121,8 +121,6 @@ function renderJobCard(job) {
   const titleBlock = createEl("div");
   titleBlock.append(createEl("h2", null, text(job.title, "Untitled")));
   titleBlock.append(createEl("p", "meta", [job.companyName, job.location, job.postedAt].filter(Boolean).join(" · ")));
-  const badges = renderReviewBadges(job);
-  if (badges) titleBlock.append(badges);
   titleRow.append(titleBlock);
   titleRow.append(renderDecisionControls(id, annotation.decision));
   article.append(titleRow);
@@ -197,13 +195,6 @@ function renderSelection(job) {
   const wrap = createEl("div", "selection");
   wrap.append(createEl("strong", null, "Matched: "));
   wrap.append(document.createTextNode(must.map((rule) => `${rule.id}: ${(rule.matchedTerms ?? []).join(", ")}`).join(" | ")));
-  return wrap;
-}
-
-function renderReviewBadges(job) {
-  if (!job._reviewMeta?.duplicateAccepted) return null;
-  const wrap = createEl("div", "badges");
-  wrap.append(createEl("span", "badge", "Accepted before"));
   return wrap;
 }
 

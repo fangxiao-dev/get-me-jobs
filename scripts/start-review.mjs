@@ -3,22 +3,21 @@ import path from "node:path";
 import { spawn } from "node:child_process";
 
 const rootDir = process.cwd();
-const source = "linkedin";
 const port = Number(process.env.PORT ?? 4173);
 
 function usage() {
-  console.log("Usage: node scripts/start-review.mjs [raw-file] [--no-open]");
-  console.log("Default: use the latest data/raw/*.json batch.");
+  console.log("Usage: node scripts/start-review.mjs [canonical-file] [--no-open]");
+  console.log("Default: use the latest data/canonical/*.json batch.");
 }
 
-function latestRawFile() {
-  const rawDir = path.join(rootDir, "data", "raw");
-  if (!fs.existsSync(rawDir)) return null;
-  const latest = fs.readdirSync(rawDir)
-    .filter((name) => /^\d{4}-\d{2}-\d{2}(?:-\d{4})?\.json$/.test(name))
+function latestCanonicalFile() {
+  const canonicalDir = path.join(rootDir, "data", "canonical");
+  if (!fs.existsSync(canonicalDir)) return null;
+  const latest = fs.readdirSync(canonicalDir)
+    .filter((name) => /^\d{4}-\d{2}-\d{2}\.json$/.test(name))
     .sort()
     .at(-1);
-  return latest ? path.join(rawDir, latest) : null;
+  return latest ? path.join(canonicalDir, latest) : null;
 }
 
 function runNode(args) {
@@ -52,24 +51,24 @@ function openBrowser(url) {
 
 const args = process.argv.slice(2);
 const shouldOpen = !args.includes("--no-open");
-const rawArg = args.find((arg) => !arg.startsWith("-"));
+const canonicalArg = args.find((arg) => !arg.startsWith("-"));
 if (args.includes("--help") || args.includes("-h")) {
   usage();
   process.exit(0);
 }
 
-const rawPath = rawArg ? path.resolve(rootDir, rawArg) : latestRawFile();
-if (!rawPath || !fs.existsSync(rawPath)) {
-  console.error(rawArg ? `Raw file not found: ${rawArg}` : "No data/raw/*.json batches found.");
+const canonicalPath = canonicalArg ? path.resolve(rootDir, canonicalArg) : latestCanonicalFile();
+if (!canonicalPath || !fs.existsSync(canonicalPath)) {
+  console.error(canonicalArg ? `Canonical file not found: ${canonicalArg}` : "No data/canonical/*.json batches found.");
   process.exit(1);
 }
 
-const batchId = path.basename(rawPath, ".json");
+const batchId = path.basename(canonicalPath, ".json");
 const selectedPath = path.join(rootDir, "data", "selected", `${batchId}.json`);
 if (!fs.existsSync(selectedPath)) {
   await runNode([
     "scripts/select-jobs.mjs",
-    rawPath,
+    canonicalPath,
     selectedPath,
     "config/preferences.linkedin.json",
   ]);
@@ -83,9 +82,8 @@ const server = spawn(process.execPath, ["app/server.mjs"], {
 });
 
 const url = new URL(`http://127.0.0.1:${port}/`);
-url.searchParams.set("source", source);
 url.searchParams.set("batch", batchId);
-url.searchParams.set("rawFile", fileUrlParam(rawPath));
+url.searchParams.set("canonicalFile", fileUrlParam(canonicalPath));
 url.searchParams.set("selectedFile", fileUrlParam(selectedPath));
 
 console.log(`Review UI: ${url.toString()}`);

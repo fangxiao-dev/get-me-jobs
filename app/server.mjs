@@ -466,6 +466,10 @@ function appendApplicationEvent(payload) {
     throw error;
   }
 
+  if (type === "reject") {
+    return rejectDashboardJob(payload);
+  }
+
   const accepted = loadAcceptedJobs();
   if (!(accepted.items ?? []).some((job) => job.jobKey === jobKey)) {
     const error = new Error(`Accepted job not found: ${jobKey}`);

@@ -6,12 +6,12 @@ const state = {
   rawFile: params.get("rawFile"),
   selectedFile: params.get("selectedFile"),
   activeTab: "selected",
-  reviewCity: "",
-  reviewState: "",
+  reviewCities: [],
+  reviewStates: [],
   dashboardStatus: "all",
   dashboardSearch: "",
-  dashboardCity: "",
-  dashboardState: "",
+  dashboardCities: [],
+  dashboardStates: [],
   dashboardAction: null,
   data: null,
   dashboard: null,
@@ -189,10 +189,10 @@ async function saveApplicationEvent(jobKey, form) {
 }
 
 async function rejectDashboardJob(jobKey, note) {
-  const response = await fetch("/api/applications/reject", {
+  const response = await fetch("/api/applications/event", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ jobKey, note }),
+    body: JSON.stringify({ jobKey, type: "reject", note }),
   });
   if (!response.ok) throw new Error((await response.json()).error ?? "Failed to reject application");
   state.dashboardAction = null;
@@ -253,7 +253,7 @@ function renderReview(focusFilter) {
   app.append(tabList);
 
   const reviewItems = filteredReviewItems();
-  app.append(renderReviewToolbar(reviewItems.length));
+  app.append(renderReviewToolbar(baseReviewItems(), reviewItems.length));
 
   const list = createEl("section", "job-list");
   for (const job of reviewItems) {
@@ -266,49 +266,125 @@ function renderReview(focusFilter) {
   restoreReviewFilterFocus(focusFilter);
 }
 
-function renderReviewToolbar(visibleCount) {
+function renderReviewToolbar(baseItems, visibleCount) {
   const toolbar = createEl("section", "review-toolbar");
-  const city = renderReviewFilter("city", "City", "Filter city", state.reviewCity, (value) => {
-    state.reviewCity = value;
-    renderReview("city");
-  });
-  const region = renderReviewFilter("state", "State", "Filter state or region", state.reviewState, (value) => {
-    state.reviewState = value;
-    renderReview("state");
-  });
-  toolbar.append(city, region);
+  toolbar.append(renderLocationFilters({
+    items: baseItems,
+    cityValues: state.reviewCities,
+    stateValues: state.reviewStates,
+    prefix: "review",
+    onChange: (kind, values) => {
+      if (kind === "city") state.reviewCities = values;
+      else state.reviewStates = values;
+      renderReview();
+    },
+  }));
   toolbar.append(createEl("p", "filter-count", `${visibleCount} visible`));
   return toolbar;
 }
 
-function renderReviewFilter(key, labelText, placeholder, value, onInput) {
-  const label = createEl("label", "filter-field");
-  label.append(createEl("span", null, labelText));
-  const input = createEl("input", "review-filter");
-  input.type = "search";
-  input.dataset.filter = key;
-  input.placeholder = placeholder;
-  input.value = value;
-  input.addEventListener("input", () => onInput(input.value));
-  label.append(input);
-  return label;
-}
-
 function locationParts(location) {
-  const parts = String(location ?? "").split(",").map((part) => part.trim().toLowerCase());
+  const parts = String(location ?? "").split(",").map((part) => part.trim());
   return {
     city: parts[0] ?? "",
     state: parts[1] ?? "",
   };
 }
 
+function locationOptions(items) {
+  const cities = new Map();
+  const states = new Map();
+  for (const item of items) {
+    const location = locationParts(item.job?.location ?? item.location);
+    if (location.city) cities.set(normalizeOption(location.city), location.city);
+    if (location.state) states.set(normalizeOption(location.state), location.state);
+  }
+  return {
+    city: [...cities].map(([value, label]) => ({ value, label })).sort(optionSort),
+    state: [...states].map(([value, label]) => ({ value, label })).sort(optionSort),
+  };
+}
+
+function normalizeOption(value) {
+  return String(value ?? "").trim().toLowerCase();
+}
+
+function optionSort(a, b) {
+  return a.label.localeCompare(b.label);
+}
+
+function renderLocationFilters({ items, cityValues, stateValues, prefix, onChange }) {
+  const wrap = createEl("div", "location-filters");
+  const options = locationOptions(items);
+  wrap.append(
+    renderMultiSelectFilter({
+      key: `${prefix}-city`,
+      label: "City",
+      options: options.city,
+      selected: cityValues,
+      onChange: (values) => onChange("city", values),
+    }),
+    renderMultiSelectFilter({
+      key: `${prefix}-state`,
+      label: "State",
+      options: options.state,
+      selected: stateValues,
+      onChange: (values) => onChange("state", values),
+    }),
+  );
+  return wrap;
+}
+
+function renderMultiSelectFilter({ key, label, options, selected, onChange }) {
+  const details = createEl("details", "multi-filter");
+  details.dataset.filter = key;
+  const summaryText = selected.length ? `${label} (${selected.length})` : label;
+  details.append(createEl("summary", null, summaryText));
+
+  const panel = createEl("div", "filter-options");
+  if (!options.length) {
+    panel.append(createEl("p", "empty", "No options"));
+  }
+  if (selected.length) {
+    const clear = createEl("button", "filter-clear", "Clear");
+    clear.type = "button";
+    clear.addEventListener("click", () => onChange([]));
+    panel.append(clear);
+  }
+
+  for (const option of options) {
+    const item = createEl("label", "filter-option");
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.checked = selected.includes(option.value);
+    input.addEventListener("change", () => {
+      const next = new Set(selected);
+      if (input.checked) next.add(option.value);
+      else next.delete(option.value);
+      onChange([...next]);
+    });
+    item.append(input, document.createTextNode(option.label));
+    panel.append(item);
+  }
+  details.append(panel);
+  return details;
+}
+
+function baseReviewItems() {
+  return state.data.items[state.activeTab] ?? [];
+}
+
 function filteredReviewItems() {
-  const city = state.reviewCity.trim().toLowerCase();
-  const region = state.reviewState.trim().toLowerCase();
-  return (state.data.items[state.activeTab] ?? []).filter((job) => {
+  return baseReviewItems().filter((job) => {
     const parts = locationParts(job.location);
-    return (!city || parts.city.includes(city)) && (!region || parts.state.includes(region));
+    return locationMatches(parts, state.reviewCities, state.reviewStates);
   });
+}
+
+function locationMatches(parts, cities, states) {
+  const city = normalizeOption(parts.city);
+  const region = normalizeOption(parts.state);
+  return (!cities.length || cities.includes(city)) && (!states.length || states.includes(region));
 }
 
 function restoreReviewFilterFocus(key) {
@@ -342,18 +418,6 @@ function renderDashboard(focusFilter) {
     });
     statusTabs.append(button);
   }
-  const filters = createEl("div", "dashboard-filters");
-  filters.append(
-    renderDashboardFilter("dashboard-city", "City", "Filter city", state.dashboardCity, (value) => {
-      state.dashboardCity = value;
-      renderDashboard("dashboard-city");
-    }),
-    renderDashboardFilter("dashboard-state", "State", "Filter state or region", state.dashboardState, (value) => {
-      state.dashboardState = value;
-      renderDashboard("dashboard-state");
-    }),
-  );
-
   const search = createEl("input", "dashboard-search");
   search.type = "search";
   search.dataset.filter = "dashboard-search";
@@ -363,6 +427,18 @@ function renderDashboard(focusFilter) {
     state.dashboardSearch = search.value;
     renderDashboard("dashboard-search");
   });
+  const filters = createEl("div", "dashboard-filters");
+  filters.append(renderLocationFilters({
+    items: dashboardBaseItems(),
+    cityValues: state.dashboardCities,
+    stateValues: state.dashboardStates,
+    prefix: "dashboard",
+    onChange: (kind, values) => {
+      if (kind === "city") state.dashboardCities = values;
+      else state.dashboardStates = values;
+      renderDashboard();
+    },
+  }));
   filters.append(search);
   toolbar.append(statusTabs, filters);
   app.append(toolbar);
@@ -379,31 +455,19 @@ function renderDashboard(focusFilter) {
   restoreFilterFocus(focusFilter);
 }
 
-function renderDashboardFilter(key, labelText, placeholder, value, onInput) {
-  const label = createEl("label", "filter-field");
-  label.append(createEl("span", null, labelText));
-  const input = createEl("input", "review-filter");
-  input.type = "search";
-  input.dataset.filter = key;
-  input.placeholder = placeholder;
-  input.value = value;
-  input.addEventListener("input", () => onInput(input.value));
-  label.append(input);
-  return label;
+function dashboardBaseItems() {
+  const search = state.dashboardSearch.trim().toLowerCase();
+  return (state.dashboard.items ?? []).filter(({ job, application }) => {
+    const statusMatches = state.dashboardStatus === "all" || application.currentStatus === state.dashboardStatus;
+    const haystack = [job.title, job.companyName, job.location, job.source].filter(Boolean).join(" ").toLowerCase();
+    return statusMatches && (!search || haystack.includes(search));
+  });
 }
 
 function filteredDashboardItems() {
-  const search = state.dashboardSearch.trim().toLowerCase();
-  const city = state.dashboardCity.trim().toLowerCase();
-  const region = state.dashboardState.trim().toLowerCase();
-  return (state.dashboard.items ?? []).filter(({ job, application }) => {
-    const statusMatches = state.dashboardStatus === "all" || application.currentStatus === state.dashboardStatus;
+  return dashboardBaseItems().filter(({ job }) => {
     const parts = locationParts(job.location);
-    const haystack = [job.title, job.companyName, job.location, job.source].filter(Boolean).join(" ").toLowerCase();
-    return statusMatches
-      && (!city || parts.city.includes(city))
-      && (!region || parts.state.includes(region))
-      && (!search || haystack.includes(search));
+    return locationMatches(parts, state.dashboardCities, state.dashboardStates);
   });
 }
 

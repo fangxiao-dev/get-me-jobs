@@ -6,7 +6,7 @@
       {
         "id": "thesis_in_title",
         "description": "The job title should be a thesis/final-project style role.",
-        "fields": ["title", "standardizedTitle"],
+        "fields": ["title.raw", "title.normalized"],
         "terms": [
           "硕士毕业设计",
           "硕士论文",
@@ -22,16 +22,16 @@
         "id": "ai_related",
         "description": "The job content should mention AI, ML, data science, LLMs, or closely related topics.",
         "fields": [
-          "title",
-          "standardizedTitle",
-          "descriptionText",
-          "descriptionHtml",
-          "companyName",
-          "location",
-          "industries",
-          "jobFunction",
-          "seniorityLevel",
-          "benefits"
+          "title.raw",
+          "title.normalized",
+          "description.text",
+          "description.html",
+          "company.name",
+          "location.raw",
+          "company.industry",
+          "employment.jobFunction",
+          "employment.seniorityLevel",
+          "employment.benefits"
         ],
         "terms": [
           "AI",
@@ -59,7 +59,7 @@
       {
         "id": "not_obvious_exclusion_yet",
         "description": "Keep empty until false positives are reviewed.",
-        "fields": ["title", "descriptionText"],
+        "fields": ["title.raw", "description.text"],
         "terms": []
       }
     ]

@@ -336,6 +336,7 @@ function renderReviewToolbar(baseItems, visibleCount) {
       if (kind === "city") state.reviewCities = values;
       else if (kind === "state") state.reviewStates = values;
       else state.reviewCompanies = values;
+      reconcileReviewFilters(kind);
       renderReview();
     },
   }));
@@ -351,7 +352,7 @@ function locationParts(location) {
   };
 }
 
-function jobFilterOptions(items) {
+function jobFilterOptions(items, filters = {}) {
   const cities = new Map();
   const states = new Map();
   const companies = new Map();
@@ -359,9 +360,15 @@ function jobFilterOptions(items) {
     const job = item.job ?? item;
     const location = locationParts(job.location?.raw ?? job.location);
     const companyName = job.company?.name ?? job.companyName;
-    if (location.city) cities.set(normalizeOption(location.city), location.city);
-    if (location.state) states.set(normalizeOption(location.state), location.state);
-    if (companyName) companies.set(normalizeOption(companyName), companyName);
+    if (location.city && jobFilterMatches(job, location, [], filters.stateValues ?? [], filters.companyValues ?? [])) {
+      cities.set(normalizeOption(location.city), location.city);
+    }
+    if (location.state && jobFilterMatches(job, location, filters.cityValues ?? [], [], filters.companyValues ?? [])) {
+      states.set(normalizeOption(location.state), location.state);
+    }
+    if (companyName && jobFilterMatches(job, location, filters.cityValues ?? [], filters.stateValues ?? [], [])) {
+      companies.set(normalizeOption(companyName), companyName);
+    }
   }
   return {
     city: [...cities].map(([value, label]) => ({ value, label })).sort(optionSort),
@@ -380,7 +387,7 @@ function optionSort(a, b) {
 
 function renderJobFilters({ items, cityValues, stateValues, companyValues, prefix, onChange }) {
   const wrap = createEl("div", "job-filters");
-  const options = jobFilterOptions(items);
+  const options = jobFilterOptions(items, { cityValues, stateValues, companyValues });
   wrap.append(
     renderMultiSelectFilter({
       key: `${prefix}-city`,
@@ -453,6 +460,50 @@ function filteredReviewItems() {
   });
 }
 
+function reconcileReviewFilters(changedKind) {
+  const next = reconcileFilterValues(baseReviewItems(), {
+    cityValues: state.reviewCities,
+    stateValues: state.reviewStates,
+    companyValues: state.reviewCompanies,
+  }, changedKind);
+  state.reviewCities = next.cityValues;
+  state.reviewStates = next.stateValues;
+  state.reviewCompanies = next.companyValues;
+}
+
+function reconcileDashboardFilters(changedKind) {
+  const next = reconcileFilterValues(dashboardBaseItems(), {
+    cityValues: state.dashboardCities,
+    stateValues: state.dashboardStates,
+    companyValues: state.dashboardCompanies,
+  }, changedKind);
+  state.dashboardCities = next.cityValues;
+  state.dashboardStates = next.stateValues;
+  state.dashboardCompanies = next.companyValues;
+}
+
+function reconcileFilterValues(items, filters, changedKind) {
+  const next = {
+    cityValues: [...filters.cityValues],
+    stateValues: [...filters.stateValues],
+    companyValues: [...filters.companyValues],
+  };
+  const kinds = [
+    ["city", "cityValues", "city"],
+    ["state", "stateValues", "state"],
+    ["company", "companyValues", "company"],
+  ];
+
+  for (const [kind, valuesKey, optionsKey] of kinds) {
+    if (kind === changedKind) continue;
+    const options = jobFilterOptions(items, next);
+    const allowed = new Set(options[optionsKey].map((option) => option.value));
+    next[valuesKey] = next[valuesKey].filter((value) => allowed.has(value));
+  }
+
+  return next;
+}
+
 function jobFilterMatches(job, parts, cities, states, companies) {
   const city = normalizeOption(parts.city);
   const region = normalizeOption(parts.state);
@@ -513,6 +564,7 @@ function renderDashboard(focusFilter) {
       if (kind === "city") state.dashboardCities = values;
       else if (kind === "state") state.dashboardStates = values;
       else state.dashboardCompanies = values;
+      reconcileDashboardFilters(kind);
       renderDashboard();
     },
   }));

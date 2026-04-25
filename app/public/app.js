@@ -10,6 +10,8 @@ const state = {
   reviewState: "",
   dashboardStatus: "all",
   dashboardSearch: "",
+  dashboardCity: "",
+  dashboardState: "",
   dashboardAction: null,
   data: null,
   dashboard: null,
@@ -36,6 +38,7 @@ const actionLabels = {
   interview_completed: "Mark Interview Completed",
   employer_agreed: "Mark Employer Agreed",
   closed: "Close",
+  reject: "Reject",
   note: "Add Note",
 };
 
@@ -162,6 +165,11 @@ async function saveAnnotation(id, patch) {
 async function saveApplicationEvent(jobKey, form) {
   const data = new FormData(form);
   const type = data.get("type");
+  if (type === "reject") {
+    await rejectDashboardJob(jobKey, data.get("note") ?? "");
+    return;
+  }
+
   const payload = {
     jobKey,
     type,
@@ -176,6 +184,17 @@ async function saveApplicationEvent(jobKey, form) {
     body: JSON.stringify(payload),
   });
   if (!response.ok) throw new Error((await response.json()).error ?? "Failed to save event");
+  state.dashboardAction = null;
+  await loadDashboard();
+}
+
+async function rejectDashboardJob(jobKey, note) {
+  const response = await fetch("/api/applications/reject", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ jobKey, note }),
+  });
+  if (!response.ok) throw new Error((await response.json()).error ?? "Failed to reject application");
   state.dashboardAction = null;
   await loadDashboard();
 }
@@ -293,6 +312,10 @@ function filteredReviewItems() {
 }
 
 function restoreReviewFilterFocus(key) {
+  restoreFilterFocus(key);
+}
+
+function restoreFilterFocus(key) {
   if (!key) return;
   const input = document.querySelector(`[data-filter="${CSS.escape(key)}"]`);
   if (!input) return;
@@ -300,7 +323,7 @@ function restoreReviewFilterFocus(key) {
   input.setSelectionRange(input.value.length, input.value.length);
 }
 
-function renderDashboard() {
+function renderDashboard(focusFilter) {
   const app = renderShell("Application Dashboard", "Accepted jobs across batches");
   const total = state.dashboard.counts.all ?? 0;
   const active = total - (state.dashboard.counts.closed ?? 0);
@@ -319,15 +342,29 @@ function renderDashboard() {
     });
     statusTabs.append(button);
   }
+  const filters = createEl("div", "dashboard-filters");
+  filters.append(
+    renderDashboardFilter("dashboard-city", "City", "Filter city", state.dashboardCity, (value) => {
+      state.dashboardCity = value;
+      renderDashboard("dashboard-city");
+    }),
+    renderDashboardFilter("dashboard-state", "State", "Filter state or region", state.dashboardState, (value) => {
+      state.dashboardState = value;
+      renderDashboard("dashboard-state");
+    }),
+  );
+
   const search = createEl("input", "dashboard-search");
   search.type = "search";
+  search.dataset.filter = "dashboard-search";
   search.placeholder = "Search title, company, location";
   search.value = state.dashboardSearch;
   search.addEventListener("input", () => {
     state.dashboardSearch = search.value;
-    renderDashboard();
+    renderDashboard("dashboard-search");
   });
-  toolbar.append(statusTabs, search);
+  filters.append(search);
+  toolbar.append(statusTabs, filters);
   app.append(toolbar);
 
   const list = createEl("section", "application-list");
@@ -339,14 +376,34 @@ function renderDashboard() {
     list.append(renderApplicationCard(item));
   }
   app.append(list);
+  restoreFilterFocus(focusFilter);
+}
+
+function renderDashboardFilter(key, labelText, placeholder, value, onInput) {
+  const label = createEl("label", "filter-field");
+  label.append(createEl("span", null, labelText));
+  const input = createEl("input", "review-filter");
+  input.type = "search";
+  input.dataset.filter = key;
+  input.placeholder = placeholder;
+  input.value = value;
+  input.addEventListener("input", () => onInput(input.value));
+  label.append(input);
+  return label;
 }
 
 function filteredDashboardItems() {
   const search = state.dashboardSearch.trim().toLowerCase();
+  const city = state.dashboardCity.trim().toLowerCase();
+  const region = state.dashboardState.trim().toLowerCase();
   return (state.dashboard.items ?? []).filter(({ job, application }) => {
     const statusMatches = state.dashboardStatus === "all" || application.currentStatus === state.dashboardStatus;
+    const parts = locationParts(job.location);
     const haystack = [job.title, job.companyName, job.location, job.source].filter(Boolean).join(" ").toLowerCase();
-    return statusMatches && (!search || haystack.includes(search));
+    return statusMatches
+      && (!city || parts.city.includes(city))
+      && (!region || parts.state.includes(region))
+      && (!search || haystack.includes(search));
   });
 }
 
@@ -438,7 +495,14 @@ function renderApplicationActions(jobKey) {
 function renderActionForm(jobKey, type) {
   const form = createEl("form", "action-form");
   const today = new Date().toISOString().slice(0, 10);
-  form.innerHTML = `
+  form.innerHTML = type === "reject" ? `
+    <input type="hidden" name="type" value="${type}">
+    <label class="wide">Reason <textarea name="note" placeholder="Why should this move back to Rejected?"></textarea></label>
+    <div class="form-actions">
+      <button type="submit">Save Reject</button>
+      <button type="button" data-cancel>Cancel</button>
+    </div>
+  ` : `
     <input type="hidden" name="type" value="${type}">
     <label>Date <input name="date" type="date" value="${today}"></label>
     <label>Next action <input name="nextActionAt" type="date"></label>

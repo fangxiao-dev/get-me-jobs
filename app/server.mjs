@@ -190,6 +190,12 @@ function readAnnotationFile(filePath, date, source) {
   }
 }
 
+function readAnnotationFileByRelativePath(relativePath, source) {
+  const filePath = path.resolve(rootDir, relativePath);
+  const batchId = path.basename(filePath, ".json").replace(`.${source}`, "");
+  return { filePath, annotationFile: readAnnotationFile(filePath, batchId, source) };
+}
+
 function resolvePayloadFiles(payload) {
   const rawPath = payload.rawFile
     ? resolveDataFile(payload.rawFile, path.join(rootDir, "raw"))
@@ -323,6 +329,7 @@ function loadReviewState(options) {
 
   const selected = readJson(selectedPath, { items: [] });
   const annotationFile = readAnnotationFile(annotationsPath, effectiveBatchId, source);
+  const annotationMap = annotationsById(annotationFile);
   const selectedIds = new Set((selected.items ?? []).map(safeJobId));
   const rawItems = raw.items ?? [];
   function withReviewMeta(item) {
@@ -337,14 +344,14 @@ function loadReviewState(options) {
   }
 
   const selectedItems = (selected.items ?? [])
+    .filter((item) => annotationMap[safeJobId(item)]?.decision !== "reject")
     .map(withReviewMeta)
     .filter((item) => !item._reviewMeta.duplicateAccepted);
   const rejectedItems = rawItems
-    .filter((item) => !selectedIds.has(safeJobId(item)))
+    .filter((item) => !selectedIds.has(safeJobId(item)) || annotationMap[safeJobId(item)]?.decision === "reject")
     .map(withReviewMeta)
     .filter((item) => !item._reviewMeta.duplicateAccepted);
   const duplicateAccepted = rawItems.filter((item) => acceptedKeys.has(jobKey(source, item))).length;
-  const annotationMap = annotationsById(annotationFile);
 
   return {
     date: effectiveBatchId,
@@ -490,6 +497,62 @@ function appendApplicationEvent(payload) {
   return items[index];
 }
 
+function rejectDashboardJob(payload) {
+  const { jobKey } = payload;
+  if (!jobKey) {
+    const error = new Error("jobKey is required");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const accepted = loadAcceptedJobs();
+  const job = (accepted.items ?? []).find((item) => item.jobKey === jobKey);
+  if (!job) {
+    const error = new Error(`Accepted job not found: ${jobKey}`);
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (job.annotationFile) {
+    const { filePath, annotationFile } = readAnnotationFileByRelativePath(job.annotationFile, job.source);
+    const now = new Date().toISOString();
+    const items = annotationFile.items ?? [];
+    const id = String(job.sourceJobId);
+    const index = items.findIndex((item) => String(item.id) === id);
+    const nextItem = {
+      id,
+      decision: "reject",
+      note: payload.note ?? "",
+      tags: [],
+      reviewedAt: now,
+    };
+    if (index >= 0) {
+      items[index] = {
+        ...items[index],
+        ...nextItem,
+        note: payload.note ? payload.note : items[index].note ?? "",
+        tags: Array.isArray(items[index].tags) ? items[index].tags : [],
+      };
+    } else {
+      items.push(nextItem);
+    }
+    writeJson(filePath, { ...annotationFile, updatedAt: now, items });
+  }
+
+  saveAcceptedJobs({
+    version: accepted.version ?? 1,
+    items: (accepted.items ?? []).filter((item) => item.jobKey !== jobKey),
+  });
+
+  const applications = loadApplications();
+  saveApplications({
+    version: applications.version ?? 1,
+    items: (applications.items ?? []).filter((item) => item.jobKey !== jobKey),
+  });
+
+  return { jobKey, sourceJobId: job.sourceJobId };
+}
+
 function serveStatic(req, res, pathname) {
   if (pathname === "/favicon.ico") {
     res.writeHead(204);
@@ -547,6 +610,13 @@ async function handleApi(req, res, url) {
     const payload = await readRequestJson(req);
     const application = appendApplicationEvent(payload);
     sendJson(res, 200, { ok: true, application, dashboard: loadDashboardState() });
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/applications/reject") {
+    const payload = await readRequestJson(req);
+    const rejected = rejectDashboardJob(payload);
+    sendJson(res, 200, { ok: true, rejected, dashboard: loadDashboardState() });
     return;
   }
 

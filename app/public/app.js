@@ -2,8 +2,7 @@ const params = new URLSearchParams(window.location.search);
 const state = {
   view: params.get("view") ?? "review",
   date: params.get("batch") ?? params.get("date"),
-  source: params.get("source") ?? "linkedin",
-  rawFile: params.get("rawFile"),
+  canonicalFile: params.get("canonicalFile"),
   selectedFile: params.get("selectedFile"),
   activeTab: "selected",
   reviewCities: [],
@@ -45,7 +44,7 @@ const actionLabels = {
 };
 
 function jobId(job) {
-  return String(job.id ?? job.sourceJobId ?? job.link ?? job.url ?? "");
+  return String(job.identity?.jobId ?? job.id ?? job.sourceJobId ?? job.link ?? job.url ?? "");
 }
 
 function text(value, fallback = "") {
@@ -61,14 +60,16 @@ function createEl(tag, className, content) {
 
 function renderDescriptionBody(job) {
   const body = createEl("div", "description-body");
-  if (job.descriptionHtml) {
-    const doc = new DOMParser().parseFromString(String(job.descriptionHtml), "text/html");
+  const html = job.description?.html ?? job.descriptionHtml;
+  const plain = job.description?.text ?? job.descriptionText;
+  if (html) {
+    const doc = new DOMParser().parseFromString(String(html), "text/html");
     for (const child of doc.body.childNodes) {
       const rendered = renderSafeDescriptionNode(child);
       if (rendered) body.append(rendered);
     }
-  } else if (job.descriptionText) {
-    body.textContent = String(job.descriptionText).trim();
+  } else if (plain) {
+    body.textContent = String(plain).trim();
   } else {
     body.textContent = "No description";
   }
@@ -117,9 +118,9 @@ async function loadApp() {
 }
 
 async function loadState() {
-  const query = new URLSearchParams({ source: state.source });
+  const query = new URLSearchParams();
   if (state.date) query.set("batch", state.date);
-  if (state.rawFile) query.set("rawFile", state.rawFile);
+  if (state.canonicalFile) query.set("canonicalFile", state.canonicalFile);
   if (state.selectedFile) query.set("selectedFile", state.selectedFile);
   const response = await fetch(`/api/state?${query.toString()}`);
   if (!response.ok) throw new Error((await response.json()).error ?? "Failed to load state");
@@ -139,8 +140,7 @@ async function saveAnnotation(id, patch) {
   const existing = effectiveAnnotation(id);
   const payload = {
     date: state.date,
-    source: state.source,
-    rawFile: state.data.files.raw,
+    canonicalFile: state.data.files.canonical,
     selectedFile: state.data.files.selected,
     id,
     decision: patch.decision ?? existing.decision,
@@ -247,7 +247,7 @@ function renderShell(title, subtitle) {
 }
 
 function renderReview(focusFilter) {
-  const app = renderShell("Job Review", `${state.source} / ${state.date}`);
+  const app = renderShell("Job Review", state.date);
   const summary = createEl("p", "summary", `${state.data.counts.selected} selected · ${state.data.counts.rejected} rejected · ${state.data.counts.annotations} annotated`);
   app.querySelector(".page-header").insertBefore(summary, app.querySelector(".error-banner"));
 
@@ -310,10 +310,11 @@ function jobFilterOptions(items) {
   const companies = new Map();
   for (const item of items) {
     const job = item.job ?? item;
-    const location = locationParts(job.location);
+    const location = locationParts(job.location?.raw ?? job.location);
+    const companyName = job.company?.name ?? job.companyName;
     if (location.city) cities.set(normalizeOption(location.city), location.city);
     if (location.state) states.set(normalizeOption(location.state), location.state);
-    if (job.companyName) companies.set(normalizeOption(job.companyName), job.companyName);
+    if (companyName) companies.set(normalizeOption(companyName), companyName);
   }
   return {
     city: [...cities].map(([value, label]) => ({ value, label })).sort(optionSort),
@@ -400,7 +401,7 @@ function baseReviewItems() {
 
 function filteredReviewItems() {
   return baseReviewItems().filter((job) => {
-    const parts = locationParts(job.location);
+    const parts = locationParts(job.location?.raw ?? job.location);
     return jobFilterMatches(job, parts, state.reviewCities, state.reviewStates, state.reviewCompanies);
   });
 }
@@ -408,7 +409,7 @@ function filteredReviewItems() {
 function jobFilterMatches(job, parts, cities, states, companies) {
   const city = normalizeOption(parts.city);
   const region = normalizeOption(parts.state);
-  const company = normalizeOption(job.companyName);
+  const company = normalizeOption(job.company?.name ?? job.companyName);
   return (!cities.length || cities.includes(city))
     && (!states.length || states.includes(region))
     && (!companies.length || companies.includes(company));
@@ -508,15 +509,17 @@ function renderJobCard(job) {
 
   const titleRow = createEl("div", "job-title-row");
   const titleBlock = createEl("div");
-  titleBlock.append(createEl("h2", null, text(job.title, "Untitled")));
-  titleBlock.append(createEl("p", "meta", [job.companyName, job.location, job.postedAt].filter(Boolean).join(" · ")));
+  titleBlock.append(createEl("h2", null, text(job.title?.raw ?? job.title, "Untitled")));
+  titleBlock.append(createEl("p", "meta", [job.company?.name ?? job.companyName, job.location?.raw ?? job.location, job.postedAt?.raw ?? job.postedAt].filter(Boolean).join(" · ")));
   titleRow.append(titleBlock);
   titleRow.append(renderDecisionControls(id, annotation.decision));
   article.append(titleRow);
 
   const links = createEl("div", "links");
-  if (job.link) links.append(renderLink("LinkedIn", job.link));
-  if (job.applyUrl) links.append(renderLink("Apply", job.applyUrl));
+  const detailUrl = job.links?.detail ?? job.link;
+  const applyUrl = job.links?.apply ?? job.applyUrl;
+  if (detailUrl) links.append(renderLink("LinkedIn", detailUrl));
+  if (applyUrl) links.append(renderLink("Apply", applyUrl));
   article.append(links);
 
   const selection = renderSelection(job);

@@ -52,6 +52,63 @@ function createEl(tag, className, content) {
   return el;
 }
 
+function normalizeDescriptionText(value) {
+  return String(value ?? "")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n[ \t]+/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function htmlToReadableText(html) {
+  if (!html) return "";
+  const doc = new DOMParser().parseFromString(String(html), "text/html");
+  const parts = [];
+
+  function appendText(value) {
+    const compact = String(value ?? "").replace(/\s+/g, " ").trim();
+    if (compact) parts.push(compact);
+  }
+
+  function appendBreak() {
+    if (parts.at(-1) !== "\n") parts.push("\n");
+  }
+
+  function walk(node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      appendText(node.nodeValue);
+      return;
+    }
+
+    if (node.nodeType !== Node.ELEMENT_NODE) return;
+    const tag = node.tagName.toLowerCase();
+    if (tag === "br") {
+      appendBreak();
+      return;
+    }
+
+    if (tag === "li") {
+      appendBreak();
+      parts.push("-");
+      for (const child of node.childNodes) walk(child);
+      appendBreak();
+      return;
+    }
+
+    const blockTags = new Set(["p", "div", "section", "article", "ul", "ol", "h1", "h2", "h3", "h4", "strong"]);
+    if (blockTags.has(tag)) appendBreak();
+    for (const child of node.childNodes) walk(child);
+    if (blockTags.has(tag)) appendBreak();
+  }
+
+  for (const child of doc.body.childNodes) walk(child);
+  return normalizeDescriptionText(parts.join(" "));
+}
+
+function readableDescription(job) {
+  return htmlToReadableText(job.descriptionHtml) || normalizeDescriptionText(job.descriptionText) || "No description";
+}
+
 function setUrlView(view) {
   const next = new URLSearchParams(window.location.search);
   next.set("view", view);
@@ -269,7 +326,7 @@ function renderJobCard(job) {
 
   const description = createEl("details", "description");
   const summary = createEl("summary", null, "Description");
-  const body = createEl("p", null, text(job.descriptionText, "No description"));
+  const body = createEl("p", null, readableDescription(job));
   description.append(summary, body);
   article.append(description);
 

@@ -1,11 +1,16 @@
 const params = new URLSearchParams(window.location.search);
 const state = {
+  view: params.get("view") ?? "review",
   date: params.get("batch") ?? params.get("date"),
   source: params.get("source") ?? "linkedin",
   rawFile: params.get("rawFile"),
   selectedFile: params.get("selectedFile"),
   activeTab: "selected",
+  dashboardStatus: "all",
+  dashboardSearch: "",
+  dashboardAction: null,
   data: null,
+  dashboard: null,
   saveTimers: new Map(),
 };
 
@@ -23,6 +28,15 @@ const tagOptions = [
   "language_issue",
 ];
 
+const actionLabels = {
+  applied: "Mark Applied",
+  interview_scheduled: "Schedule Interview",
+  interview_completed: "Mark Interview Completed",
+  employer_agreed: "Mark Employer Agreed",
+  closed: "Close",
+  note: "Add Note",
+};
+
 function jobId(job) {
   return String(job.id ?? job.sourceJobId ?? job.link ?? job.url ?? "");
 }
@@ -38,6 +52,20 @@ function createEl(tag, className, content) {
   return el;
 }
 
+function setUrlView(view) {
+  const next = new URLSearchParams(window.location.search);
+  next.set("view", view);
+  history.pushState(null, "", `/?${next.toString()}`);
+}
+
+async function loadApp() {
+  if (state.view === "dashboard") {
+    await loadDashboard();
+  } else {
+    await loadState();
+  }
+}
+
 async function loadState() {
   const query = new URLSearchParams({ source: state.source });
   if (state.date) query.set("batch", state.date);
@@ -47,7 +75,14 @@ async function loadState() {
   if (!response.ok) throw new Error((await response.json()).error ?? "Failed to load state");
   state.data = await response.json();
   state.date = state.data.date;
-  render();
+  renderReview();
+}
+
+async function loadDashboard() {
+  const response = await fetch("/api/dashboard");
+  if (!response.ok) throw new Error((await response.json()).error ?? "Failed to load dashboard");
+  state.dashboard = await response.json();
+  renderDashboard();
 }
 
 async function saveAnnotation(id, patch) {
@@ -55,6 +90,8 @@ async function saveAnnotation(id, patch) {
   const payload = {
     date: state.date,
     source: state.source,
+    rawFile: state.data.files.raw,
+    selectedFile: state.data.files.selected,
     id,
     decision: patch.decision ?? existing.decision,
     note: patch.note ?? existing.note ?? "",
@@ -70,7 +107,32 @@ async function saveAnnotation(id, patch) {
   if (!response.ok) throw new Error((await response.json()).error ?? "Failed to save annotation");
   const result = await response.json();
   state.data.annotations = result.annotations;
-  updateCardStatus(id);
+  if (payload.decision === "accept") {
+    await loadState();
+  } else {
+    updateCardStatus(id);
+  }
+}
+
+async function saveApplicationEvent(jobKey, form) {
+  const data = new FormData(form);
+  const type = data.get("type");
+  const payload = {
+    jobKey,
+    type,
+    date: data.get("date") || new Date().toISOString().slice(0, 10),
+    note: data.get("note") ?? "",
+    nextActionAt: data.get("nextActionAt") || null,
+  };
+
+  const response = await fetch("/api/applications/event", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) throw new Error((await response.json()).error ?? "Failed to save event");
+  state.dashboardAction = null;
+  await loadDashboard();
 }
 
 function debounceSave(id, patchFactory) {
@@ -85,16 +147,34 @@ function showError(error) {
   if (banner) banner.textContent = error.message ?? String(error);
 }
 
-function render() {
+function renderShell(title, subtitle) {
   const app = document.querySelector("#app");
   app.textContent = "";
 
   const header = createEl("header", "page-header");
-  header.append(createEl("div", "eyebrow", `${state.source} / ${state.date}`));
-  header.append(createEl("h1", null, "Job Review"));
-  header.append(createEl("p", "summary", `${state.data.counts.selected} selected · ${state.data.counts.rejected} rejected · ${state.data.counts.annotations} annotated`));
+  const nav = createEl("nav", "top-nav");
+  for (const [view, label] of [["review", "Review"], ["dashboard", "Dashboard"]]) {
+    const button = createEl("button", state.view === view ? "nav-button active" : "nav-button", label);
+    button.type = "button";
+    button.addEventListener("click", async () => {
+      state.view = view;
+      setUrlView(view);
+      await loadApp().catch(showFatalError);
+    });
+    nav.append(button);
+  }
+  header.append(nav);
+  if (subtitle) header.append(createEl("div", "eyebrow", subtitle));
+  header.append(createEl("h1", null, title));
   header.append(createEl("div", "error-banner"));
   app.append(header);
+  return app;
+}
+
+function renderReview() {
+  const app = renderShell("Job Review", `${state.source} / ${state.date}`);
+  const summary = createEl("p", "summary", `${state.data.counts.selected} selected · ${state.data.counts.rejected} rejected · ${state.data.counts.annotations} annotated`);
+  app.querySelector(".page-header").insertBefore(summary, app.querySelector(".error-banner"));
 
   const tabList = createEl("nav", "tabs");
   for (const [key, label] of tabs) {
@@ -102,7 +182,7 @@ function render() {
     button.type = "button";
     button.addEventListener("click", () => {
       state.activeTab = key;
-      render();
+      renderReview();
     });
     tabList.append(button);
   }
@@ -113,6 +193,56 @@ function render() {
     list.append(renderJobCard(job));
   }
   app.append(list);
+}
+
+function renderDashboard() {
+  const app = renderShell("Application Dashboard", "Accepted jobs across batches");
+  const total = state.dashboard.counts.all ?? 0;
+  const active = total - (state.dashboard.counts.closed ?? 0);
+  const summary = createEl("p", "summary", `${total} accepted · ${active} active · ${state.dashboard.counts.closed ?? 0} closed`);
+  app.querySelector(".page-header").insertBefore(summary, app.querySelector(".error-banner"));
+
+  const toolbar = createEl("section", "dashboard-toolbar");
+  const statusTabs = createEl("div", "status-tabs");
+  for (const [key, label] of [["all", "All"], ...Object.entries(state.dashboard.statuses)]) {
+    const count = state.dashboard.counts[key] ?? 0;
+    const button = createEl("button", state.dashboardStatus === key ? "status-tab active" : "status-tab", `${label} (${count})`);
+    button.type = "button";
+    button.addEventListener("click", () => {
+      state.dashboardStatus = key;
+      renderDashboard();
+    });
+    statusTabs.append(button);
+  }
+  const search = createEl("input", "dashboard-search");
+  search.type = "search";
+  search.placeholder = "Search title, company, location";
+  search.value = state.dashboardSearch;
+  search.addEventListener("input", () => {
+    state.dashboardSearch = search.value;
+    renderDashboard();
+  });
+  toolbar.append(statusTabs, search);
+  app.append(toolbar);
+
+  const list = createEl("section", "application-list");
+  const items = filteredDashboardItems();
+  if (!items.length) {
+    list.append(createEl("p", "empty", "No applications match the current filter."));
+  }
+  for (const item of items) {
+    list.append(renderApplicationCard(item));
+  }
+  app.append(list);
+}
+
+function filteredDashboardItems() {
+  const search = state.dashboardSearch.trim().toLowerCase();
+  return (state.dashboard.items ?? []).filter(({ job, application }) => {
+    const statusMatches = state.dashboardStatus === "all" || application.currentStatus === state.dashboardStatus;
+    const haystack = [job.title, job.companyName, job.location, job.source].filter(Boolean).join(" ").toLowerCase();
+    return statusMatches && (!search || haystack.includes(search));
+  });
 }
 
 function renderJobCard(job) {
@@ -153,6 +283,76 @@ function renderJobCard(job) {
 
   article.append(createEl("div", "save-status", annotation.reviewedAt ? `Saved ${new Date(annotation.reviewedAt).toLocaleString()}` : "Not reviewed"));
   return article;
+}
+
+function renderApplicationCard({ job, application }) {
+  const article = createEl("article", "application-card");
+  const titleRow = createEl("div", "job-title-row");
+  const titleBlock = createEl("div");
+  titleBlock.append(createEl("h2", null, text(job.title, "Untitled")));
+  titleBlock.append(createEl("p", "meta", [job.companyName, job.location, job.source].filter(Boolean).join(" · ")));
+  titleRow.append(titleBlock);
+  titleRow.append(createEl("span", "status-pill", state.dashboard.statuses[application.currentStatus] ?? application.currentStatus));
+  article.append(titleRow);
+
+  const links = createEl("div", "links");
+  if (job.link) links.append(renderLink("Source", job.link));
+  if (job.applyUrl) links.append(renderLink("Apply", job.applyUrl));
+  article.append(links);
+
+  article.append(renderApplicationActions(job.jobKey));
+  if (state.dashboardAction?.jobKey === job.jobKey) {
+    article.append(renderActionForm(job.jobKey, state.dashboardAction.type));
+  }
+
+  const timeline = createEl("ol", "timeline");
+  for (const event of [...(application.events ?? [])].reverse()) {
+    const item = createEl("li");
+    item.append(createEl("strong", null, event.type.replaceAll("_", " ")));
+    item.append(document.createTextNode(` · ${event.date}`));
+    if (event.note) item.append(createEl("p", null, event.note));
+    timeline.append(item);
+  }
+  article.append(timeline);
+  return article;
+}
+
+function renderApplicationActions(jobKey) {
+  const group = createEl("div", "application-actions");
+  for (const [type, label] of Object.entries(actionLabels)) {
+    const button = createEl("button", "action-button", label);
+    button.type = "button";
+    button.addEventListener("click", () => {
+      state.dashboardAction = { jobKey, type };
+      renderDashboard();
+    });
+    group.append(button);
+  }
+  return group;
+}
+
+function renderActionForm(jobKey, type) {
+  const form = createEl("form", "action-form");
+  const today = new Date().toISOString().slice(0, 10);
+  form.innerHTML = `
+    <input type="hidden" name="type" value="${type}">
+    <label>Date <input name="date" type="date" value="${today}"></label>
+    <label>Next action <input name="nextActionAt" type="date"></label>
+    <label class="wide">Note <textarea name="note" placeholder="Add context..."></textarea></label>
+    <div class="form-actions">
+      <button type="submit">Save ${actionLabels[type]}</button>
+      <button type="button" data-cancel>Cancel</button>
+    </div>
+  `;
+  form.querySelector("[data-cancel]").addEventListener("click", () => {
+    state.dashboardAction = null;
+    renderDashboard();
+  });
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    saveApplicationEvent(jobKey, form).catch(showError);
+  });
+  return form;
 }
 
 function renderLink(label, href) {
@@ -214,6 +414,14 @@ function updateCardStatus(id) {
   }
 }
 
-loadState().catch((error) => {
+function showFatalError(error) {
   document.querySelector("#app").textContent = error.message ?? String(error);
+}
+
+window.addEventListener("popstate", () => {
+  const next = new URLSearchParams(window.location.search);
+  state.view = next.get("view") ?? "review";
+  loadApp().catch(showFatalError);
 });
+
+loadApp().catch(showFatalError);

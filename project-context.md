@@ -4,7 +4,7 @@
 
 - Name: `job-finder`
 - Project type: local data workflow / internal tool
-- Purpose: collect job-description data from Apify, filter it with editable preferences, and improve those preferences from human review feedback.
+- Purpose: collect job-description data from Apify, filter it with editable preferences, review accepted jobs, and track applications locally.
 - Primary user: the repository owner, reviewing thesis/job opportunities locally.
 - Current phase: bootstrap workflow and review loop.
 
@@ -17,13 +17,16 @@ Apify Task
   -> selected/<date>.json
   -> local Review UI
   -> annotations/<date>.<source>.json
+  -> data/accepted-jobs.json
+  -> data/applications.json
+  -> Application Dashboard
   -> preference-analyse skill
   -> confirmed preference update
 ```
 
 ## Current Milestone
 
-Build a local review UI where selected/raw/rejected jobs can be reviewed with:
+Build a local review and application dashboard where selected/rejected jobs can be reviewed with:
 
 - `accept`
 - `reject`
@@ -32,6 +35,8 @@ Build a local review UI where selected/raw/rejected jobs can be reviewed with:
 - optional tags
 
 Then use annotations to infer preference improvements, proposed by a separate `preference-analyse` skill and applied only after user confirmation.
+
+Accepted jobs are deduped across batches and collected into the dashboard. The dashboard tracks application status and timeline events.
 
 ## Repository Facts
 
@@ -42,6 +47,8 @@ Then use annotations to infer preference improvements, proposed by a separate `p
 - `scripts/select-jobs.mjs`: deterministic filtering script.
 - `docs/plans/2026-04-25-review-ui-preference-analysis-design.md`: approved workflow design.
 - `docs/plans/2026-04-25-review-ui-preference-analysis.md`: implementation plan.
+- `data/accepted-jobs.json`: runtime accepted-job registry, created by the UI.
+- `data/applications.json`: runtime application timeline store, created by the UI.
 
 ## Scope
 
@@ -51,6 +58,7 @@ In scope:
 - Local raw and selected JSON files.
 - Editable preference rules.
 - Human review annotations.
+- Accepted-job registry and application status dashboard.
 - Preference analysis and proposed preference updates.
 
 Out of scope for now:

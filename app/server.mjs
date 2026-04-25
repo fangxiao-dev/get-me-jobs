@@ -11,6 +11,26 @@ const port = Number(process.env.PORT ?? 4173);
 const acceptedJobsPath = path.join(rootDir, "data", "accepted-jobs.json");
 const applicationsPath = path.join(rootDir, "data", "applications.json");
 
+const statuses = {
+  accepted: "Accepted",
+  applied_waiting: "Applied, waiting for response",
+  interview_scheduled: "Interview scheduled, preparing",
+  interview_completed: "Interview completed, waiting for result",
+  employer_agreed: "Employer agreed, waiting for contract",
+  closed: "Closed / rejected / withdrawn",
+};
+
+const eventStatusMap = {
+  applied: "applied_waiting",
+  interview_scheduled: "interview_scheduled",
+  interview_completed: "interview_completed",
+  employer_agreed: "employer_agreed",
+  rejected: "closed",
+  withdrawn: "closed",
+  contract_signed: "closed",
+  closed: "closed",
+};
+
 const mimeTypes = new Map([
   [".html", "text/html; charset=utf-8"],
   [".js", "text/javascript; charset=utf-8"],
@@ -72,6 +92,14 @@ function loadApplications() {
   return readStore(applicationsPath, emptyApplications());
 }
 
+function saveAcceptedJobs(value) {
+  writeJson(acceptedJobsPath, value);
+}
+
+function saveApplications(value) {
+  writeJson(applicationsPath, value);
+}
+
 function safeJobId(item) {
   return String(item?.id ?? item?.sourceJobId ?? item?.link ?? item?.url ?? "");
 }
@@ -125,6 +153,10 @@ function resolveDataFile(filePath, fallbackDir) {
   return resolved;
 }
 
+function relativeDataPath(filePath) {
+  return path.relative(rootDir, filePath).replaceAll(path.sep, "/");
+}
+
 function annotationPath(date, source) {
   return path.join(rootDir, "annotations", `${date}.${source}.json`);
 }
@@ -158,8 +190,115 @@ function readAnnotationFile(filePath, date, source) {
   }
 }
 
+function resolvePayloadFiles(payload) {
+  const rawPath = payload.rawFile
+    ? resolveDataFile(payload.rawFile, path.join(rootDir, "raw"))
+    : path.join(rootDir, "raw", `${payload.date}.json`);
+  const selectedPath = payload.selectedFile
+    ? resolveDataFile(payload.selectedFile, path.join(rootDir, "selected"))
+    : path.join(rootDir, "selected", `${batchIdFromFile(rawPath)}.json`);
+  return {
+    rawPath,
+    selectedPath,
+    rawFile: relativeDataPath(rawPath),
+    selectedFile: relativeDataPath(selectedPath),
+  };
+}
+
 function annotationsById(annotationFile) {
   return Object.fromEntries((annotationFile.items ?? []).map((item) => [String(item.id), item]));
+}
+
+function findJobForAnnotation(payload) {
+  const files = resolvePayloadFiles(payload);
+  const selected = readJson(files.selectedPath, { items: [] });
+  const raw = readJson(files.rawPath, { items: [] });
+  const id = String(payload.id);
+  const item = [...(selected.items ?? []), ...(raw.items ?? [])].find((candidate) => safeJobId(candidate) === id);
+  if (!item) {
+    const error = new Error(`Job not found for accepted annotation: ${id}`);
+    error.statusCode = 404;
+    throw error;
+  }
+  return { item, files };
+}
+
+function acceptedJobFromItem(source, item, context) {
+  return {
+    jobKey: jobKey(source, item),
+    source,
+    sourceJobId: safeJobId(item),
+    title: item.title ?? null,
+    companyName: item.companyName ?? null,
+    location: item.location ?? null,
+    link: item.link ?? item.url ?? null,
+    applyUrl: item.applyUrl ?? null,
+    firstSeenAt: context.now,
+    acceptedAt: context.now,
+    rawFile: context.rawFile,
+    annotationFile: context.annotationFile,
+  };
+}
+
+function createEvent(type, note = "", date = new Date().toISOString().slice(0, 10)) {
+  return {
+    id: `evt_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    type,
+    date,
+    note,
+  };
+}
+
+function upsertAcceptedApplication(payload, context) {
+  const { item, files } = findJobForAnnotation(payload);
+  const acceptedJob = acceptedJobFromItem(payload.source, item, {
+    now: context.now,
+    rawFile: files.rawFile,
+    annotationFile: context.annotationFile,
+  });
+
+  const accepted = loadAcceptedJobs();
+  const acceptedItems = accepted.items ?? [];
+  const acceptedIndex = acceptedItems.findIndex((entry) => entry.jobKey === acceptedJob.jobKey);
+  if (acceptedIndex >= 0) {
+    acceptedItems[acceptedIndex] = {
+      ...acceptedItems[acceptedIndex],
+      ...acceptedJob,
+      firstSeenAt: acceptedItems[acceptedIndex].firstSeenAt ?? acceptedJob.firstSeenAt,
+      acceptedAt: acceptedItems[acceptedIndex].acceptedAt ?? acceptedJob.acceptedAt,
+    };
+  } else {
+    acceptedItems.push(acceptedJob);
+  }
+  saveAcceptedJobs({ version: accepted.version ?? 1, items: acceptedItems });
+
+  const applications = loadApplications();
+  const applicationItems = applications.items ?? [];
+  const appIndex = applicationItems.findIndex((entry) => entry.jobKey === acceptedJob.jobKey);
+  const acceptedEvent = createEvent("accepted", payload.note || "Accepted from review UI", context.now.slice(0, 10));
+
+  if (appIndex >= 0) {
+    const existing = applicationItems[appIndex];
+    const events = existing.events ?? [];
+    applicationItems[appIndex] = {
+      ...existing,
+      currentStatus: existing.currentStatus ?? "accepted",
+      appliedAt: existing.appliedAt ?? null,
+      nextActionAt: existing.nextActionAt ?? null,
+      ownerNote: existing.ownerNote ?? "",
+      events: events.some((event) => event.type === "accepted") ? events : [acceptedEvent, ...events],
+    };
+  } else {
+    applicationItems.push({
+      jobKey: acceptedJob.jobKey,
+      currentStatus: "accepted",
+      appliedAt: null,
+      nextActionAt: null,
+      ownerNote: "",
+      events: [acceptedEvent],
+    });
+  }
+  saveApplications({ version: applications.version ?? 1, items: applicationItems });
 }
 
 function loadReviewState(options) {
@@ -246,6 +385,11 @@ function upsertAnnotation(payload) {
   }
 
   const filePath = annotationPath(date, source);
+  const files = resolvePayloadFiles(payload);
+  const annotationFilePath = relativeDataPath(filePath);
+  if (payload.decision === "accept") {
+    findJobForAnnotation(payload);
+  }
   const annotationFile = readAnnotationFile(filePath, date, source);
   const now = new Date().toISOString();
   const items = annotationFile.items ?? [];
@@ -266,14 +410,84 @@ function upsertAnnotation(payload) {
 
   const nextFile = {
     source,
-    rawFile: `raw/${date}.json`,
-    selectedFile: `selected/${date}.json`,
+    rawFile: files.rawFile,
+    selectedFile: files.selectedFile,
     createdAt: annotationFile.createdAt ?? now,
     updatedAt: now,
     items,
   };
   writeJson(filePath, nextFile);
+  if (payload.decision === "accept") {
+    upsertAcceptedApplication(payload, { now, annotationFile: annotationFilePath });
+  }
   return nextFile;
+}
+
+function defaultApplication(jobKey) {
+  return {
+    jobKey,
+    currentStatus: "accepted",
+    appliedAt: null,
+    nextActionAt: null,
+    ownerNote: "",
+    events: [],
+  };
+}
+
+function loadDashboardState() {
+  const accepted = loadAcceptedJobs();
+  const applications = loadApplications();
+  const appMap = new Map((applications.items ?? []).map((item) => [item.jobKey, item]));
+  const items = (accepted.items ?? []).map((job) => ({
+    job,
+    application: appMap.get(job.jobKey) ?? defaultApplication(job.jobKey),
+  }));
+  const counts = Object.fromEntries(Object.keys(statuses).map((status) => [status, 0]));
+  counts.all = items.length;
+  for (const item of items) {
+    const status = item.application.currentStatus ?? "accepted";
+    counts[status] = (counts[status] ?? 0) + 1;
+  }
+  return { statuses, counts, items };
+}
+
+function appendApplicationEvent(payload) {
+  const { jobKey, type } = payload;
+  if (!jobKey || !type) {
+    const error = new Error("jobKey and type are required");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const accepted = loadAcceptedJobs();
+  if (!(accepted.items ?? []).some((job) => job.jobKey === jobKey)) {
+    const error = new Error(`Accepted job not found: ${jobKey}`);
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const applications = loadApplications();
+  const items = applications.items ?? [];
+  let index = items.findIndex((item) => item.jobKey === jobKey);
+  if (index < 0) {
+    items.push(defaultApplication(jobKey));
+    index = items.length - 1;
+  }
+
+  const current = items[index];
+  const nextStatus = eventStatusMap[type] ?? current.currentStatus ?? "accepted";
+  const event = createEvent(type, payload.note ?? "", payload.date || new Date().toISOString().slice(0, 10));
+  items[index] = {
+    ...current,
+    currentStatus: nextStatus,
+    appliedAt: type === "applied" ? event.date : current.appliedAt ?? null,
+    nextActionAt: payload.nextActionAt ?? current.nextActionAt ?? null,
+    ownerNote: type === "note" && payload.note ? payload.note : current.ownerNote ?? "",
+    events: [...(current.events ?? []), event],
+  };
+
+  saveApplications({ version: applications.version ?? 1, items });
+  return items[index];
 }
 
 function serveStatic(req, res, pathname) {
@@ -321,6 +535,18 @@ async function handleApi(req, res, url) {
     const payload = await readRequestJson(req);
     const annotationFile = upsertAnnotation(payload);
     sendJson(res, 200, { ok: true, annotations: annotationsById(annotationFile) });
+    return;
+  }
+
+  if (req.method === "GET" && url.pathname === "/api/dashboard") {
+    sendJson(res, 200, loadDashboardState());
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/applications/event") {
+    const payload = await readRequestJson(req);
+    const application = appendApplicationEvent(payload);
+    sendJson(res, 200, { ok: true, application, dashboard: loadDashboardState() });
     return;
   }
 

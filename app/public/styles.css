@@ -126,6 +126,18 @@ h2 {
   margin-bottom: 16px;
 }
 
+.review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.merge-status {
+  color: var(--muted);
+}
+
 .job-filters {
   display: grid;
   grid-template-columns: repeat(3, minmax(140px, 1fr));

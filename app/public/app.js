@@ -14,6 +14,8 @@ const state = {
   dashboardStates: [],
   dashboardCompanies: [],
   dashboardAction: null,
+  mergeRunning: false,
+  mergeStatus: "",
   data: null,
   dashboard: null,
   saveTimers: new Map(),
@@ -190,6 +192,43 @@ async function saveApplicationEvent(jobKey, form) {
   await loadDashboard();
 }
 
+async function mergeRawForCurrentDate() {
+  if (!state.date || state.mergeRunning) return;
+  state.mergeRunning = true;
+  state.mergeStatus = "Merging raw files...";
+  renderReview();
+
+  let errorToShow = null;
+  try {
+    const response = await fetch("/api/merge", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ date: state.date }),
+    });
+    if (!response.ok) throw new Error((await response.json()).error ?? "Failed to merge raw files");
+    const result = await response.json();
+    state.mergeStatus = mergeStatusText(result);
+    await loadState();
+  } catch (error) {
+    errorToShow = error;
+  } finally {
+    state.mergeRunning = false;
+    renderReview();
+    if (errorToShow) showError(errorToShow);
+  }
+}
+
+function mergeStatusText(result) {
+  const files = result.files ?? [];
+  const added = files.reduce((sum, file) => sum + (file.addedCount ?? 0), 0);
+  const duplicates = files.reduce((sum, file) => sum + (file.duplicateCount ?? 0), 0);
+  const rawCount = files.reduce((sum, file) => sum + (file.rawCount ?? 0), 0);
+  if (!rawCount && !files.some((file) => !file.skipped)) {
+    return "No new raw files";
+  }
+  return `Merged ${rawCount} raw jobs, added ${added}, duplicates ${duplicates}, selected ${result.selectedCount}`;
+}
+
 async function rejectDashboardJob(jobKey, note) {
   const response = await fetch("/api/applications/event", {
     method: "POST",
@@ -250,6 +289,14 @@ function renderReview(focusFilter) {
   const app = renderShell("Job Review", state.date);
   const summary = createEl("p", "summary", `${state.data.counts.selected} selected · ${state.data.counts.rejected} rejected · ${state.data.counts.annotations} annotated`);
   app.querySelector(".page-header").insertBefore(summary, app.querySelector(".error-banner"));
+  const actions = createEl("div", "review-actions");
+  const mergeButton = createEl("button", "action-button", state.mergeRunning ? "Merging..." : "Merge Raw");
+  mergeButton.type = "button";
+  mergeButton.disabled = state.mergeRunning;
+  mergeButton.addEventListener("click", () => mergeRawForCurrentDate().catch(showError));
+  actions.append(mergeButton);
+  if (state.mergeStatus) actions.append(createEl("span", "merge-status", state.mergeStatus));
+  app.querySelector(".page-header").insertBefore(actions, app.querySelector(".error-banner"));
 
   const tabList = createEl("nav", "tabs");
   for (const [key, label] of tabs) {

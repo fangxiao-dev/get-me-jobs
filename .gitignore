@@ -16,3 +16,6 @@ Thumbs.db
 # Future local runtime output
 tmp/
 dist/
+
+# Git worktrees
+.worktrees/

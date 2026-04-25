@@ -1,0 +1,13 @@
+.env
+node_modules/
+*.log
+
+# Local OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Future local runtime output
+tmp/
+dist/

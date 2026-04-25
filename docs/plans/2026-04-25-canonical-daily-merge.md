@@ -4,7 +4,7 @@
 
 **Goal:** Insert a canonical adapt-and-merge layer between `data/raw/` and selection so all sources converge into `data/canonical/<date>.json` as the single stable input for selection and review.
 
-**Architecture:** A new CLI script (`scripts/merge-canonical.mjs`) scans `data/raw/` for source-stamped files, adapts each raw item to a `CanonicalJob` shape, deduplicates by `identity.jobId`, and writes `data/canonical/<date>.json`. Selection and the Review UI are updated to consume canonical files instead of raw files. No backward-compatibility shims — old data files are abandoned in place.
+**Architecture:** A new CLI script (`scripts/merge-canonical.mjs`) scans `data/raw/` for source-stamped files, adapts each raw item to a `CanonicalJob` shape, deduplicates by strong source ID and normalized URL keys, and writes `data/canonical/<date>.json`. Selection and the Review UI are updated to consume canonical files instead of raw files. Old raw/selected files are abandoned in place, but existing user annotations must be migrated before the Review UI cutover.
 
 **Tech Stack:** Node.js 22 built-ins only (`node:fs`, `node:path`, `node:test`, `node:assert/strict`). No new npm dependencies.
 
@@ -20,7 +20,8 @@
 | `identity.sourceJobId` | `item.id` |
 | `identity.source` | `"linkedin"` |
 | `identity.sourceJobUrl` | `item.link` |
-| `identity.dedupeKey` | `"linkedin:" + item.id` |
+| `identity.dedupeKey` | `"source-id:linkedin:" + item.id` |
+| `identity.dedupeKeys` | source-id key plus normalized URL key when available |
 | `title.raw` | `item.title` |
 | `title.normalized` | `item.standardizedTitle` |
 | `company.name` | `item.companyName` |
@@ -43,7 +44,7 @@
 | `employment.salaryText` | `item.salary` |
 | `employment.benefits` | `item.benefits` |
 | `timing.postedAt` | `item.postedAt` |
-| `timing.expiresAt` | `item.expireAt` |
+| `timing.expiresAt` | `item.expireAt` converted to ISO string |
 | `timing.collectedAt` | raw file `savedAt` |
 
 **workplaceType rule:**
@@ -57,14 +58,14 @@
 ## Task 1: Rename the existing raw file
 
 **Files:**
-- Rename: `data/raw/2026-04-25.json` → `data/raw/linkedin-2026-04-25-094105.json`
+- Rename: `data/raw/2026-04-25.json` → `data/raw/linkedin-2026-04-25-114234.json`
 
-The time `094105` comes from `startedAt: "2026-04-25T09:41:05.157Z"` in the file.
+The time `114234` comes from local `savedAt: "2026-04-25T11:42:34.4948603+02:00"` in the file. Raw filenames use local workflow time, not UTC `startedAt`, because canonical files are grouped by local review date.
 
 **Step 1: Rename**
 
 ```powershell
-git mv "data/raw/2026-04-25.json" "data/raw/linkedin-2026-04-25-094105.json"
+git mv "data/raw/2026-04-25.json" "data/raw/linkedin-2026-04-25-114234.json"
 ```
 
 **Step 2: Commit**
@@ -175,8 +176,14 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { adaptLinkedinItem } from "../adapt-linkedin.mjs";
 
-const RAW_FILE = "data/raw/linkedin-2026-04-25-094105.json";
+const RAW_FILE = "data/raw/linkedin-2026-04-25-114234.json";
 const COLLECTED_AT = "2026-04-25T11:42:34.000Z";
+const RAW_CONTEXT = {
+  rawFile: RAW_FILE,
+  collectedAt: COLLECTED_AT,
+  runId: "aeWWMhq38NBlLwFUf",
+  datasetId: "gTibyfv4TVpQQxvVb",
+};
 
 const minimalItem = {
   id: "4405313639",
@@ -190,24 +197,41 @@ const minimalItem = {
 
 describe("adaptLinkedinItem", () => {
   it("generates a stable jobId from source and linkedin id", () => {
-    const job = adaptLinkedinItem(minimalItem, { rawFile: RAW_FILE, collectedAt: COLLECTED_AT });
+    const job = adaptLinkedinItem(minimalItem, RAW_CONTEXT);
     assert.equal(job.identity.jobId, "linkedin:4405313639");
     assert.equal(job.identity.source, "linkedin");
     assert.equal(job.identity.sourceJobId, "4405313639");
-    assert.equal(job.identity.dedupeKey, "linkedin:4405313639");
+    assert.equal(job.identity.dedupeKey, "source-id:linkedin:4405313639");
+    assert.ok(job.identity.dedupeKeys.includes("source-id:linkedin:4405313639"));
+  });
+
+  it("adds a normalized URL dedupe key", () => {
+    const job = adaptLinkedinItem(
+      { ...minimalItem, link: "https://de.linkedin.com/jobs/view/4405313639?position=1&trackingId=abc#x" },
+      RAW_CONTEXT,
+    );
+    assert.ok(job.identity.dedupeKeys.some((key) => key.startsWith("url:")));
+    assert.equal(job.identity.dedupeKeys.some((key) => key.includes("trackingId")), false);
+  });
+
+  it("maps top-level raw run metadata from context and tolerates missing inputUrl", () => {
+    const job = adaptLinkedinItem(minimalItem, RAW_CONTEXT);
+    assert.equal(job.identity.sourceRunId, "aeWWMhq38NBlLwFUf");
+    assert.equal(job.identity.sourceDatasetId, "gTibyfv4TVpQQxvVb");
+    assert.equal(job.identity.sourceInputUrl, undefined);
   });
 
   it("maps title fields", () => {
     const job = adaptLinkedinItem(
       { ...minimalItem, standardizedTitle: "AI Thesis" },
-      { rawFile: RAW_FILE, collectedAt: COLLECTED_AT },
+      RAW_CONTEXT,
     );
     assert.equal(job.title.raw, "Masterarbeit KI");
     assert.equal(job.title.normalized, "AI Thesis");
   });
 
   it("parses location into city and state", () => {
-    const job = adaptLinkedinItem(minimalItem, { rawFile: RAW_FILE, collectedAt: COLLECTED_AT });
+    const job = adaptLinkedinItem(minimalItem, RAW_CONTEXT);
     assert.equal(job.location.raw, "Berlin, Germany");
     assert.equal(job.location.city, "Berlin");
     assert.equal(job.location.state, "Germany");
@@ -217,7 +241,7 @@ describe("adaptLinkedinItem", () => {
   it("maps workplaceType REMOTE", () => {
     const job = adaptLinkedinItem(
       { ...minimalItem, workplaceTypes: ["REMOTE"] },
-      { rawFile: RAW_FILE, collectedAt: COLLECTED_AT },
+      RAW_CONTEXT,
     );
     assert.equal(job.location.workplaceType, "remote");
   });
@@ -225,7 +249,7 @@ describe("adaptLinkedinItem", () => {
   it("maps workplaceType HYBRID", () => {
     const job = adaptLinkedinItem(
       { ...minimalItem, workplaceTypes: ["HYBRID"] },
-      { rawFile: RAW_FILE, collectedAt: COLLECTED_AT },
+      RAW_CONTEXT,
     );
     assert.equal(job.location.workplaceType, "hybrid");
   });
@@ -233,18 +257,23 @@ describe("adaptLinkedinItem", () => {
   it("maps empty workplaceTypes to unknown, not on_site", () => {
     const job = adaptLinkedinItem(
       { ...minimalItem, workplaceTypes: [], workRemoteAllowed: false },
-      { rawFile: RAW_FILE, collectedAt: COLLECTED_AT },
+      RAW_CONTEXT,
     );
     assert.equal(job.location.workplaceType, "unknown");
   });
 
   it("sets collectedAt from context", () => {
-    const job = adaptLinkedinItem(minimalItem, { rawFile: RAW_FILE, collectedAt: COLLECTED_AT });
+    const job = adaptLinkedinItem(minimalItem, RAW_CONTEXT);
     assert.equal(job.timing.collectedAt, COLLECTED_AT);
   });
 
+  it("converts numeric expireAt to ISO expiresAt", () => {
+    const job = adaptLinkedinItem({ ...minimalItem, expireAt: 1779619551000 }, RAW_CONTEXT);
+    assert.equal(job.timing.expiresAt, "2026-05-24T10:45:51.000Z");
+  });
+
   it("creates an initial sighting", () => {
-    const job = adaptLinkedinItem(minimalItem, { rawFile: RAW_FILE, collectedAt: COLLECTED_AT });
+    const job = adaptLinkedinItem(minimalItem, RAW_CONTEXT);
     assert.equal(job.sightings.length, 1);
     assert.equal(job.sightings[0].source, "linkedin");
     assert.equal(job.sightings[0].rawFile, RAW_FILE);
@@ -253,7 +282,7 @@ describe("adaptLinkedinItem", () => {
   it("maps description fields", () => {
     const job = adaptLinkedinItem(
       { ...minimalItem, descriptionHtml: "<p>text</p>" },
-      { rawFile: RAW_FILE, collectedAt: COLLECTED_AT },
+      RAW_CONTEXT,
     );
     assert.equal(job.description.text, "Some description");
     assert.equal(job.description.html, "<p>text</p>");
@@ -271,6 +300,27 @@ node --test scripts/lib/tests/adapt-linkedin.test.mjs
 
 ```js
 // scripts/lib/adapt-linkedin.mjs
+
+function canonicalUrl(value) {
+  try {
+    const url = new URL(value);
+    url.hash = "";
+    for (const key of [...url.searchParams.keys()]) {
+      if (["refId", "trackingId", "trk", "position", "pageNum"].includes(key)) {
+        url.searchParams.delete(key);
+      }
+    }
+    return url.toString();
+  } catch {
+    return String(value ?? "").trim().toLowerCase();
+  }
+}
+
+function expiresAtIso(value) {
+  if (value == null || value === "") return undefined;
+  if (typeof value === "number") return new Date(value).toISOString();
+  return String(value);
+}
 
 function parseLocation(raw, country) {
   const parts = String(raw ?? "").split(",").map((p) => p.trim());
@@ -296,21 +346,25 @@ function industryText(industries) {
   return String(industries) || undefined;
 }
 
-export function adaptLinkedinItem(item, { rawFile, collectedAt }) {
+export function adaptLinkedinItem(item, { rawFile, collectedAt, runId, datasetId }) {
   const sourceJobId = String(item.id ?? "");
   const jobId = `linkedin:${sourceJobId}`;
+  const sourceIdDedupeKey = `source-id:${jobId}`;
+  const urlDedupeKey = item.link ? `url:${canonicalUrl(item.link)}` : null;
   const loc = parseLocation(item.location, item.country);
 
   return {
     schemaVersion: 1,
     identity: {
       jobId,
-      dedupeKey: jobId,
+      dedupeKey: sourceIdDedupeKey,
+      dedupeKeys: [sourceIdDedupeKey, urlDedupeKey].filter(Boolean),
       source: "linkedin",
       sourceJobId,
       sourceJobUrl: item.link ?? undefined,
-      sourceRunId: item.runId ?? undefined,
-      sourceDatasetId: item.datasetId ?? undefined,
+      sourceRunId: runId ?? undefined,
+      sourceDatasetId: datasetId ?? undefined,
+      sourceInputUrl: item.inputUrl ?? undefined,
       rawFile,
     },
     title: {
@@ -345,7 +399,7 @@ export function adaptLinkedinItem(item, { rawFile, collectedAt }) {
     },
     timing: {
       postedAt: item.postedAt ?? undefined,
-      expiresAt: item.expireAt ?? undefined,
+      expiresAt: expiresAtIso(item.expireAt),
       collectedAt,
     },
     sightings: [
@@ -367,7 +421,7 @@ export function adaptLinkedinItem(item, { rawFile, collectedAt }) {
 node --test scripts/lib/tests/adapt-linkedin.test.mjs
 ```
 
-Expected: all 9 pass.
+Expected: all 12 pass.
 
 **Step 5: Commit**
 
@@ -380,7 +434,7 @@ git commit -m "feat: add LinkedIn raw → canonical adapter"
 
 ## Task 4: `scripts/lib/canonical-merge.mjs`
 
-Pure function. Merges an array of new `CanonicalJob` objects into an existing canonical daily file structure. Deduplicates by `identity.dedupeKey`.
+Pure function. Merges an array of new `CanonicalJob` objects into an existing canonical daily file structure. Deduplicates by all strong keys in `identity.dedupeKeys`, falling back to `identity.dedupeKey`.
 
 **Files:**
 - Create: `scripts/lib/canonical-merge.mjs`
@@ -395,25 +449,27 @@ import assert from "node:assert/strict";
 import { emptyCanonicalFile, mergeIntoCanonical } from "../canonical-merge.mjs";
 
 function makeJob(id, extra = {}) {
+  const sourceKey = `source-id:linkedin:${id}`;
+  const urlKey = `url:https://example.com/jobs/${id}`;
   return {
     schemaVersion: 1,
-    identity: { jobId: `linkedin:${id}`, dedupeKey: `linkedin:${id}`, source: "linkedin", sourceJobId: id, rawFile: "data/raw/linkedin-2026-04-25-094105.json" },
+    identity: { jobId: `linkedin:${id}`, dedupeKey: sourceKey, dedupeKeys: [sourceKey, urlKey], source: "linkedin", sourceJobId: id, rawFile: "data/raw/linkedin-2026-04-25-114234.json" },
     title: { raw: `Job ${id}` },
     company: { name: "Acme" },
     location: { raw: "Berlin", workplaceType: "unknown" },
     description: { text: "desc" },
     application: {},
     employment: {},
-    timing: { collectedAt: "2026-04-25T09:41:05.000Z" },
-    sightings: [{ source: "linkedin", rawFile: "data/raw/linkedin-2026-04-25-094105.json", sourceJobId: id, seenAt: "2026-04-25T09:41:05.000Z" }],
+    timing: { collectedAt: "2026-04-25T11:42:34.000Z" },
+    sightings: [{ source: "linkedin", rawFile: "data/raw/linkedin-2026-04-25-114234.json", sourceJobId: id, seenAt: "2026-04-25T11:42:34.000Z" }],
     ...extra,
   };
 }
 
 const SOURCE_META = {
   source: "linkedin",
-  rawFile: "data/raw/linkedin-2026-04-25-094105.json",
-  rawFileTime: "094105",
+  rawFile: "data/raw/linkedin-2026-04-25-114234.json",
+  rawFileTime: "114234",
   importedAt: "2026-04-25T11:00:00.000Z",
   rawCount: 2,
 };
@@ -466,7 +522,7 @@ describe("mergeIntoCanonical", () => {
     const canonical = emptyCanonicalFile("2026-04-25");
     const result = mergeIntoCanonical(canonical, [makeJob("111")], SOURCE_META);
     assert.ok(result.mergeState.processedRawFiles.includes(SOURCE_META.rawFile));
-    assert.equal(result.mergeState.lastRawFileTime, "094105");
+    assert.equal(result.mergeState.lastRawFileTime, "114234");
   });
 
   it("is idempotent: skips files already in processedRawFiles", () => {
@@ -475,6 +531,26 @@ describe("mergeIntoCanonical", () => {
     const second = mergeIntoCanonical(first, [makeJob("111")], SOURCE_META);
     assert.equal(second.items.length, 1);
     assert.equal(second.sources.length, 1);
+  });
+
+  it("deduplicates by normalized URL key even when source ids differ", () => {
+    const canonical = emptyCanonicalFile("2026-04-25");
+    const first = mergeIntoCanonical(canonical, [makeJob("111")], SOURCE_META);
+    const secondMeta = { ...SOURCE_META, rawFile: "data/raw/linkedin-2026-04-25-120000.json", rawFileTime: "120000" };
+    const sameUrlDifferentId = makeJob("999", {
+      identity: {
+        jobId: "linkedin:999",
+        dedupeKey: "source-id:linkedin:999",
+        dedupeKeys: ["source-id:linkedin:999", "url:https://example.com/jobs/111"],
+        source: "linkedin",
+        sourceJobId: "999",
+        rawFile: secondMeta.rawFile,
+      },
+    });
+    const result = mergeIntoCanonical(first, [sameUrlDifferentId], secondMeta);
+    assert.equal(result.items.length, 1);
+    assert.equal(result.sources[1].duplicateCount, 1);
+    assert.ok(result.items[0].identity.dedupeKeys.includes("source-id:linkedin:999"));
   });
 });
 ```
@@ -512,28 +588,40 @@ export function mergeIntoCanonical(canonicalFile, newJobs, sourceMeta) {
     return canonicalFile;
   }
 
-  const existingByDedupeKey = new Map(
-    canonicalFile.items.map((job) => [job.identity.dedupeKey, job]),
-  );
+  const existingByDedupeKey = new Map();
+  for (const job of canonicalFile.items) {
+    for (const key of job.identity.dedupeKeys ?? [job.identity.dedupeKey]) {
+      existingByDedupeKey.set(key, job);
+    }
+  }
 
   let addedCount = 0;
   let duplicateCount = 0;
   const nextItems = [...canonicalFile.items];
 
   for (const job of newJobs) {
-    const key = job.identity.dedupeKey;
-    if (existingByDedupeKey.has(key)) {
-      // preserve existing canonical fields; append new sightings only
-      const existing = existingByDedupeKey.get(key);
+    const keys = job.identity.dedupeKeys ?? [job.identity.dedupeKey];
+    const existing = keys.map((key) => existingByDedupeKey.get(key)).find(Boolean);
+    if (existing) {
+      // preserve existing canonical fields; append new sightings and remember all strong keys
       const index = nextItems.indexOf(existing);
+      const mergedKeys = [...new Set([
+        ...(existing.identity.dedupeKeys ?? [existing.identity.dedupeKey]),
+        ...keys,
+      ])];
       nextItems[index] = {
         ...existing,
+        identity: {
+          ...existing.identity,
+          dedupeKeys: mergedKeys,
+        },
         sightings: [...existing.sightings, ...job.sightings],
       };
+      for (const key of mergedKeys) existingByDedupeKey.set(key, nextItems[index]);
       duplicateCount++;
     } else {
       nextItems.push(job);
-      existingByDedupeKey.set(key, job);
+      for (const key of keys) existingByDedupeKey.set(key, job);
       addedCount++;
     }
   }
@@ -564,7 +652,7 @@ export function mergeIntoCanonical(canonicalFile, newJobs, sourceMeta) {
 node --test scripts/lib/tests/canonical-merge.test.mjs
 ```
 
-Expected: all 5 pass.
+Expected: all 6 pass.
 
 **Step 5: Commit**
 
@@ -657,6 +745,12 @@ for (const { name, parsed } of filesForDate) {
   const { source, time } = parsed;
   const rawFilePath = path.join(rawDir, name);
   const rawRelative = path.relative(rootDir, rawFilePath).replaceAll(path.sep, "/");
+  const lastRawFileTime = canonical.mergeState.lastRawFileTime;
+
+  if (lastRawFileTime && time <= lastRawFileTime) {
+    summary.push({ file: name, skipped: true, reason: "not newer than canonical watermark" });
+    continue;
+  }
 
   if (canonical.mergeState.processedRawFiles.includes(rawRelative)) {
     summary.push({ file: name, skipped: true, reason: "already processed" });
@@ -674,7 +768,12 @@ for (const { name, parsed } of filesForDate) {
   const collectedAt = raw.savedAt ?? new Date().toISOString();
 
   const newJobs = rawItems.map((item) =>
-    adapt(item, { rawFile: rawRelative, collectedAt }),
+    adapt(item, {
+      rawFile: rawRelative,
+      collectedAt,
+      runId: raw.runId,
+      datasetId: raw.datasetId,
+    }),
   );
 
   const importedAt = new Date().toISOString();
@@ -918,6 +1017,118 @@ node -e "const f=JSON.parse(require('fs').readFileSync('data/selected/2026-04-25
 ```bash
 git add scripts/select-jobs.mjs data/selected/
 git commit -m "feat: update select-jobs to consume canonical file and dot-notation fields"
+```
+
+---
+
+## Task 7.5: Migrate existing annotations to canonical IDs
+
+Existing annotation files are source-suffixed and use bare source IDs, for example `data/annotations/2026-04-25.linkedin.json` with `id: "4405313639"`. Before the server starts reading `data/annotations/<date>.json`, migrate those IDs to canonical `jobId` values such as `linkedin:4405313639`.
+
+**Files:**
+- Create: `scripts/migrate-annotations-canonical.mjs`
+- Optional local output, not committed: `data/annotations/2026-04-25.json`
+
+**Step 1: Implement the migration script**
+
+```js
+// scripts/migrate-annotations-canonical.mjs
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const rootDir = path.resolve(__dirname, "..");
+const annotationsDir = path.join(rootDir, "data", "annotations");
+
+function readJson(filePath, fallback = null) {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, "utf8"));
+  } catch (error) {
+    if (error.code === "ENOENT") return fallback;
+    throw error;
+  }
+}
+
+function writeJson(filePath, value) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
+}
+
+function canonicalAnnotationId(source, id) {
+  const value = String(id);
+  return value.includes(":") ? value : `${source}:${value}`;
+}
+
+function migrateFile(fileName) {
+  const match = /^(\d{4}-\d{2}-\d{2})\.([a-z][a-z0-9]*)\.json$/.exec(fileName);
+  if (!match) return null;
+
+  const [, date, source] = match;
+  const oldPath = path.join(annotationsDir, fileName);
+  const newPath = path.join(annotationsDir, `${date}.json`);
+  const oldFile = readJson(oldPath, { items: [] });
+  const newFile = readJson(newPath, {
+    date,
+    createdAt: oldFile.createdAt ?? new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    items: [],
+  });
+
+  const byId = new Map((newFile.items ?? []).map((item) => [String(item.id), item]));
+  for (const item of oldFile.items ?? []) {
+    const next = {
+      ...item,
+      id: canonicalAnnotationId(source, item.id),
+    };
+    byId.set(String(next.id), { ...byId.get(String(next.id)), ...next });
+  }
+
+  const migrated = {
+    date,
+    createdAt: newFile.createdAt ?? oldFile.createdAt ?? new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    items: [...byId.values()],
+  };
+  writeJson(newPath, migrated);
+  return { from: fileName, to: path.basename(newPath), migrated: (oldFile.items ?? []).length };
+}
+
+const results = fs.existsSync(annotationsDir)
+  ? fs.readdirSync(annotationsDir).map(migrateFile).filter(Boolean)
+  : [];
+
+console.log(JSON.stringify({ migratedFiles: results }, null, 2));
+```
+
+**Step 2: Run migration**
+
+```powershell
+node scripts/migrate-annotations-canonical.mjs
+```
+
+Expected for the current data: one migrated file from `2026-04-25.linkedin.json` to `2026-04-25.json`, with 2 migrated items.
+
+**Step 3: Verify existing labels use canonical IDs**
+
+```powershell
+node -e "const f=JSON.parse(require('fs').readFileSync('data/annotations/2026-04-25.json','utf8')); console.log(f.items.map(i=>i.id).join('\\n'))"
+```
+
+Expected:
+
+```text
+linkedin:4303346866
+linkedin:4405313639
+```
+
+Do not commit `data/annotations/2026-04-25.json`; annotation files are local runtime state.
+
+**Step 4: Commit the migration script**
+
+```bash
+git add scripts/migrate-annotations-canonical.mjs
+git commit -m "feat: add annotation migration to canonical ids"
 ```
 
 ---
@@ -1559,10 +1770,21 @@ node scripts/start-review.mjs --no-open
 Open `http://127.0.0.1:4173/` in a browser and check:
 - Selected tab shows job cards with titles, companies, and locations.
 - Rejected tab shows the remaining jobs.
+- Previously migrated annotations are honored: `linkedin:4303346866` and `linkedin:4405313639` should not reappear as unreviewed.
 - Accept/Reject/Maybe buttons work and the annotation persists after page refresh.
 - `data/annotations/2026-04-25.json` (no source suffix) is created.
 - Accepted jobs appear in the Dashboard view.
 - Dashboard Reject moves a job out of the accepted list and writes the annotation.
+
+**Step 4.5: Verify incremental merge skips old raw files**
+
+Run merge a second time with no newer raw files:
+
+```powershell
+node scripts/merge-canonical.mjs 2026-04-25
+```
+
+Expected: existing files are skipped with `not newer than canonical watermark` or `already processed`, and `totalItems` remains unchanged.
 
 **Step 5: Final commit**
 

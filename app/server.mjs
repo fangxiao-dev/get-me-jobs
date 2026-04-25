@@ -9,7 +9,7 @@ const publicDir = path.join(__dirname, "public");
 const host = "127.0.0.1";
 const port = Number(process.env.PORT ?? 4173);
 const dataDir = path.join(rootDir, "data");
-const rawDir = path.join(dataDir, "raw");
+const canonicalDir = path.join(dataDir, "canonical");
 const selectedDir = path.join(dataDir, "selected");
 const annotationsDir = path.join(dataDir, "annotations");
 const acceptedJobsPath = path.join(rootDir, "data", "accepted-jobs.json");
@@ -105,7 +105,7 @@ function saveApplications(value) {
 }
 
 function safeJobId(item) {
-  return String(item?.id ?? item?.sourceJobId ?? item?.link ?? item?.url ?? "");
+  return String(item?.identity?.jobId ?? item?.id ?? item?.sourceJobId ?? item?.link ?? item?.url ?? "");
 }
 
 function normalizeText(value) {
@@ -128,6 +128,7 @@ function canonicalUrl(value) {
 }
 
 function jobKey(source, item) {
+  if (item?.identity?.jobId) return item.identity.jobId;
   if (item?.id) return `${source}:${item.id}`;
   if (item?.sourceJobId) return `${source}:${item.sourceJobId}`;
   if (item?.link || item?.url) return `${source}:url:${canonicalUrl(item.link ?? item.url)}`;
@@ -138,13 +139,13 @@ function batchIdFromFile(filePath) {
   return path.basename(filePath, ".json");
 }
 
-function latestRawFile() {
-  const files = fs.existsSync(rawDir) ? fs.readdirSync(rawDir) : [];
+function latestCanonicalFile() {
+  const files = fs.existsSync(canonicalDir) ? fs.readdirSync(canonicalDir) : [];
   const latestName = files
-    .filter((name) => /^\d{4}-\d{2}-\d{2}(?:-\d{4})?\.json$/.test(name))
+    .filter((name) => /^\d{4}-\d{2}-\d{2}\.json$/.test(name))
     .sort()
     .at(-1);
-  return latestName ? path.join(rawDir, latestName) : null;
+  return latestName ? path.join(canonicalDir, latestName) : null;
 }
 
 function resolveDataFile(filePath, fallbackDir) {
@@ -160,16 +161,14 @@ function relativeDataPath(filePath) {
   return path.relative(rootDir, filePath).replaceAll(path.sep, "/");
 }
 
-function annotationPath(date, source) {
-  return path.join(annotationsDir, `${date}.${source}.json`);
+function annotationPath(date) {
+  return path.join(annotationsDir, `${date}.json`);
 }
 
-function readAnnotationFile(filePath, date, source) {
+function readAnnotationFile(filePath, date) {
   try {
     return readJson(filePath, {
-      source,
-      rawFile: `data/raw/${date}.json`,
-      selectedFile: `data/selected/${date}.json`,
+      date,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       items: [],
@@ -180,9 +179,7 @@ function readAnnotationFile(filePath, date, source) {
       fs.mkdirSync(path.dirname(filePath), { recursive: true });
       fs.copyFileSync(filePath, backupPath);
       return {
-        source,
-        rawFile: `data/raw/${date}.json`,
-        selectedFile: `data/selected/${date}.json`,
+        date,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         items: [],
@@ -193,23 +190,23 @@ function readAnnotationFile(filePath, date, source) {
   }
 }
 
-function readAnnotationFileByRelativePath(relativePath, source) {
+function readAnnotationFileByRelativePath(relativePath) {
   const filePath = resolveDataFile(relativePath, annotationsDir);
-  const batchId = path.basename(filePath, ".json").replace(`.${source}`, "");
-  return { filePath, annotationFile: readAnnotationFile(filePath, batchId, source) };
+  const date = path.basename(filePath, ".json");
+  return { filePath, annotationFile: readAnnotationFile(filePath, date) };
 }
 
 function resolvePayloadFiles(payload) {
-  const rawPath = payload.rawFile
-    ? resolveDataFile(payload.rawFile, rawDir)
-    : path.join(rawDir, `${payload.date}.json`);
+  const canonicalPath = payload.canonicalFile
+    ? resolveDataFile(payload.canonicalFile, canonicalDir)
+    : path.join(canonicalDir, `${payload.date}.json`);
   const selectedPath = payload.selectedFile
     ? resolveDataFile(payload.selectedFile, selectedDir)
-    : path.join(selectedDir, `${batchIdFromFile(rawPath)}.json`);
+    : path.join(selectedDir, `${batchIdFromFile(canonicalPath)}.json`);
   return {
-    rawPath,
+    canonicalPath,
     selectedPath,
-    rawFile: relativeDataPath(rawPath),
+    canonicalFile: relativeDataPath(canonicalPath),
     selectedFile: relativeDataPath(selectedPath),
   };
 }
@@ -220,10 +217,9 @@ function annotationsById(annotationFile) {
 
 function findJobForAnnotation(payload) {
   const files = resolvePayloadFiles(payload);
-  const selected = readJson(files.selectedPath, { items: [] });
-  const raw = readJson(files.rawPath, { items: [] });
+  const canonical = readJson(files.canonicalPath, { items: [] });
   const id = String(payload.id);
-  const item = [...(selected.items ?? []), ...(raw.items ?? [])].find((candidate) => safeJobId(candidate) === id);
+  const item = (canonical.items ?? []).find((candidate) => safeJobId(candidate) === id);
   if (!item) {
     const error = new Error(`Job not found for accepted annotation: ${id}`);
     error.statusCode = 404;
@@ -237,14 +233,14 @@ function acceptedJobFromItem(source, item, context) {
     jobKey: jobKey(source, item),
     source,
     sourceJobId: safeJobId(item),
-    title: item.title ?? null,
-    companyName: item.companyName ?? null,
-    location: item.location ?? null,
-    link: item.link ?? item.url ?? null,
-    applyUrl: item.applyUrl ?? null,
+    title: item.title?.raw ?? item.title ?? null,
+    companyName: item.company?.name ?? item.companyName ?? null,
+    location: item.location?.raw ?? item.location ?? null,
+    link: item.links?.detail ?? item.link ?? item.url ?? null,
+    applyUrl: item.links?.apply ?? item.applyUrl ?? null,
     firstSeenAt: context.now,
     acceptedAt: context.now,
-    rawFile: context.rawFile,
+    canonicalFile: context.canonicalFile,
     annotationFile: context.annotationFile,
   };
 }
@@ -262,7 +258,7 @@ function upsertAcceptedApplication(payload, context) {
   const { item, files } = findJobForAnnotation(payload);
   const acceptedJob = acceptedJobFromItem(payload.source, item, {
     now: context.now,
-    rawFile: files.rawFile,
+    canonicalFile: files.canonicalFile,
     annotationFile: context.annotationFile,
   });
 
@@ -311,32 +307,32 @@ function upsertAcceptedApplication(payload, context) {
 }
 
 function loadReviewState(options) {
-  const { batchId, source, rawFile, selectedFile } = options;
-  const rawPath = rawFile
-    ? resolveDataFile(rawFile, rawDir)
-    : path.join(rawDir, `${batchId}.json`);
+  const { batchId, canonicalFile, selectedFile } = options;
+  const canonicalPath = canonicalFile
+    ? resolveDataFile(canonicalFile, canonicalDir)
+    : path.join(canonicalDir, `${batchId}.json`);
   const selectedPath = selectedFile
     ? resolveDataFile(selectedFile, selectedDir)
-    : path.join(selectedDir, `${batchIdFromFile(rawPath)}.json`);
-  const effectiveBatchId = batchId ?? batchIdFromFile(rawPath);
-  const annotationsPath = annotationPath(effectiveBatchId, source);
+    : path.join(selectedDir, `${batchIdFromFile(canonicalPath)}.json`);
+  const effectiveBatchId = batchId ?? batchIdFromFile(canonicalPath);
+  const annPath = annotationPath(effectiveBatchId);
   const accepted = loadAcceptedJobs();
   const acceptedKeys = new Set((accepted.items ?? []).map((item) => item.jobKey));
 
-  const raw = readJson(rawPath);
-  if (!raw) {
-    const error = new Error(`Missing raw file: ${path.relative(rootDir, rawPath)}`);
+  const canonical = readJson(canonicalPath);
+  if (!canonical) {
+    const error = new Error(`Missing canonical file: ${path.relative(rootDir, canonicalPath)}`);
     error.statusCode = 404;
     throw error;
   }
 
   const selected = readJson(selectedPath, { items: [] });
-  const annotationFile = readAnnotationFile(annotationsPath, effectiveBatchId, source);
+  const annotationFile = readAnnotationFile(annPath, effectiveBatchId);
   const annotationMap = annotationsById(annotationFile);
   const selectedIds = new Set((selected.items ?? []).map(safeJobId));
-  const rawItems = raw.items ?? [];
+  const canonicalItems = canonical.items ?? [];
   function withReviewMeta(item) {
-    const key = jobKey(source, item);
+    const key = jobKey(null, item);
     return {
       ...item,
       _reviewMeta: {
@@ -350,20 +346,19 @@ function loadReviewState(options) {
     .filter((item) => annotationMap[safeJobId(item)]?.decision !== "reject")
     .map(withReviewMeta)
     .filter((item) => !item._reviewMeta.duplicateAccepted);
-  const rejectedItems = rawItems
+  const rejectedItems = canonicalItems
     .filter((item) => !selectedIds.has(safeJobId(item)) || annotationMap[safeJobId(item)]?.decision === "reject")
     .map(withReviewMeta)
     .filter((item) => !item._reviewMeta.duplicateAccepted);
-  const duplicateAccepted = rawItems.filter((item) => acceptedKeys.has(jobKey(source, item))).length;
+  const duplicateAccepted = canonicalItems.filter((item) => acceptedKeys.has(jobKey(null, item))).length;
 
   return {
     date: effectiveBatchId,
     batchId: effectiveBatchId,
-    source,
     files: {
-      raw: path.relative(rootDir, rawPath),
+      canonical: path.relative(rootDir, canonicalPath),
       selected: path.relative(rootDir, selectedPath),
-      annotations: path.relative(rootDir, annotationsPath),
+      annotations: path.relative(rootDir, annPath),
     },
     counts: {
       selected: selectedItems.length,
@@ -387,20 +382,19 @@ async function readRequestJson(req) {
 }
 
 function upsertAnnotation(payload) {
-  const { date, source, id } = payload;
-  if (!date || !source || !id) {
-    const error = new Error("date, source, and id are required");
+  const { date, id } = payload;
+  if (!date || !id) {
+    const error = new Error("date and id are required");
     error.statusCode = 400;
     throw error;
   }
 
-  const filePath = annotationPath(date, source);
-  const files = resolvePayloadFiles(payload);
+  const filePath = annotationPath(date);
   const annotationFilePath = relativeDataPath(filePath);
   if (payload.decision === "accept") {
     findJobForAnnotation(payload);
   }
-  const annotationFile = readAnnotationFile(filePath, date, source);
+  const annotationFile = readAnnotationFile(filePath, date);
   const now = new Date().toISOString();
   const items = annotationFile.items ?? [];
   const index = items.findIndex((item) => String(item.id) === String(id));
@@ -419,9 +413,7 @@ function upsertAnnotation(payload) {
   }
 
   const nextFile = {
-    source,
-    rawFile: files.rawFile,
-    selectedFile: files.selectedFile,
+    date,
     createdAt: annotationFile.createdAt ?? now,
     updatedAt: now,
     items,
@@ -521,7 +513,7 @@ function rejectDashboardJob(payload) {
   }
 
   if (job.annotationFile) {
-    const { filePath, annotationFile } = readAnnotationFileByRelativePath(job.annotationFile, job.source);
+    const { filePath, annotationFile } = readAnnotationFileByRelativePath(job.annotationFile);
     const now = new Date().toISOString();
     const items = annotationFile.items ?? [];
     const id = String(job.sourceJobId);
@@ -588,16 +580,15 @@ function serveStatic(req, res, pathname) {
 
 async function handleApi(req, res, url) {
   if (req.method === "GET" && url.pathname === "/api/state") {
-    const source = url.searchParams.get("source") ?? "linkedin";
-    const rawFile = url.searchParams.get("rawFile");
+    const canonicalFile = url.searchParams.get("canonicalFile");
     const selectedFile = url.searchParams.get("selectedFile");
-    const latest = rawFile ? null : latestRawFile();
+    const latest = canonicalFile ? null : latestCanonicalFile();
     const batchId = url.searchParams.get("batch") ?? url.searchParams.get("date") ?? (latest ? batchIdFromFile(latest) : null);
-    if (!batchId && !rawFile) {
-      sendError(res, 404, "No raw batches found");
+    if (!batchId && !canonicalFile) {
+      sendError(res, 404, "No canonical batches found");
       return;
     }
-    sendJson(res, 200, loadReviewState({ batchId, source, rawFile, selectedFile }));
+    sendJson(res, 200, loadReviewState({ batchId, canonicalFile, selectedFile }));
     return;
   }
 

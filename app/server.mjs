@@ -2,6 +2,8 @@ import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { mergeCanonicalForDate } from "../scripts/merge-canonical.mjs";
+import { selectJobsFile } from "../scripts/select-jobs.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
@@ -374,6 +376,29 @@ function loadReviewState(options) {
   };
 }
 
+function mergeAndSelect(date) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(date ?? ""))) {
+    const error = new Error("date must be YYYY-MM-DD");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const merge = mergeCanonicalForDate(date, { rootDir });
+  const canonicalFile = path.join("data", "canonical", `${date}.json`);
+  const selectedFile = path.join("data", "selected", `${date}.json`);
+  const selection = selectJobsFile(canonicalFile, selectedFile, "config/preferences.linkedin.json", { cwd: rootDir });
+
+  return {
+    ok: true,
+    date,
+    canonicalFile: canonicalFile.replaceAll(path.sep, "/"),
+    selectedFile: selectedFile.replaceAll(path.sep, "/"),
+    canonicalItems: merge.canonicalItems,
+    selectedCount: selection.selectedCount,
+    files: merge.files,
+  };
+}
+
 async function readRequestJson(req) {
   const chunks = [];
   for await (const chunk of req) chunks.push(chunk);
@@ -589,6 +614,13 @@ async function handleApi(req, res, url) {
       return;
     }
     sendJson(res, 200, loadReviewState({ batchId, canonicalFile, selectedFile }));
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/merge") {
+    const payload = await readRequestJson(req);
+    const result = mergeAndSelect(payload.date);
+    sendJson(res, 200, result);
     return;
   }
 

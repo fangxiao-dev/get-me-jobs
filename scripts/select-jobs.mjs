@@ -17,8 +17,12 @@ function toText(value) {
   return String(value);
 }
 
+function getField(obj, dotPath) {
+  return dotPath.split(".").reduce((curr, key) => curr?.[key], obj);
+}
+
 function pickFields(item, fields) {
-  return fields.map((field) => toText(item[field])).filter(Boolean).join("\n");
+  return fields.map((field) => toText(getField(item, field))).filter(Boolean).join("\n");
 }
 
 function termMatches(text, term) {
@@ -77,22 +81,24 @@ const raw = readJson(rawPath);
 const preferences = readJson(preferencesPath);
 const previousOutput = fs.existsSync(selectedPath) ? readJson(selectedPath) : null;
 const selected = selectItems(raw, preferences);
-const selectedIds = selected.map(({ item }) => item.id ?? item.sourceJobId ?? item.link ?? item.url);
-const previousIds = (previousOutput?.items ?? []).map((item) => item.id ?? item.sourceJobId ?? item.link ?? item.url);
+
+function stableId(item) {
+  return item.identity?.jobId ?? item.id ?? item.sourceJobId ?? item.link ?? item.url;
+}
+
+const selectedIds = selected.map(({ item }) => stableId(item));
+const previousIds = (previousOutput?.items ?? []).map(stableId);
 const selectionUnchanged = JSON.stringify(selectedIds) === JSON.stringify(previousIds)
   && previousOutput?.preferencesVersion === preferences.version
   && previousOutput?.preferencesFile === path.relative(process.cwd(), preferencesPath);
 
 const output = {
-  source: raw.source,
-  taskId: raw.taskId,
-  taskName: raw.taskName,
-  runId: raw.runId,
-  datasetId: raw.datasetId,
+  schemaVersion: raw.schemaVersion ?? 1,
+  date: raw.date,
   savedAt: selectionUnchanged ? previousOutput.savedAt : new Date().toISOString(),
   preferencesFile: path.relative(process.cwd(), preferencesPath),
   preferencesVersion: preferences.version,
-  rawCount: raw.items?.length ?? raw.count ?? 0,
+  rawCount: raw.items?.length ?? 0,
   selectedCount: selected.length,
   items: selected.map(({ item, match }) => ({
     ...item,

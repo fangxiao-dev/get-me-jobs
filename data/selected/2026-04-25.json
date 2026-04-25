@@ -1,45 +1,75 @@
 {
-  "source": "linkedin",
-  "taskId": "lfwNUdTa3jpYanfcP",
-  "taskName": "linkedin-jobs-scraper-task",
-  "runId": "aeWWMhq38NBlLwFUf",
-  "datasetId": "gTibyfv4TVpQQxvVb",
-  "savedAt": "2026-04-25T09:47:55.636Z",
+  "schemaVersion": 1,
+  "date": "2026-04-25",
+  "savedAt": "2026-04-25T17:31:56.485Z",
   "preferencesFile": "config\\preferences.linkedin.json",
   "preferencesVersion": 1,
   "rawCount": 50,
   "selectedCount": 8,
   "items": [
     {
-      "id": "4405313639",
-      "trackingId": "DTjC6bDoSHsS8pu+8E5uhw==",
-      "refId": "5980+83aynuxGNAFIXKaiA==",
-      "link": "https://de.linkedin.com/jobs/view/praktikum-abschlussarbeit-genai-machine-learning-leistungselektronik-w-m-d-at-volkswagen-group-4405313639?position=10&pageNum=0&refId=5980%2B83aynuxGNAFIXKaiA%3D%3D&trackingId=DTjC6bDoSHsS8pu%2B8E5uhw%3D%3D",
-      "title": "Praktikum / Abschlussarbeit GenAI & Machine Learning Leistungselektronik (w/m/d)",
-      "companyName": "Volkswagen Group",
-      "companyLinkedinUrl": "https://de.linkedin.com/company/volkswagen-group?trk=public_jobs_jserp-result_job-search-card-subtitle",
-      "companyLogo": "https://media.licdn.com/dms/image/v2/D4E0BAQFB1WG81oe_XQ/company-logo_100_100/company-logo_100_100/0/1709205041953/volkswagen_group_logo?e=2147483647&v=beta&t=-Z4PgFSGa37NmD13VFKmOnCG9UDPjNdoqaVEjSoaU_s",
-      "location": "Baunatal, Hesse, Germany",
-      "postedAt": "2026-04-24T10:45:51Z",
-      "benefits": [],
-      "descriptionHtml": "<strong>Arbeitsumfeld<br><br></strong>Unser Bereich „Entwicklung E-Antrieb, Leistungselektronik &amp; Getriebe“ der Group Components an den Standorten Kassel, Wolfsburg und Gaimersheim trägt die Verantwortung für die Entwicklung aller zukünftigen Pulswechselrichter (PWR) für Elektroantriebe im VW-Konzern. Wir gestalten die mobile Zukunft, indem wir unsere Innovationen konsequent in wirtschaftliche Produkte umsetzen und bestehende Technologien kontinuierlich weiterentwickeln. Werden Sie Teil unseres Teams!<br><br><strong>Mögliche Aufgaben dieser Rolle<br><br></strong><ul><li>Unterstützen bei der Beantwortung diverser Entwicklungsfragestellungen in den Bereichen \"Virtuelle Leistungselektronik (Simulation)\" und \"System Leistungselektronik mit Fokus auf moderne KI-Ansätze (GenAI / Agentensysteme)\"</li><li>Aufbauen, Weiterentwickeln und Evaluieren allgemeiner Modelle und Funktionsbausteine</li><li>Mitarbeiten bei der Integration und Anpassung KI‑gestützter Assistenzfunktionen</li><li>Zusammenarbeiten in produktübergreifenden Teams innerhalb der VW-Group<br><br></li></ul><strong>Anforderungen an die Qualifikation<br><br></strong><ul><li>Studierende im Bachelorstudium (&gt; 89 Credit Points) oder Masterstudium im Bereich Informatik, Software / Computer Engineering, Elektrotechnik oder vergleichbare Studiengänge</li><li>Gute bis sehr gute Studienleistungen</li><li>Erste Erfahrungen mit GenAI, LLMs sowie Programmiererfahrung (z.B. Python)</li><li>Erste Erfahrungen mit Ingenieurswissenschaften</li><li>Deutsch oder Englisch Sprachniveau B2<br><br></li></ul><strong>Folgende Dokumente sind mit der Bewerbung einzureichen<br><br></strong><ul><li>Lebenslauf</li><li>Aktuelle Immatrikulationsbescheinigung</li><li>Aktueller Notenspiegel</li><li>Bei einem Pflichtpraktikum zusätzlich eine Bescheinigung der Hochschule</li><li>Arbeitserlaubnis für Nicht-EU Bürgerinnen / Bürger<br><br></li></ul><strong>Keywords<br><br></strong>GenAI Engineering, Power Electronics, E‑Drive Development, Machine Learning Models, Neural Networks, Python Programming, AI Research, Electric Powertrain, Functional Safety Basics, Data Processing Pipelines<br><br>Kontakt für diese Ausschreibung: Maximilian Kaeding",
-      "applicantsCount": "25",
-      "applyUrl": "https://jobs.volkswagen-group.com/Volkswagen/job/Baunatal-Praktikum-Abschlussarbeit-GenAI-&-Machine-Learning-Leistungselektronik-%28wmd%29-34225/1368472733/?feedId=397633&utm_source=SAPJobs",
-      "salary": "",
-      "descriptionText": "Arbeitsumfeld\n\nUnser Bereich „Entwicklung E-Antrieb, Leistungselektronik & Getriebe“ der Group Components an den Standorten Kassel, Wolfsburg und Gaimersheim trägt die Verantwortung für die Entwicklung aller zukünftigen Pulswechselrichter (PWR) für Elektroantriebe im VW-Konzern. Wir gestalten die mobile Zukunft, indem wir unsere Innovationen konsequent in wirtschaftliche Produkte umsetzen und bestehende Technologien kontinuierlich weiterentwickeln. Werden Sie Teil unseres Teams!\n\nMögliche Aufgaben dieser Rolle\n\nUnterstützen bei der Beantwortung diverser Entwicklungsfragestellungen in den Bereichen \"Virtuelle Leistungselektronik (Simulation)\" und \"System Leistungselektronik mit Fokus auf moderne KI-Ansätze (GenAI / Agentensysteme)\"Aufbauen, Weiterentwickeln und Evaluieren allgemeiner Modelle und FunktionsbausteineMitarbeiten bei der Integration und Anpassung KI‑gestützter AssistenzfunktionenZusammenarbeiten in produktübergreifenden Teams innerhalb der VW-Group\n\nAnforderungen an die Qualifikation\n\nStudierende im Bachelorstudium (> 89 Credit Points) oder Masterstudium im Bereich Informatik, Software / Computer Engineering, Elektrotechnik oder vergleichbare StudiengängeGute bis sehr gute StudienleistungenErste Erfahrungen mit GenAI, LLMs sowie Programmiererfahrung (z.B. Python)Erste Erfahrungen mit IngenieurswissenschaftenDeutsch oder Englisch Sprachniveau B2\n\nFolgende Dokumente sind mit der Bewerbung einzureichen\n\nLebenslaufAktuelle ImmatrikulationsbescheinigungAktueller NotenspiegelBei einem Pflichtpraktikum zusätzlich eine Bescheinigung der HochschuleArbeitserlaubnis für Nicht-EU Bürgerinnen / Bürger\n\nKeywords\n\nGenAI Engineering, Power Electronics, E‑Drive Development, Machine Learning Models, Neural Networks, Python Programming, AI Research, Electric Powertrain, Functional Safety Basics, Data Processing Pipelines\n\nKontakt für diese Ausschreibung: Maximilian Kaeding",
-      "seniorityLevel": "Internship",
-      "employmentType": "Full-time",
-      "jobFunction": "Research",
-      "industries": "Motor Vehicle Manufacturing",
-      "inputUrl": "https://www.linkedin.com/jobs/search?keywords=Abschlussarbeit&location=Germany&geoId=101282230&f_E=1%2C2&f_TPR=r86400&position=1&pageNum=0",
-      "salaryInsights": {},
-      "applyMethod": "OffsiteApply",
-      "expireAt": 1779619551000,
-      "postedAtTimestamp": 1777027551000,
-      "workplaceTypes": [],
-      "workRemoteAllowed": false,
-      "standardizedTitle": "Intern",
-      "country": "DE",
+      "schemaVersion": 1,
+      "identity": {
+        "jobId": "linkedin:4405313639",
+        "dedupeKey": "source-id:linkedin:4405313639",
+        "dedupeKeys": [
+          "source-id:linkedin:4405313639",
+          "url:https://de.linkedin.com/jobs/view/praktikum-abschlussarbeit-genai-machine-learning-leistungselektronik-w-m-d-at-volkswagen-group-4405313639"
+        ],
+        "source": "linkedin",
+        "sourceJobId": "4405313639",
+        "sourceJobUrl": "https://de.linkedin.com/jobs/view/praktikum-abschlussarbeit-genai-machine-learning-leistungselektronik-w-m-d-at-volkswagen-group-4405313639?position=10&pageNum=0&refId=5980%2B83aynuxGNAFIXKaiA%3D%3D&trackingId=DTjC6bDoSHsS8pu%2B8E5uhw%3D%3D",
+        "sourceRunId": "aeWWMhq38NBlLwFUf",
+        "sourceDatasetId": "gTibyfv4TVpQQxvVb",
+        "sourceInputUrl": "https://www.linkedin.com/jobs/search?keywords=Abschlussarbeit&location=Germany&geoId=101282230&f_E=1%2C2&f_TPR=r86400&position=1&pageNum=0",
+        "rawFile": "data/raw/linkedin-2026-04-25-114234.json"
+      },
+      "title": {
+        "raw": "Praktikum / Abschlussarbeit GenAI & Machine Learning Leistungselektronik (w/m/d)",
+        "normalized": "Intern"
+      },
+      "company": {
+        "name": "Volkswagen Group",
+        "profileUrl": "https://de.linkedin.com/company/volkswagen-group?trk=public_jobs_jserp-result_job-search-card-subtitle",
+        "logoUrl": "https://media.licdn.com/dms/image/v2/D4E0BAQFB1WG81oe_XQ/company-logo_100_100/company-logo_100_100/0/1709205041953/volkswagen_group_logo?e=2147483647&v=beta&t=-Z4PgFSGa37NmD13VFKmOnCG9UDPjNdoqaVEjSoaU_s",
+        "industry": "Motor Vehicle Manufacturing"
+      },
+      "location": {
+        "raw": "Baunatal, Hesse, Germany",
+        "city": "Baunatal",
+        "state": "Hesse",
+        "country": "DE",
+        "workplaceType": "unknown"
+      },
+      "description": {
+        "text": "Arbeitsumfeld\n\nUnser Bereich „Entwicklung E-Antrieb, Leistungselektronik & Getriebe“ der Group Components an den Standorten Kassel, Wolfsburg und Gaimersheim trägt die Verantwortung für die Entwicklung aller zukünftigen Pulswechselrichter (PWR) für Elektroantriebe im VW-Konzern. Wir gestalten die mobile Zukunft, indem wir unsere Innovationen konsequent in wirtschaftliche Produkte umsetzen und bestehende Technologien kontinuierlich weiterentwickeln. Werden Sie Teil unseres Teams!\n\nMögliche Aufgaben dieser Rolle\n\nUnterstützen bei der Beantwortung diverser Entwicklungsfragestellungen in den Bereichen \"Virtuelle Leistungselektronik (Simulation)\" und \"System Leistungselektronik mit Fokus auf moderne KI-Ansätze (GenAI / Agentensysteme)\"Aufbauen, Weiterentwickeln und Evaluieren allgemeiner Modelle und FunktionsbausteineMitarbeiten bei der Integration und Anpassung KI‑gestützter AssistenzfunktionenZusammenarbeiten in produktübergreifenden Teams innerhalb der VW-Group\n\nAnforderungen an die Qualifikation\n\nStudierende im Bachelorstudium (> 89 Credit Points) oder Masterstudium im Bereich Informatik, Software / Computer Engineering, Elektrotechnik oder vergleichbare StudiengängeGute bis sehr gute StudienleistungenErste Erfahrungen mit GenAI, LLMs sowie Programmiererfahrung (z.B. Python)Erste Erfahrungen mit IngenieurswissenschaftenDeutsch oder Englisch Sprachniveau B2\n\nFolgende Dokumente sind mit der Bewerbung einzureichen\n\nLebenslaufAktuelle ImmatrikulationsbescheinigungAktueller NotenspiegelBei einem Pflichtpraktikum zusätzlich eine Bescheinigung der HochschuleArbeitserlaubnis für Nicht-EU Bürgerinnen / Bürger\n\nKeywords\n\nGenAI Engineering, Power Electronics, E‑Drive Development, Machine Learning Models, Neural Networks, Python Programming, AI Research, Electric Powertrain, Functional Safety Basics, Data Processing Pipelines\n\nKontakt für diese Ausschreibung: Maximilian Kaeding",
+        "html": "<strong>Arbeitsumfeld<br><br></strong>Unser Bereich „Entwicklung E-Antrieb, Leistungselektronik &amp; Getriebe“ der Group Components an den Standorten Kassel, Wolfsburg und Gaimersheim trägt die Verantwortung für die Entwicklung aller zukünftigen Pulswechselrichter (PWR) für Elektroantriebe im VW-Konzern. Wir gestalten die mobile Zukunft, indem wir unsere Innovationen konsequent in wirtschaftliche Produkte umsetzen und bestehende Technologien kontinuierlich weiterentwickeln. Werden Sie Teil unseres Teams!<br><br><strong>Mögliche Aufgaben dieser Rolle<br><br></strong><ul><li>Unterstützen bei der Beantwortung diverser Entwicklungsfragestellungen in den Bereichen \"Virtuelle Leistungselektronik (Simulation)\" und \"System Leistungselektronik mit Fokus auf moderne KI-Ansätze (GenAI / Agentensysteme)\"</li><li>Aufbauen, Weiterentwickeln und Evaluieren allgemeiner Modelle und Funktionsbausteine</li><li>Mitarbeiten bei der Integration und Anpassung KI‑gestützter Assistenzfunktionen</li><li>Zusammenarbeiten in produktübergreifenden Teams innerhalb der VW-Group<br><br></li></ul><strong>Anforderungen an die Qualifikation<br><br></strong><ul><li>Studierende im Bachelorstudium (&gt; 89 Credit Points) oder Masterstudium im Bereich Informatik, Software / Computer Engineering, Elektrotechnik oder vergleichbare Studiengänge</li><li>Gute bis sehr gute Studienleistungen</li><li>Erste Erfahrungen mit GenAI, LLMs sowie Programmiererfahrung (z.B. Python)</li><li>Erste Erfahrungen mit Ingenieurswissenschaften</li><li>Deutsch oder Englisch Sprachniveau B2<br><br></li></ul><strong>Folgende Dokumente sind mit der Bewerbung einzureichen<br><br></strong><ul><li>Lebenslauf</li><li>Aktuelle Immatrikulationsbescheinigung</li><li>Aktueller Notenspiegel</li><li>Bei einem Pflichtpraktikum zusätzlich eine Bescheinigung der Hochschule</li><li>Arbeitserlaubnis für Nicht-EU Bürgerinnen / Bürger<br><br></li></ul><strong>Keywords<br><br></strong>GenAI Engineering, Power Electronics, E‑Drive Development, Machine Learning Models, Neural Networks, Python Programming, AI Research, Electric Powertrain, Functional Safety Basics, Data Processing Pipelines<br><br>Kontakt für diese Ausschreibung: Maximilian Kaeding"
+      },
+      "application": {
+        "jobUrl": "https://de.linkedin.com/jobs/view/praktikum-abschlussarbeit-genai-machine-learning-leistungselektronik-w-m-d-at-volkswagen-group-4405313639?position=10&pageNum=0&refId=5980%2B83aynuxGNAFIXKaiA%3D%3D&trackingId=DTjC6bDoSHsS8pu%2B8E5uhw%3D%3D",
+        "applyUrl": "https://jobs.volkswagen-group.com/Volkswagen/job/Baunatal-Praktikum-Abschlussarbeit-GenAI-&-Machine-Learning-Leistungselektronik-%28wmd%29-34225/1368472733/?feedId=397633&utm_source=SAPJobs",
+        "applyMethod": "OffsiteApply"
+      },
+      "employment": {
+        "seniorityLevel": "Internship",
+        "employmentType": "Full-time",
+        "jobFunction": "Research",
+        "salaryText": ""
+      },
+      "timing": {
+        "postedAt": "2026-04-24T10:45:51Z",
+        "expiresAt": "2026-05-24T10:45:51.000Z",
+        "collectedAt": "2026-04-25T11:42:34.4948603+02:00"
+      },
+      "sightings": [
+        {
+          "source": "linkedin",
+          "rawFile": "data/raw/linkedin-2026-04-25-114234.json",
+          "sourceJobId": "4405313639",
+          "jobUrl": "https://de.linkedin.com/jobs/view/praktikum-abschlussarbeit-genai-machine-learning-leistungselektronik-w-m-d-at-volkswagen-group-4405313639?position=10&pageNum=0&refId=5980%2B83aynuxGNAFIXKaiA%3D%3D&trackingId=DTjC6bDoSHsS8pu%2B8E5uhw%3D%3D",
+          "seenAt": "2026-04-25T11:42:34.4948603+02:00"
+        }
+      ],
       "_selection": {
         "passed": true,
         "must": [
@@ -75,37 +105,68 @@
       }
     },
     {
-      "id": "4374371860",
-      "trackingId": "dpgZHxaU0bq24Q8UE5pacw==",
-      "refId": "9ikST/ZcWXX7PDsaQeNoNg==",
-      "link": "https://de.linkedin.com/jobs/view/masterarbeit-ki-transformation-verstehen-was-macht-ki-use-cases-wirklich-aufwendig%3F-at-fraunhofer-iem-4374371860?position=5&pageNum=0&refId=9ikST%2FZcWXX7PDsaQeNoNg%3D%3D&trackingId=dpgZHxaU0bq24Q8UE5pacw%3D%3D",
-      "title": "Masterarbeit: KI-Transformation verstehen - was macht KI-Use-Cases wirklich aufwendig?",
-      "companyName": "Fraunhofer IEM",
-      "companyLinkedinUrl": "https://de.linkedin.com/company/fraunhofer-iem?trk=public_jobs_jserp-result_job-search-card-subtitle",
-      "companyLogo": "https://media.licdn.com/dms/image/v2/C4D0BAQFP8eAICBtP_w/company-logo_100_100/company-logo_100_100/0/1645520907426/fraunhofer_iem_logo?e=2147483647&v=beta&t=7uVe9ZftZmmcJPKGNghQF12O3ZJYAxlGdceYrIJdUIQ",
-      "location": "Paderborn, North Rhine-Westphalia, Germany",
-      "postedAt": "2026-02-20T12:36:45Z",
-      "benefits": [],
-      "descriptionHtml": "Wie das Engineering der Zukunft aussieht, erforschen wir am Fraunhofer IEM in Paderborn – gemeinsam mit starken Partnern und viel Leidenschaft für Technik. Unsere Teams entwickeln Lösungen, die wirklich in die Anwendung kommen: von smarten Produkten über vernetzte Produktionssysteme bis hin zu digitalen Services und moderner Software. Dabei denken wir Innovation vom ersten Konzept bis zur Umsetzung. Und genau hier kommst Du ins Spiel!<br><br><strong>Hier sorgst Du für Veränderung<br><br></strong><ul><li>Du analysierst, warum manche KI-Use-Caes leicht umzusetzen sind, während andere Überraschend komplex ausfallen.</li><li>Du identifizierst zentrale Stellhebel der KI-Transformation aus den Perspektiven Mensch, Organisation und Technologie.</li><li>Du führst eine strukturierte Literaturrecherche zu Erfolgs- und Aufwandsfaktoren bei der Einführung von KI durch. </li><li>Du konzipierst und führst Fokusgruppen aus den drei Perspektiven Mensch, Organisation und Technologie durch.</li><li>Du entwickelst ein praxisnahes Modell zur Einschätzung des Umsetzungsaufwands von KI-Use-Cases.<br><br><br></li></ul><strong>Hiermit bringst Du Dich ein<br><br></strong><ul><li>Du befindest dich in einem Masterstudium in einem wirtschafts- oder IT-nahen Studiengang.</li><li>Du bringst Interesse an KI, digitaler Transformation und empirischer Forschung mit. </li><li>Du verfügst über analytisches Denkvermögen und hast Freude daran, komplexe Zusammenhänge zu strukturieren.</li><li>Du arbeitest selbstständig, zuverlässig und verantwortungsbewusst.<br><br><br></li></ul><strong>Was wir für Dich bereithalten<br><br></strong><ul><li>Du erhältst spannende Einblicke in aktuelle Forschungsprojekte mit hoher gesellschaftlicher Relevanz im Bereich Testautomatisierung und lernst, wie wissenschaftliche Erkenntnisse in die Praxis umgesetzt werden.</li><li>Dich erwartet ein interdisziplinäres und engagiertes Team, in dem Eigeninitiative geschätzt und dir viel Gestaltungsspielraum geboten wird.</li><li>Dank flexibler Arbeitszeiten kannst du deine Tätigkeit optimal mit deinem Studium vereinbaren und wertvolle Praxiserfahrungen sammeln.</li><li>Du hast die Möglichkeit, eigene Ideen einzubringen und an der Schnittstelle zwischen Forschung und Industrie aktiv mitzuwirken.</li><li>Bei dieser Position handelt es sich um eine unbezahlte Tätigkeit.<br><br><br></li></ul>Wir wertschätzen und fördern die Vielfalt der Kompetenzen unserer Mitarbeitenden und begrüßen daher alle Bewerbungen – unabhängig von Alter, Geschlecht, Nationalität, ethnischer und sozialer Herkunft, Religion, Weltanschauung, Behinderung sowie sexueller Orientierung und Identität. Schwerbehinderte Menschen werden bei gleicher Eignung bevorzugt eingestellt. Unsere Aufgaben sind vielfältig und anpassbar – für Bewerber*innen mit Behinderung finden wir gemeinsam Lösungen, die ihre Fähigkeiten optimal fördern.<br><br>Mit ihrer Fokussierung auf zukunftsrelevante Schlüsseltechnologien sowie auf die Verwertung der Ergebnisse in Wirtschaft und Industrie spielt die Fraunhofer-Gesellschaft eine zentrale Rolle im Innovationsprozess. Als Wegweiser und Impulsgeber für innovative Entwicklungen und wissenschaftliche Exzellenz wirkt sie mit an der Gestaltung unserer Gesellschaft und unserer Zukunft.<br><br><strong>Bereit für Veränderung? Dann bewirb Dich jetzt, und mach einen Unterschied! Nach Eingang Deiner Online-Bewerbung erhältst Du eine automatische Empfangsbestätigung. Dann melden wir uns schnellstmöglich und sagen Dir, wie es weitergeht.<br><br></strong><strong>Noch unentschlossen oder Fragen im Kopf?<br><br></strong>Fachliche Fragen beantwortet Ihnen gerne:<br><br>Frau Verena Dondorf<br><br>📧 Verena.dondorf@iem.fraunhofer.de<br><br>📞 +49 5251 5465316<br><br>Für Fragen rund um den Bewerbungsprozess steht Ihnen zur Verfügung:<br><br>Herr Fatih Ufuk<br><br>📧 Fatih.ufuk@iem.fraunhofer.de<br><br>📞 +49 5251 5465142<br><br>Fraunhofer-Institut für Entwurfstechnik Mechatronik IEM<br><br>www.iem.fraunhofer.de<br><br>Kennziffer: 83225 Bewerbungsfrist:",
-      "applicantsCount": "25",
-      "applyUrl": "https://jobs.fraunhofer.de/job/Paderborn-Masterarbeit-KI-Transformation-verstehen-was-macht-KI-Use-Cases-wirklich-aufwendig-33102/1366193733/",
-      "salary": "",
-      "descriptionText": "Wie das Engineering der Zukunft aussieht, erforschen wir am Fraunhofer IEM in Paderborn – gemeinsam mit starken Partnern und viel Leidenschaft für Technik. Unsere Teams entwickeln Lösungen, die wirklich in die Anwendung kommen: von smarten Produkten über vernetzte Produktionssysteme bis hin zu digitalen Services und moderner Software. Dabei denken wir Innovation vom ersten Konzept bis zur Umsetzung. Und genau hier kommst Du ins Spiel!\n\nHier sorgst Du für Veränderung\n\nDu analysierst, warum manche KI-Use-Caes leicht umzusetzen sind, während andere Überraschend komplex ausfallen.Du identifizierst zentrale Stellhebel der KI-Transformation aus den Perspektiven Mensch, Organisation und Technologie.Du führst eine strukturierte Literaturrecherche zu Erfolgs- und Aufwandsfaktoren bei der Einführung von KI durch. Du konzipierst und führst Fokusgruppen aus den drei Perspektiven Mensch, Organisation und Technologie durch.Du entwickelst ein praxisnahes Modell zur Einschätzung des Umsetzungsaufwands von KI-Use-Cases.\n\n\nHiermit bringst Du Dich ein\n\nDu befindest dich in einem Masterstudium in einem wirtschafts- oder IT-nahen Studiengang.Du bringst Interesse an KI, digitaler Transformation und empirischer Forschung mit. Du verfügst über analytisches Denkvermögen und hast Freude daran, komplexe Zusammenhänge zu strukturieren.Du arbeitest selbstständig, zuverlässig und verantwortungsbewusst.\n\n\nWas wir für Dich bereithalten\n\nDu erhältst spannende Einblicke in aktuelle Forschungsprojekte mit hoher gesellschaftlicher Relevanz im Bereich Testautomatisierung und lernst, wie wissenschaftliche Erkenntnisse in die Praxis umgesetzt werden.Dich erwartet ein interdisziplinäres und engagiertes Team, in dem Eigeninitiative geschätzt und dir viel Gestaltungsspielraum geboten wird.Dank flexibler Arbeitszeiten kannst du deine Tätigkeit optimal mit deinem Studium vereinbaren und wertvolle Praxiserfahrungen sammeln.Du hast die Möglichkeit, eigene Ideen einzubringen und an der Schnittstelle zwischen Forschung und Industrie aktiv mitzuwirken.Bei dieser Position handelt es sich um eine unbezahlte Tätigkeit.\n\n\nWir wertschätzen und fördern die Vielfalt der Kompetenzen unserer Mitarbeitenden und begrüßen daher alle Bewerbungen – unabhängig von Alter, Geschlecht, Nationalität, ethnischer und sozialer Herkunft, Religion, Weltanschauung, Behinderung sowie sexueller Orientierung und Identität. Schwerbehinderte Menschen werden bei gleicher Eignung bevorzugt eingestellt. Unsere Aufgaben sind vielfältig und anpassbar – für Bewerber*innen mit Behinderung finden wir gemeinsam Lösungen, die ihre Fähigkeiten optimal fördern.\n\nMit ihrer Fokussierung auf zukunftsrelevante Schlüsseltechnologien sowie auf die Verwertung der Ergebnisse in Wirtschaft und Industrie spielt die Fraunhofer-Gesellschaft eine zentrale Rolle im Innovationsprozess. Als Wegweiser und Impulsgeber für innovative Entwicklungen und wissenschaftliche Exzellenz wirkt sie mit an der Gestaltung unserer Gesellschaft und unserer Zukunft.\n\nBereit für Veränderung? Dann bewirb Dich jetzt, und mach einen Unterschied! Nach Eingang Deiner Online-Bewerbung erhältst Du eine automatische Empfangsbestätigung. Dann melden wir uns schnellstmöglich und sagen Dir, wie es weitergeht.\n\nNoch unentschlossen oder Fragen im Kopf?\n\nFachliche Fragen beantwortet Ihnen gerne:\n\nFrau Verena Dondorf\n\n📧 Verena.dondorf@iem.fraunhofer.de\n\n📞 +49 5251 5465316\n\nFür Fragen rund um den Bewerbungsprozess steht Ihnen zur Verfügung:\n\nHerr Fatih Ufuk\n\n📧 Fatih.ufuk@iem.fraunhofer.de\n\n📞 +49 5251 5465142\n\nFraunhofer-Institut für Entwurfstechnik Mechatronik IEM\n\nwww.iem.fraunhofer.de\n\nKennziffer: 83225 Bewerbungsfrist:",
-      "seniorityLevel": "Internship",
-      "employmentType": "Full-time",
-      "jobFunction": "Education and Training",
-      "industries": "Research Services",
-      "inputUrl": "https://www.linkedin.com/jobs/search?keywords=Masterarbeit&location=Germany&geoId=101282230&trk=public_jobs_jobs-search-bar_search-submit&position=1&pageNum=0",
-      "salaryInsights": {},
-      "applyMethod": "OffsiteApply",
-      "expireAt": 1778849058000,
-      "postedAtTimestamp": 1771591005000,
-      "workplaceTypes": [
-        "Hybrid"
+      "schemaVersion": 1,
+      "identity": {
+        "jobId": "linkedin:4374371860",
+        "dedupeKey": "source-id:linkedin:4374371860",
+        "dedupeKeys": [
+          "source-id:linkedin:4374371860",
+          "url:https://de.linkedin.com/jobs/view/masterarbeit-ki-transformation-verstehen-was-macht-ki-use-cases-wirklich-aufwendig%3F-at-fraunhofer-iem-4374371860"
+        ],
+        "source": "linkedin",
+        "sourceJobId": "4374371860",
+        "sourceJobUrl": "https://de.linkedin.com/jobs/view/masterarbeit-ki-transformation-verstehen-was-macht-ki-use-cases-wirklich-aufwendig%3F-at-fraunhofer-iem-4374371860?position=5&pageNum=0&refId=9ikST%2FZcWXX7PDsaQeNoNg%3D%3D&trackingId=dpgZHxaU0bq24Q8UE5pacw%3D%3D",
+        "sourceRunId": "aeWWMhq38NBlLwFUf",
+        "sourceDatasetId": "gTibyfv4TVpQQxvVb",
+        "sourceInputUrl": "https://www.linkedin.com/jobs/search?keywords=Masterarbeit&location=Germany&geoId=101282230&trk=public_jobs_jobs-search-bar_search-submit&position=1&pageNum=0",
+        "rawFile": "data/raw/linkedin-2026-04-25-114234.json"
+      },
+      "title": {
+        "raw": "Masterarbeit: KI-Transformation verstehen - was macht KI-Use-Cases wirklich aufwendig?",
+        "normalized": "Masters Student"
+      },
+      "company": {
+        "name": "Fraunhofer IEM",
+        "profileUrl": "https://de.linkedin.com/company/fraunhofer-iem?trk=public_jobs_jserp-result_job-search-card-subtitle",
+        "logoUrl": "https://media.licdn.com/dms/image/v2/C4D0BAQFP8eAICBtP_w/company-logo_100_100/company-logo_100_100/0/1645520907426/fraunhofer_iem_logo?e=2147483647&v=beta&t=7uVe9ZftZmmcJPKGNghQF12O3ZJYAxlGdceYrIJdUIQ",
+        "industry": "Research Services"
+      },
+      "location": {
+        "raw": "Paderborn, North Rhine-Westphalia, Germany",
+        "city": "Paderborn",
+        "state": "North Rhine-Westphalia",
+        "country": "DE",
+        "workplaceType": "hybrid"
+      },
+      "description": {
+        "text": "Wie das Engineering der Zukunft aussieht, erforschen wir am Fraunhofer IEM in Paderborn – gemeinsam mit starken Partnern und viel Leidenschaft für Technik. Unsere Teams entwickeln Lösungen, die wirklich in die Anwendung kommen: von smarten Produkten über vernetzte Produktionssysteme bis hin zu digitalen Services und moderner Software. Dabei denken wir Innovation vom ersten Konzept bis zur Umsetzung. Und genau hier kommst Du ins Spiel!\n\nHier sorgst Du für Veränderung\n\nDu analysierst, warum manche KI-Use-Caes leicht umzusetzen sind, während andere Überraschend komplex ausfallen.Du identifizierst zentrale Stellhebel der KI-Transformation aus den Perspektiven Mensch, Organisation und Technologie.Du führst eine strukturierte Literaturrecherche zu Erfolgs- und Aufwandsfaktoren bei der Einführung von KI durch. Du konzipierst und führst Fokusgruppen aus den drei Perspektiven Mensch, Organisation und Technologie durch.Du entwickelst ein praxisnahes Modell zur Einschätzung des Umsetzungsaufwands von KI-Use-Cases.\n\n\nHiermit bringst Du Dich ein\n\nDu befindest dich in einem Masterstudium in einem wirtschafts- oder IT-nahen Studiengang.Du bringst Interesse an KI, digitaler Transformation und empirischer Forschung mit. Du verfügst über analytisches Denkvermögen und hast Freude daran, komplexe Zusammenhänge zu strukturieren.Du arbeitest selbstständig, zuverlässig und verantwortungsbewusst.\n\n\nWas wir für Dich bereithalten\n\nDu erhältst spannende Einblicke in aktuelle Forschungsprojekte mit hoher gesellschaftlicher Relevanz im Bereich Testautomatisierung und lernst, wie wissenschaftliche Erkenntnisse in die Praxis umgesetzt werden.Dich erwartet ein interdisziplinäres und engagiertes Team, in dem Eigeninitiative geschätzt und dir viel Gestaltungsspielraum geboten wird.Dank flexibler Arbeitszeiten kannst du deine Tätigkeit optimal mit deinem Studium vereinbaren und wertvolle Praxiserfahrungen sammeln.Du hast die Möglichkeit, eigene Ideen einzubringen und an der Schnittstelle zwischen Forschung und Industrie aktiv mitzuwirken.Bei dieser Position handelt es sich um eine unbezahlte Tätigkeit.\n\n\nWir wertschätzen und fördern die Vielfalt der Kompetenzen unserer Mitarbeitenden und begrüßen daher alle Bewerbungen – unabhängig von Alter, Geschlecht, Nationalität, ethnischer und sozialer Herkunft, Religion, Weltanschauung, Behinderung sowie sexueller Orientierung und Identität. Schwerbehinderte Menschen werden bei gleicher Eignung bevorzugt eingestellt. Unsere Aufgaben sind vielfältig und anpassbar – für Bewerber*innen mit Behinderung finden wir gemeinsam Lösungen, die ihre Fähigkeiten optimal fördern.\n\nMit ihrer Fokussierung auf zukunftsrelevante Schlüsseltechnologien sowie auf die Verwertung der Ergebnisse in Wirtschaft und Industrie spielt die Fraunhofer-Gesellschaft eine zentrale Rolle im Innovationsprozess. Als Wegweiser und Impulsgeber für innovative Entwicklungen und wissenschaftliche Exzellenz wirkt sie mit an der Gestaltung unserer Gesellschaft und unserer Zukunft.\n\nBereit für Veränderung? Dann bewirb Dich jetzt, und mach einen Unterschied! Nach Eingang Deiner Online-Bewerbung erhältst Du eine automatische Empfangsbestätigung. Dann melden wir uns schnellstmöglich und sagen Dir, wie es weitergeht.\n\nNoch unentschlossen oder Fragen im Kopf?\n\nFachliche Fragen beantwortet Ihnen gerne:\n\nFrau Verena Dondorf\n\n📧 Verena.dondorf@iem.fraunhofer.de\n\n📞 +49 5251 5465316\n\nFür Fragen rund um den Bewerbungsprozess steht Ihnen zur Verfügung:\n\nHerr Fatih Ufuk\n\n📧 Fatih.ufuk@iem.fraunhofer.de\n\n📞 +49 5251 5465142\n\nFraunhofer-Institut für Entwurfstechnik Mechatronik IEM\n\nwww.iem.fraunhofer.de\n\nKennziffer: 83225 Bewerbungsfrist:",
+        "html": "Wie das Engineering der Zukunft aussieht, erforschen wir am Fraunhofer IEM in Paderborn – gemeinsam mit starken Partnern und viel Leidenschaft für Technik. Unsere Teams entwickeln Lösungen, die wirklich in die Anwendung kommen: von smarten Produkten über vernetzte Produktionssysteme bis hin zu digitalen Services und moderner Software. Dabei denken wir Innovation vom ersten Konzept bis zur Umsetzung. Und genau hier kommst Du ins Spiel!<br><br><strong>Hier sorgst Du für Veränderung<br><br></strong><ul><li>Du analysierst, warum manche KI-Use-Caes leicht umzusetzen sind, während andere Überraschend komplex ausfallen.</li><li>Du identifizierst zentrale Stellhebel der KI-Transformation aus den Perspektiven Mensch, Organisation und Technologie.</li><li>Du führst eine strukturierte Literaturrecherche zu Erfolgs- und Aufwandsfaktoren bei der Einführung von KI durch. </li><li>Du konzipierst und führst Fokusgruppen aus den drei Perspektiven Mensch, Organisation und Technologie durch.</li><li>Du entwickelst ein praxisnahes Modell zur Einschätzung des Umsetzungsaufwands von KI-Use-Cases.<br><br><br></li></ul><strong>Hiermit bringst Du Dich ein<br><br></strong><ul><li>Du befindest dich in einem Masterstudium in einem wirtschafts- oder IT-nahen Studiengang.</li><li>Du bringst Interesse an KI, digitaler Transformation und empirischer Forschung mit. </li><li>Du verfügst über analytisches Denkvermögen und hast Freude daran, komplexe Zusammenhänge zu strukturieren.</li><li>Du arbeitest selbstständig, zuverlässig und verantwortungsbewusst.<br><br><br></li></ul><strong>Was wir für Dich bereithalten<br><br></strong><ul><li>Du erhältst spannende Einblicke in aktuelle Forschungsprojekte mit hoher gesellschaftlicher Relevanz im Bereich Testautomatisierung und lernst, wie wissenschaftliche Erkenntnisse in die Praxis umgesetzt werden.</li><li>Dich erwartet ein interdisziplinäres und engagiertes Team, in dem Eigeninitiative geschätzt und dir viel Gestaltungsspielraum geboten wird.</li><li>Dank flexibler Arbeitszeiten kannst du deine Tätigkeit optimal mit deinem Studium vereinbaren und wertvolle Praxiserfahrungen sammeln.</li><li>Du hast die Möglichkeit, eigene Ideen einzubringen und an der Schnittstelle zwischen Forschung und Industrie aktiv mitzuwirken.</li><li>Bei dieser Position handelt es sich um eine unbezahlte Tätigkeit.<br><br><br></li></ul>Wir wertschätzen und fördern die Vielfalt der Kompetenzen unserer Mitarbeitenden und begrüßen daher alle Bewerbungen – unabhängig von Alter, Geschlecht, Nationalität, ethnischer und sozialer Herkunft, Religion, Weltanschauung, Behinderung sowie sexueller Orientierung und Identität. Schwerbehinderte Menschen werden bei gleicher Eignung bevorzugt eingestellt. Unsere Aufgaben sind vielfältig und anpassbar – für Bewerber*innen mit Behinderung finden wir gemeinsam Lösungen, die ihre Fähigkeiten optimal fördern.<br><br>Mit ihrer Fokussierung auf zukunftsrelevante Schlüsseltechnologien sowie auf die Verwertung der Ergebnisse in Wirtschaft und Industrie spielt die Fraunhofer-Gesellschaft eine zentrale Rolle im Innovationsprozess. Als Wegweiser und Impulsgeber für innovative Entwicklungen und wissenschaftliche Exzellenz wirkt sie mit an der Gestaltung unserer Gesellschaft und unserer Zukunft.<br><br><strong>Bereit für Veränderung? Dann bewirb Dich jetzt, und mach einen Unterschied! Nach Eingang Deiner Online-Bewerbung erhältst Du eine automatische Empfangsbestätigung. Dann melden wir uns schnellstmöglich und sagen Dir, wie es weitergeht.<br><br></strong><strong>Noch unentschlossen oder Fragen im Kopf?<br><br></strong>Fachliche Fragen beantwortet Ihnen gerne:<br><br>Frau Verena Dondorf<br><br>📧 Verena.dondorf@iem.fraunhofer.de<br><br>📞 +49 5251 5465316<br><br>Für Fragen rund um den Bewerbungsprozess steht Ihnen zur Verfügung:<br><br>Herr Fatih Ufuk<br><br>📧 Fatih.ufuk@iem.fraunhofer.de<br><br>📞 +49 5251 5465142<br><br>Fraunhofer-Institut für Entwurfstechnik Mechatronik IEM<br><br>www.iem.fraunhofer.de<br><br>Kennziffer: 83225 Bewerbungsfrist:"
+      },
+      "application": {
+        "jobUrl": "https://de.linkedin.com/jobs/view/masterarbeit-ki-transformation-verstehen-was-macht-ki-use-cases-wirklich-aufwendig%3F-at-fraunhofer-iem-4374371860?position=5&pageNum=0&refId=9ikST%2FZcWXX7PDsaQeNoNg%3D%3D&trackingId=dpgZHxaU0bq24Q8UE5pacw%3D%3D",
+        "applyUrl": "https://jobs.fraunhofer.de/job/Paderborn-Masterarbeit-KI-Transformation-verstehen-was-macht-KI-Use-Cases-wirklich-aufwendig-33102/1366193733/",
+        "applyMethod": "OffsiteApply"
+      },
+      "employment": {
+        "seniorityLevel": "Internship",
+        "employmentType": "Full-time",
+        "jobFunction": "Education and Training",
+        "salaryText": ""
+      },
+      "timing": {
+        "postedAt": "2026-02-20T12:36:45Z",
+        "expiresAt": "2026-05-15T12:44:18.000Z",
+        "collectedAt": "2026-04-25T11:42:34.4948603+02:00"
+      },
+      "sightings": [
+        {
+          "source": "linkedin",
+          "rawFile": "data/raw/linkedin-2026-04-25-114234.json",
+          "sourceJobId": "4374371860",
+          "jobUrl": "https://de.linkedin.com/jobs/view/masterarbeit-ki-transformation-verstehen-was-macht-ki-use-cases-wirklich-aufwendig%3F-at-fraunhofer-iem-4374371860?position=5&pageNum=0&refId=9ikST%2FZcWXX7PDsaQeNoNg%3D%3D&trackingId=dpgZHxaU0bq24Q8UE5pacw%3D%3D",
+          "seenAt": "2026-04-25T11:42:34.4948603+02:00"
+        }
       ],
-      "workRemoteAllowed": false,
-      "standardizedTitle": "Masters Student",
-      "country": "DE",
       "_selection": {
         "passed": true,
         "must": [
@@ -137,37 +198,68 @@
       }
     },
     {
-      "id": "4397689250",
-      "trackingId": "dCr6RF5hPXfRPkUPqtxsVA==",
-      "refId": "9ikST/ZcWXX7PDsaQeNoNg==",
-      "link": "https://de.linkedin.com/jobs/view/praktikant-werkstudent-bachelorarbeit-masterarbeit-w-m-d-in-der-anwendungsentwicklung-at-deos-ag-4397689250?position=2&pageNum=0&refId=9ikST%2FZcWXX7PDsaQeNoNg%3D%3D&trackingId=dCr6RF5hPXfRPkUPqtxsVA%3D%3D",
-      "title": "Praktikant / Werkstudent / Bachelorarbeit / Masterarbeit (w/m/d) in der Anwendungsentwicklung",
-      "companyName": "DEOS AG",
-      "companyLinkedinUrl": "https://de.linkedin.com/company/deos-ag?trk=public_jobs_jserp-result_job-search-card-subtitle",
-      "companyLogo": "https://media.licdn.com/dms/image/v2/D4E0BAQELL6M_LBhcQQ/company-logo_100_100/company-logo_100_100/0/1709536998629/deos_ag_logo?e=2147483647&v=beta&t=2ZACwavuCHmYeBCSXyLjvf2SxQuDOoSMKAjNEm08ggs",
-      "location": "Rheine, North Rhine-Westphalia, Germany",
-      "postedAt": "2026-03-16T06:29:22Z",
-      "benefits": [],
-      "descriptionHtml": "<strong>Dein Beruf mit Zukunft<br><br></strong>Als Hersteller von Produkten, Lösungen und Dienstleistungen für die Digitalisierung und Automation von Gebäuden und Anlagen bieten wir unseren Partnern und Kunden die Grundlage für intelligente Gebäude der Zukunft, sogenannte Smart Buildings. Dabei verfolgen wir stets das Ziel die Energieeffizienz zu maximieren und somit unseren Beitrag zum nachhaltigen Betrieb von Gebäuden und gleichzeitig einer nachhaltigeren Zukunft zu leisten. Entscheide auch Du Dich für einen Beruf mit Zukunft und begeistere unsere Partner und Kunden mit Deinem Einsatz.<br><br>Nenne eines der innovativsten Bürogebäude Europas Deinen neuen Arbeitsplatz. In unserer Unternehmenszentrale in Rheine bieten wir Dir das, wofür DEOS steht: Intelligente Gebäude der Zukunft, die Wohlfühlklima, Design und modernste Technik vereinen. Erlebe die Zukunft bereits heute!<br><br><strong>So sieht Dein zukünftiger Arbeitsalltag aus<br><br></strong><ul><li>Du hast Interesse an einer Stelle als Werkstudent (w/m/d) Bachelor/Master oder möchtest eine Bachelor- oder Masterarbeit in unserem Unternehmen schreiben, bist interessiert an Praxissemestern / Praktika oder an einer Anstellung als studentische Hilfskräfte</li><li>Du interessierst Dich für den Schwerpunkt Hardwarenahe Softwareentwicklung, µC Programmierung in Ansi C, embedded Linux Programmierung in ANSI C oder</li><li>Du interessierst Dich für den Schwerpunkt PC-Softwareentwicklung in den Sprachen Visual C++, C#, Java sowie Skript Sprachen. Webclient, Server, UI Interface<br><br><br></li></ul><strong>Hiermit begeistern wir Dich<br><br></strong><ul><li>Du kannst Dich auf ein sicheres und zukunftsorientiertes Marktumfeld, welches für Nachhaltigkeit und Klimaschutz steht, freuen</li><li>Ein auf Dich persönlich zugeschnittener Onboarding-Prozess ermöglicht es Dir, Dich schnell mit Deinem neuen Arbeitsumfeld vertraut zu machen</li><li>Wir fördern von Anfang an die Vernetzung mit Deinen neuen Kolleginnen und Kollegen – denn ein begeisterndes DEOS-Team ist für Dich ansprechbar und unterstützt Dich bei Deinen (neuen) Aufgaben. Unsere transparent gestalteten Unternehmenswerte sowie unser Führungsleitbild bilden hierbei die Grundlage für unsere Zusammenarbeit</li><li>Gestalte unsere Zukunft mit – Deine Ideen, um unsere Kunden zu begeistern, sind willkommen. Diese diskutierst Du bei uns respektvoll und auf Augenhöhe – denn ein Austausch über alle Unternehmensebenen wird bei uns ausdrücklich gewünscht und gehört zu unserer Kultur</li><li>Du genießt eine flexible Arbeitszeitgestaltung z. B. mit mobilem Arbeiten von zuhause<br><br><br></li></ul><strong>Das solltest Du mitbringen<br><br></strong><ul><li>Du absolvierst ein technisches Studium, z.B. im Bereich der Elektrotechnik oder Informatik</li><li>Dein Interesse liegt im Bereich Softwareentwicklung und Konzeption</li><li>Du verfügst über Kenntnisse in den Programmiersprachen ANSI C, Visual C++, C#, JAVA, HTML oder JavaScript</li><li>Du zeigst Interesse an Software QA/QS</li><li>Du hast erste Erfahrungen im Projektmanagement</li><li>Dich begeistern KI und Data Analytics<br></li></ul>",
-      "applicantsCount": "25",
-      "applyUrl": "https://jobsite.perview.de/ApplicationForm/AppForm?job=1514&companyGuid=b212905f-0b09-4dca-afee-5765ecac4eb5&channel=easy.basic.linkedin.com&lang=de-DE&api=true",
-      "salary": "",
-      "descriptionText": "Dein Beruf mit Zukunft\n\nAls Hersteller von Produkten, Lösungen und Dienstleistungen für die Digitalisierung und Automation von Gebäuden und Anlagen bieten wir unseren Partnern und Kunden die Grundlage für intelligente Gebäude der Zukunft, sogenannte Smart Buildings. Dabei verfolgen wir stets das Ziel die Energieeffizienz zu maximieren und somit unseren Beitrag zum nachhaltigen Betrieb von Gebäuden und gleichzeitig einer nachhaltigeren Zukunft zu leisten. Entscheide auch Du Dich für einen Beruf mit Zukunft und begeistere unsere Partner und Kunden mit Deinem Einsatz.\n\nNenne eines der innovativsten Bürogebäude Europas Deinen neuen Arbeitsplatz. In unserer Unternehmenszentrale in Rheine bieten wir Dir das, wofür DEOS steht: Intelligente Gebäude der Zukunft, die Wohlfühlklima, Design und modernste Technik vereinen. Erlebe die Zukunft bereits heute!\n\nSo sieht Dein zukünftiger Arbeitsalltag aus\n\nDu hast Interesse an einer Stelle als Werkstudent (w/m/d) Bachelor/Master oder möchtest eine Bachelor- oder Masterarbeit in unserem Unternehmen schreiben, bist interessiert an Praxissemestern / Praktika oder an einer Anstellung als studentische HilfskräfteDu interessierst Dich für den Schwerpunkt Hardwarenahe Softwareentwicklung, µC Programmierung in Ansi C, embedded Linux Programmierung in ANSI C oderDu interessierst Dich für den Schwerpunkt PC-Softwareentwicklung in den Sprachen Visual C++, C#, Java sowie Skript Sprachen. Webclient, Server, UI Interface\n\n\nHiermit begeistern wir Dich\n\nDu kannst Dich auf ein sicheres und zukunftsorientiertes Marktumfeld, welches für Nachhaltigkeit und Klimaschutz steht, freuenEin auf Dich persönlich zugeschnittener Onboarding-Prozess ermöglicht es Dir, Dich schnell mit Deinem neuen Arbeitsumfeld vertraut zu machenWir fördern von Anfang an die Vernetzung mit Deinen neuen Kolleginnen und Kollegen – denn ein begeisterndes DEOS-Team ist für Dich ansprechbar und unterstützt Dich bei Deinen (neuen) Aufgaben. Unsere transparent gestalteten Unternehmenswerte sowie unser Führungsleitbild bilden hierbei die Grundlage für unsere ZusammenarbeitGestalte unsere Zukunft mit – Deine Ideen, um unsere Kunden zu begeistern, sind willkommen. Diese diskutierst Du bei uns respektvoll und auf Augenhöhe – denn ein Austausch über alle Unternehmensebenen wird bei uns ausdrücklich gewünscht und gehört zu unserer KulturDu genießt eine flexible Arbeitszeitgestaltung z. B. mit mobilem Arbeiten von zuhause\n\n\nDas solltest Du mitbringen\n\nDu absolvierst ein technisches Studium, z.B. im Bereich der Elektrotechnik oder InformatikDein Interesse liegt im Bereich Softwareentwicklung und KonzeptionDu verfügst über Kenntnisse in den Programmiersprachen ANSI C, Visual C++, C#, JAVA, HTML oder JavaScriptDu zeigst Interesse an Software QA/QSDu hast erste Erfahrungen im ProjektmanagementDich begeistern KI und Data Analytics\n",
-      "seniorityLevel": "Entry level",
-      "employmentType": "Volunteer",
-      "jobFunction": "Engineering, Information Technology, and Project Management",
-      "industries": "Appliances, Electrical, and Electronics Manufacturing, IT Services and IT Consulting, and Automation Machinery Manufacturing",
-      "inputUrl": "https://www.linkedin.com/jobs/search?keywords=Masterarbeit&location=Germany&geoId=101282230&trk=public_jobs_jobs-search-bar_search-submit&position=1&pageNum=0",
-      "salaryInsights": {},
-      "applyMethod": "ComplexOnsiteApply",
-      "expireAt": 1783548000000,
-      "postedAtTimestamp": 1773642562000,
-      "workplaceTypes": [
-        "On-site"
+      "schemaVersion": 1,
+      "identity": {
+        "jobId": "linkedin:4397689250",
+        "dedupeKey": "source-id:linkedin:4397689250",
+        "dedupeKeys": [
+          "source-id:linkedin:4397689250",
+          "url:https://de.linkedin.com/jobs/view/praktikant-werkstudent-bachelorarbeit-masterarbeit-w-m-d-in-der-anwendungsentwicklung-at-deos-ag-4397689250"
+        ],
+        "source": "linkedin",
+        "sourceJobId": "4397689250",
+        "sourceJobUrl": "https://de.linkedin.com/jobs/view/praktikant-werkstudent-bachelorarbeit-masterarbeit-w-m-d-in-der-anwendungsentwicklung-at-deos-ag-4397689250?position=2&pageNum=0&refId=9ikST%2FZcWXX7PDsaQeNoNg%3D%3D&trackingId=dCr6RF5hPXfRPkUPqtxsVA%3D%3D",
+        "sourceRunId": "aeWWMhq38NBlLwFUf",
+        "sourceDatasetId": "gTibyfv4TVpQQxvVb",
+        "sourceInputUrl": "https://www.linkedin.com/jobs/search?keywords=Masterarbeit&location=Germany&geoId=101282230&trk=public_jobs_jobs-search-bar_search-submit&position=1&pageNum=0",
+        "rawFile": "data/raw/linkedin-2026-04-25-114234.json"
+      },
+      "title": {
+        "raw": "Praktikant / Werkstudent / Bachelorarbeit / Masterarbeit (w/m/d) in der Anwendungsentwicklung",
+        "normalized": "Application Engineer"
+      },
+      "company": {
+        "name": "DEOS AG",
+        "profileUrl": "https://de.linkedin.com/company/deos-ag?trk=public_jobs_jserp-result_job-search-card-subtitle",
+        "logoUrl": "https://media.licdn.com/dms/image/v2/D4E0BAQELL6M_LBhcQQ/company-logo_100_100/company-logo_100_100/0/1709536998629/deos_ag_logo?e=2147483647&v=beta&t=2ZACwavuCHmYeBCSXyLjvf2SxQuDOoSMKAjNEm08ggs",
+        "industry": "Appliances, Electrical, and Electronics Manufacturing, IT Services and IT Consulting, and Automation Machinery Manufacturing"
+      },
+      "location": {
+        "raw": "Rheine, North Rhine-Westphalia, Germany",
+        "city": "Rheine",
+        "state": "North Rhine-Westphalia",
+        "country": "DE",
+        "workplaceType": "unknown"
+      },
+      "description": {
+        "text": "Dein Beruf mit Zukunft\n\nAls Hersteller von Produkten, Lösungen und Dienstleistungen für die Digitalisierung und Automation von Gebäuden und Anlagen bieten wir unseren Partnern und Kunden die Grundlage für intelligente Gebäude der Zukunft, sogenannte Smart Buildings. Dabei verfolgen wir stets das Ziel die Energieeffizienz zu maximieren und somit unseren Beitrag zum nachhaltigen Betrieb von Gebäuden und gleichzeitig einer nachhaltigeren Zukunft zu leisten. Entscheide auch Du Dich für einen Beruf mit Zukunft und begeistere unsere Partner und Kunden mit Deinem Einsatz.\n\nNenne eines der innovativsten Bürogebäude Europas Deinen neuen Arbeitsplatz. In unserer Unternehmenszentrale in Rheine bieten wir Dir das, wofür DEOS steht: Intelligente Gebäude der Zukunft, die Wohlfühlklima, Design und modernste Technik vereinen. Erlebe die Zukunft bereits heute!\n\nSo sieht Dein zukünftiger Arbeitsalltag aus\n\nDu hast Interesse an einer Stelle als Werkstudent (w/m/d) Bachelor/Master oder möchtest eine Bachelor- oder Masterarbeit in unserem Unternehmen schreiben, bist interessiert an Praxissemestern / Praktika oder an einer Anstellung als studentische HilfskräfteDu interessierst Dich für den Schwerpunkt Hardwarenahe Softwareentwicklung, µC Programmierung in Ansi C, embedded Linux Programmierung in ANSI C oderDu interessierst Dich für den Schwerpunkt PC-Softwareentwicklung in den Sprachen Visual C++, C#, Java sowie Skript Sprachen. Webclient, Server, UI Interface\n\n\nHiermit begeistern wir Dich\n\nDu kannst Dich auf ein sicheres und zukunftsorientiertes Marktumfeld, welches für Nachhaltigkeit und Klimaschutz steht, freuenEin auf Dich persönlich zugeschnittener Onboarding-Prozess ermöglicht es Dir, Dich schnell mit Deinem neuen Arbeitsumfeld vertraut zu machenWir fördern von Anfang an die Vernetzung mit Deinen neuen Kolleginnen und Kollegen – denn ein begeisterndes DEOS-Team ist für Dich ansprechbar und unterstützt Dich bei Deinen (neuen) Aufgaben. Unsere transparent gestalteten Unternehmenswerte sowie unser Führungsleitbild bilden hierbei die Grundlage für unsere ZusammenarbeitGestalte unsere Zukunft mit – Deine Ideen, um unsere Kunden zu begeistern, sind willkommen. Diese diskutierst Du bei uns respektvoll und auf Augenhöhe – denn ein Austausch über alle Unternehmensebenen wird bei uns ausdrücklich gewünscht und gehört zu unserer KulturDu genießt eine flexible Arbeitszeitgestaltung z. B. mit mobilem Arbeiten von zuhause\n\n\nDas solltest Du mitbringen\n\nDu absolvierst ein technisches Studium, z.B. im Bereich der Elektrotechnik oder InformatikDein Interesse liegt im Bereich Softwareentwicklung und KonzeptionDu verfügst über Kenntnisse in den Programmiersprachen ANSI C, Visual C++, C#, JAVA, HTML oder JavaScriptDu zeigst Interesse an Software QA/QSDu hast erste Erfahrungen im ProjektmanagementDich begeistern KI und Data Analytics\n",
+        "html": "<strong>Dein Beruf mit Zukunft<br><br></strong>Als Hersteller von Produkten, Lösungen und Dienstleistungen für die Digitalisierung und Automation von Gebäuden und Anlagen bieten wir unseren Partnern und Kunden die Grundlage für intelligente Gebäude der Zukunft, sogenannte Smart Buildings. Dabei verfolgen wir stets das Ziel die Energieeffizienz zu maximieren und somit unseren Beitrag zum nachhaltigen Betrieb von Gebäuden und gleichzeitig einer nachhaltigeren Zukunft zu leisten. Entscheide auch Du Dich für einen Beruf mit Zukunft und begeistere unsere Partner und Kunden mit Deinem Einsatz.<br><br>Nenne eines der innovativsten Bürogebäude Europas Deinen neuen Arbeitsplatz. In unserer Unternehmenszentrale in Rheine bieten wir Dir das, wofür DEOS steht: Intelligente Gebäude der Zukunft, die Wohlfühlklima, Design und modernste Technik vereinen. Erlebe die Zukunft bereits heute!<br><br><strong>So sieht Dein zukünftiger Arbeitsalltag aus<br><br></strong><ul><li>Du hast Interesse an einer Stelle als Werkstudent (w/m/d) Bachelor/Master oder möchtest eine Bachelor- oder Masterarbeit in unserem Unternehmen schreiben, bist interessiert an Praxissemestern / Praktika oder an einer Anstellung als studentische Hilfskräfte</li><li>Du interessierst Dich für den Schwerpunkt Hardwarenahe Softwareentwicklung, µC Programmierung in Ansi C, embedded Linux Programmierung in ANSI C oder</li><li>Du interessierst Dich für den Schwerpunkt PC-Softwareentwicklung in den Sprachen Visual C++, C#, Java sowie Skript Sprachen. Webclient, Server, UI Interface<br><br><br></li></ul><strong>Hiermit begeistern wir Dich<br><br></strong><ul><li>Du kannst Dich auf ein sicheres und zukunftsorientiertes Marktumfeld, welches für Nachhaltigkeit und Klimaschutz steht, freuen</li><li>Ein auf Dich persönlich zugeschnittener Onboarding-Prozess ermöglicht es Dir, Dich schnell mit Deinem neuen Arbeitsumfeld vertraut zu machen</li><li>Wir fördern von Anfang an die Vernetzung mit Deinen neuen Kolleginnen und Kollegen – denn ein begeisterndes DEOS-Team ist für Dich ansprechbar und unterstützt Dich bei Deinen (neuen) Aufgaben. Unsere transparent gestalteten Unternehmenswerte sowie unser Führungsleitbild bilden hierbei die Grundlage für unsere Zusammenarbeit</li><li>Gestalte unsere Zukunft mit – Deine Ideen, um unsere Kunden zu begeistern, sind willkommen. Diese diskutierst Du bei uns respektvoll und auf Augenhöhe – denn ein Austausch über alle Unternehmensebenen wird bei uns ausdrücklich gewünscht und gehört zu unserer Kultur</li><li>Du genießt eine flexible Arbeitszeitgestaltung z. B. mit mobilem Arbeiten von zuhause<br><br><br></li></ul><strong>Das solltest Du mitbringen<br><br></strong><ul><li>Du absolvierst ein technisches Studium, z.B. im Bereich der Elektrotechnik oder Informatik</li><li>Dein Interesse liegt im Bereich Softwareentwicklung und Konzeption</li><li>Du verfügst über Kenntnisse in den Programmiersprachen ANSI C, Visual C++, C#, JAVA, HTML oder JavaScript</li><li>Du zeigst Interesse an Software QA/QS</li><li>Du hast erste Erfahrungen im Projektmanagement</li><li>Dich begeistern KI und Data Analytics<br></li></ul>"
+      },
+      "application": {
+        "jobUrl": "https://de.linkedin.com/jobs/view/praktikant-werkstudent-bachelorarbeit-masterarbeit-w-m-d-in-der-anwendungsentwicklung-at-deos-ag-4397689250?position=2&pageNum=0&refId=9ikST%2FZcWXX7PDsaQeNoNg%3D%3D&trackingId=dCr6RF5hPXfRPkUPqtxsVA%3D%3D",
+        "applyUrl": "https://jobsite.perview.de/ApplicationForm/AppForm?job=1514&companyGuid=b212905f-0b09-4dca-afee-5765ecac4eb5&channel=easy.basic.linkedin.com&lang=de-DE&api=true",
+        "applyMethod": "ComplexOnsiteApply"
+      },
+      "employment": {
+        "seniorityLevel": "Entry level",
+        "employmentType": "Volunteer",
+        "jobFunction": "Engineering, Information Technology, and Project Management",
+        "salaryText": ""
+      },
+      "timing": {
+        "postedAt": "2026-03-16T06:29:22Z",
+        "expiresAt": "2026-07-08T22:00:00.000Z",
+        "collectedAt": "2026-04-25T11:42:34.4948603+02:00"
+      },
+      "sightings": [
+        {
+          "source": "linkedin",
+          "rawFile": "data/raw/linkedin-2026-04-25-114234.json",
+          "sourceJobId": "4397689250",
+          "jobUrl": "https://de.linkedin.com/jobs/view/praktikant-werkstudent-bachelorarbeit-masterarbeit-w-m-d-in-der-anwendungsentwicklung-at-deos-ag-4397689250?position=2&pageNum=0&refId=9ikST%2FZcWXX7PDsaQeNoNg%3D%3D&trackingId=dCr6RF5hPXfRPkUPqtxsVA%3D%3D",
+          "seenAt": "2026-04-25T11:42:34.4948603+02:00"
+        }
       ],
-      "workRemoteAllowed": false,
-      "standardizedTitle": "Application Engineer",
-      "country": "DE",
       "_selection": {
         "passed": true,
         "must": [
@@ -199,37 +291,68 @@
       }
     },
     {
-      "id": "4326765416",
-      "trackingId": "rdJI4ZlPB6bpFXm8L9htkQ==",
-      "refId": "ZkBk9KEY5h2S8tg5+GHJDQ==",
-      "link": "https://de.linkedin.com/jobs/view/bachelor-masterarbeit-%C2%BBentwicklung-und-optimierung-nachhaltiger-additiver-produktionsprozesse%C2%AB-at-fraunhofer-institute-for-production-technology-ipt-4326765416?position=9&pageNum=2&refId=ZkBk9KEY5h2S8tg5%2BGHJDQ%3D%3D&trackingId=rdJI4ZlPB6bpFXm8L9htkQ%3D%3D",
-      "title": "Bachelor-/ Masterarbeit: »Entwicklung und Optimierung nachhaltiger additiver Produktionsprozesse«",
-      "companyName": "Fraunhofer Institute for Production Technology IPT",
-      "companyLinkedinUrl": "https://de.linkedin.com/company/fraunhofer-ipt?trk=public_jobs_jserp-result_job-search-card-subtitle",
-      "companyLogo": "https://media.licdn.com/dms/image/v2/D4E0BAQEeIcUBa82VXQ/company-logo_100_100/company-logo_100_100/0/1685707196846/fraunhofer_ipt_logo?e=2147483647&v=beta&t=qHVkLJV9f9GH3SWjLXpsdXq0igUE3NDNQngHuMK6no4",
-      "location": "Aachen, North Rhine-Westphalia, Germany",
-      "postedAt": "2025-12-11T12:37:50Z",
-      "benefits": [],
-      "descriptionHtml": "Das Fraunhofer IPT in Aachen erforscht nachhaltige und effiziente Produktionsverfahren, darunter additive Fertigungsverfahren wie Laserauftragschweißen mit Draht, Lichtbogenauftragschweißen und Laserstrahlschmelzen im Pulverbett. Diese Verfahren ermöglichen eine ressourcenschonende Herstellung, kostengünstige Reparatur und die Beschichtung von Bauteilen.<br><br>In der Abteilung »Energetische Strahlverfahren« entwickeln wir diese Technologien für die Industrie weiter. Wir erforschen neue Werkstoffe, Fertigungsverfahren und die Digitalisierung der additiven Fertigung. Dabei integrieren wir Sensorik in Fertigungsanlagen und nutzen Künstliche Intelligenz zur Prozessüberwachung. Zudem beschäftigen wir uns mit konstruktiven Fragestellungen für Bauteile und Maschinen-Equipment.<br><br><strong>Hier sorgst Du für Veränderung<br><br></strong><ul><li>Entwicklung und Optimierung nachhaltiger additiver Produktionsprozesse</li><li>Automatisierung und Digitalisierung der Fertigung</li><li>Mitarbeit in Forschungsprojekten zu aktuellen Themen wie Nachhaltigkeit in der Produktion und Wasserstoffverbrennung <br><br><br></li></ul><strong>Hiermit bringst Du Dich ein<br><br></strong><ul><li>Du studierst Maschinenbau, Wirtschaftsingenieurwesen, Physik oder eine vergleichbare Fachrichtung</li><li>Du hast erste Kenntnisse im Bereich der additiven Fertigung</li><li>Du kannst selbstständig arbeiten und hast Freude an interdisziplinärer Teamarbeit</li><li>Du verfügst über gute Sprachkenntnisse in Deutsch und/oder Englisch <br><br><br></li></ul><strong>Was wir für Dich bereithalten<br><br></strong><ul><li>Freie Wahl des Themas, Freiheit bei der Ausgestaltung deiner Arbeit und fachliche Unterstützung</li><li>Zugang zu modernsten Maschinen und digitaler Ausrüstung, z. B. Edge-Cloud-Systeme und 5G-Infrastruktur</li><li>Einblick in den wissenschaftlichen Betrieb und Industriekontakte</li><li>Ein teamorientiertes Umfeld, geprägt von Respekt und Zusammenarbeit auf Augenhöhe<br><br><br></li></ul>Wir wertschätzen und fördern die Vielfalt der Kompetenzen unserer Mitarbeitenden und begrüßen daher alle Bewerbungen – unabhängig von Alter, Geschlecht, Nationalität, ethnischer und sozialer Herkunft, Religion, Weltanschauung, Behinderung sowie sexueller Orientierung und Identität. Schwerbehinderte Menschen werden bei gleicher Eignung bevorzugt eingestellt. Unsere Aufgaben sind vielfältig und anpassbar – für Bewerber*innen mit Behinderung finden wir gemeinsam Lösungen, die ihre Fähigkeiten optimal fördern.<br><br>Mit ihrer Fokussierung auf zukunftsrelevante Schlüsseltechnologien sowie auf die Verwertung der Ergebnisse in Wirtschaft und Industrie spielt die Fraunhofer-Gesellschaft eine zentrale Rolle im Innovationsprozess. Als Wegweiser und Impulsgeber für innovative Entwicklungen und wissenschaftliche Exzellenz wirkt sie mit an der Gestaltung unserer Gesellschaft und unserer Zukunft.<br><br><strong>Bereit für Veränderung? Dann bewirb Dich jetzt, und mach einen Unterschied! Nach Eingang Deiner Online-Bewerbung erhältst Du eine automatische Empfangsbestätigung. Dann melden wir uns schnellstmöglich und sagen Dir, wie es weitergeht.<br><br></strong><strong>Auf deine Fragen zu dieser Abschlussarbeit freut sich:<br><br></strong>Stefan Gräfe M.Eng.<br><br>Teamleiter Additive Fertigung, Abteilung Energetische Strahlverfahren<br><br>Telefon: +49 241 8904-254<br><br>Fraunhofer-Institut für Produktionstechnologie IPT<br><br>www.ipt.fraunhofer.de<br><br>Kennziffer: 68757 Bewerbungsfrist:",
-      "applicantsCount": "25",
-      "applyUrl": "https://jobs.fraunhofer.de/job/Aachen-Bachelor-Masterarbeit-%C2%BBEntwicklung-und-Optimierung-nachhaltiger-additiver-Produktionsprozesse%C2%AB-52074/983538901/",
-      "salary": "",
-      "descriptionText": "Das Fraunhofer IPT in Aachen erforscht nachhaltige und effiziente Produktionsverfahren, darunter additive Fertigungsverfahren wie Laserauftragschweißen mit Draht, Lichtbogenauftragschweißen und Laserstrahlschmelzen im Pulverbett. Diese Verfahren ermöglichen eine ressourcenschonende Herstellung, kostengünstige Reparatur und die Beschichtung von Bauteilen.\n\nIn der Abteilung »Energetische Strahlverfahren« entwickeln wir diese Technologien für die Industrie weiter. Wir erforschen neue Werkstoffe, Fertigungsverfahren und die Digitalisierung der additiven Fertigung. Dabei integrieren wir Sensorik in Fertigungsanlagen und nutzen Künstliche Intelligenz zur Prozessüberwachung. Zudem beschäftigen wir uns mit konstruktiven Fragestellungen für Bauteile und Maschinen-Equipment.\n\nHier sorgst Du für Veränderung\n\nEntwicklung und Optimierung nachhaltiger additiver ProduktionsprozesseAutomatisierung und Digitalisierung der FertigungMitarbeit in Forschungsprojekten zu aktuellen Themen wie Nachhaltigkeit in der Produktion und Wasserstoffverbrennung \n\n\nHiermit bringst Du Dich ein\n\nDu studierst Maschinenbau, Wirtschaftsingenieurwesen, Physik oder eine vergleichbare FachrichtungDu hast erste Kenntnisse im Bereich der additiven FertigungDu kannst selbstständig arbeiten und hast Freude an interdisziplinärer TeamarbeitDu verfügst über gute Sprachkenntnisse in Deutsch und/oder Englisch \n\n\nWas wir für Dich bereithalten\n\nFreie Wahl des Themas, Freiheit bei der Ausgestaltung deiner Arbeit und fachliche UnterstützungZugang zu modernsten Maschinen und digitaler Ausrüstung, z. B. Edge-Cloud-Systeme und 5G-InfrastrukturEinblick in den wissenschaftlichen Betrieb und IndustriekontakteEin teamorientiertes Umfeld, geprägt von Respekt und Zusammenarbeit auf Augenhöhe\n\n\nWir wertschätzen und fördern die Vielfalt der Kompetenzen unserer Mitarbeitenden und begrüßen daher alle Bewerbungen – unabhängig von Alter, Geschlecht, Nationalität, ethnischer und sozialer Herkunft, Religion, Weltanschauung, Behinderung sowie sexueller Orientierung und Identität. Schwerbehinderte Menschen werden bei gleicher Eignung bevorzugt eingestellt. Unsere Aufgaben sind vielfältig und anpassbar – für Bewerber*innen mit Behinderung finden wir gemeinsam Lösungen, die ihre Fähigkeiten optimal fördern.\n\nMit ihrer Fokussierung auf zukunftsrelevante Schlüsseltechnologien sowie auf die Verwertung der Ergebnisse in Wirtschaft und Industrie spielt die Fraunhofer-Gesellschaft eine zentrale Rolle im Innovationsprozess. Als Wegweiser und Impulsgeber für innovative Entwicklungen und wissenschaftliche Exzellenz wirkt sie mit an der Gestaltung unserer Gesellschaft und unserer Zukunft.\n\nBereit für Veränderung? Dann bewirb Dich jetzt, und mach einen Unterschied! Nach Eingang Deiner Online-Bewerbung erhältst Du eine automatische Empfangsbestätigung. Dann melden wir uns schnellstmöglich und sagen Dir, wie es weitergeht.\n\nAuf deine Fragen zu dieser Abschlussarbeit freut sich:\n\nStefan Gräfe M.Eng.\n\nTeamleiter Additive Fertigung, Abteilung Energetische Strahlverfahren\n\nTelefon: +49 241 8904-254\n\nFraunhofer-Institut für Produktionstechnologie IPT\n\nwww.ipt.fraunhofer.de\n\nKennziffer: 68757 Bewerbungsfrist:",
-      "seniorityLevel": "Internship",
-      "employmentType": "Full-time",
-      "jobFunction": "Education and Training",
-      "industries": "Research Services",
-      "inputUrl": "https://www.linkedin.com/jobs/search?keywords=Masterarbeit&location=Germany&geoId=101282230&trk=public_jobs_jobs-search-bar_search-submit&position=1&pageNum=0",
-      "salaryInsights": {},
-      "applyMethod": "OffsiteApply",
-      "expireAt": 1778849078000,
-      "postedAtTimestamp": 1765456670000,
-      "workplaceTypes": [
-        "Hybrid"
+      "schemaVersion": 1,
+      "identity": {
+        "jobId": "linkedin:4326765416",
+        "dedupeKey": "source-id:linkedin:4326765416",
+        "dedupeKeys": [
+          "source-id:linkedin:4326765416",
+          "url:https://de.linkedin.com/jobs/view/bachelor-masterarbeit-%C2%BBentwicklung-und-optimierung-nachhaltiger-additiver-produktionsprozesse%C2%AB-at-fraunhofer-institute-for-production-technology-ipt-4326765416"
+        ],
+        "source": "linkedin",
+        "sourceJobId": "4326765416",
+        "sourceJobUrl": "https://de.linkedin.com/jobs/view/bachelor-masterarbeit-%C2%BBentwicklung-und-optimierung-nachhaltiger-additiver-produktionsprozesse%C2%AB-at-fraunhofer-institute-for-production-technology-ipt-4326765416?position=9&pageNum=2&refId=ZkBk9KEY5h2S8tg5%2BGHJDQ%3D%3D&trackingId=rdJI4ZlPB6bpFXm8L9htkQ%3D%3D",
+        "sourceRunId": "aeWWMhq38NBlLwFUf",
+        "sourceDatasetId": "gTibyfv4TVpQQxvVb",
+        "sourceInputUrl": "https://www.linkedin.com/jobs/search?keywords=Masterarbeit&location=Germany&geoId=101282230&trk=public_jobs_jobs-search-bar_search-submit&position=1&pageNum=0",
+        "rawFile": "data/raw/linkedin-2026-04-25-114234.json"
+      },
+      "title": {
+        "raw": "Bachelor-/ Masterarbeit: »Entwicklung und Optimierung nachhaltiger additiver Produktionsprozesse«",
+        "normalized": "Masters Student"
+      },
+      "company": {
+        "name": "Fraunhofer Institute for Production Technology IPT",
+        "profileUrl": "https://de.linkedin.com/company/fraunhofer-ipt?trk=public_jobs_jserp-result_job-search-card-subtitle",
+        "logoUrl": "https://media.licdn.com/dms/image/v2/D4E0BAQEeIcUBa82VXQ/company-logo_100_100/company-logo_100_100/0/1685707196846/fraunhofer_ipt_logo?e=2147483647&v=beta&t=qHVkLJV9f9GH3SWjLXpsdXq0igUE3NDNQngHuMK6no4",
+        "industry": "Research Services"
+      },
+      "location": {
+        "raw": "Aachen, North Rhine-Westphalia, Germany",
+        "city": "Aachen",
+        "state": "North Rhine-Westphalia",
+        "country": "DE",
+        "workplaceType": "hybrid"
+      },
+      "description": {
+        "text": "Das Fraunhofer IPT in Aachen erforscht nachhaltige und effiziente Produktionsverfahren, darunter additive Fertigungsverfahren wie Laserauftragschweißen mit Draht, Lichtbogenauftragschweißen und Laserstrahlschmelzen im Pulverbett. Diese Verfahren ermöglichen eine ressourcenschonende Herstellung, kostengünstige Reparatur und die Beschichtung von Bauteilen.\n\nIn der Abteilung »Energetische Strahlverfahren« entwickeln wir diese Technologien für die Industrie weiter. Wir erforschen neue Werkstoffe, Fertigungsverfahren und die Digitalisierung der additiven Fertigung. Dabei integrieren wir Sensorik in Fertigungsanlagen und nutzen Künstliche Intelligenz zur Prozessüberwachung. Zudem beschäftigen wir uns mit konstruktiven Fragestellungen für Bauteile und Maschinen-Equipment.\n\nHier sorgst Du für Veränderung\n\nEntwicklung und Optimierung nachhaltiger additiver ProduktionsprozesseAutomatisierung und Digitalisierung der FertigungMitarbeit in Forschungsprojekten zu aktuellen Themen wie Nachhaltigkeit in der Produktion und Wasserstoffverbrennung \n\n\nHiermit bringst Du Dich ein\n\nDu studierst Maschinenbau, Wirtschaftsingenieurwesen, Physik oder eine vergleichbare FachrichtungDu hast erste Kenntnisse im Bereich der additiven FertigungDu kannst selbstständig arbeiten und hast Freude an interdisziplinärer TeamarbeitDu verfügst über gute Sprachkenntnisse in Deutsch und/oder Englisch \n\n\nWas wir für Dich bereithalten\n\nFreie Wahl des Themas, Freiheit bei der Ausgestaltung deiner Arbeit und fachliche UnterstützungZugang zu modernsten Maschinen und digitaler Ausrüstung, z. B. Edge-Cloud-Systeme und 5G-InfrastrukturEinblick in den wissenschaftlichen Betrieb und IndustriekontakteEin teamorientiertes Umfeld, geprägt von Respekt und Zusammenarbeit auf Augenhöhe\n\n\nWir wertschätzen und fördern die Vielfalt der Kompetenzen unserer Mitarbeitenden und begrüßen daher alle Bewerbungen – unabhängig von Alter, Geschlecht, Nationalität, ethnischer und sozialer Herkunft, Religion, Weltanschauung, Behinderung sowie sexueller Orientierung und Identität. Schwerbehinderte Menschen werden bei gleicher Eignung bevorzugt eingestellt. Unsere Aufgaben sind vielfältig und anpassbar – für Bewerber*innen mit Behinderung finden wir gemeinsam Lösungen, die ihre Fähigkeiten optimal fördern.\n\nMit ihrer Fokussierung auf zukunftsrelevante Schlüsseltechnologien sowie auf die Verwertung der Ergebnisse in Wirtschaft und Industrie spielt die Fraunhofer-Gesellschaft eine zentrale Rolle im Innovationsprozess. Als Wegweiser und Impulsgeber für innovative Entwicklungen und wissenschaftliche Exzellenz wirkt sie mit an der Gestaltung unserer Gesellschaft und unserer Zukunft.\n\nBereit für Veränderung? Dann bewirb Dich jetzt, und mach einen Unterschied! Nach Eingang Deiner Online-Bewerbung erhältst Du eine automatische Empfangsbestätigung. Dann melden wir uns schnellstmöglich und sagen Dir, wie es weitergeht.\n\nAuf deine Fragen zu dieser Abschlussarbeit freut sich:\n\nStefan Gräfe M.Eng.\n\nTeamleiter Additive Fertigung, Abteilung Energetische Strahlverfahren\n\nTelefon: +49 241 8904-254\n\nFraunhofer-Institut für Produktionstechnologie IPT\n\nwww.ipt.fraunhofer.de\n\nKennziffer: 68757 Bewerbungsfrist:",
+        "html": "Das Fraunhofer IPT in Aachen erforscht nachhaltige und effiziente Produktionsverfahren, darunter additive Fertigungsverfahren wie Laserauftragschweißen mit Draht, Lichtbogenauftragschweißen und Laserstrahlschmelzen im Pulverbett. Diese Verfahren ermöglichen eine ressourcenschonende Herstellung, kostengünstige Reparatur und die Beschichtung von Bauteilen.<br><br>In der Abteilung »Energetische Strahlverfahren« entwickeln wir diese Technologien für die Industrie weiter. Wir erforschen neue Werkstoffe, Fertigungsverfahren und die Digitalisierung der additiven Fertigung. Dabei integrieren wir Sensorik in Fertigungsanlagen und nutzen Künstliche Intelligenz zur Prozessüberwachung. Zudem beschäftigen wir uns mit konstruktiven Fragestellungen für Bauteile und Maschinen-Equipment.<br><br><strong>Hier sorgst Du für Veränderung<br><br></strong><ul><li>Entwicklung und Optimierung nachhaltiger additiver Produktionsprozesse</li><li>Automatisierung und Digitalisierung der Fertigung</li><li>Mitarbeit in Forschungsprojekten zu aktuellen Themen wie Nachhaltigkeit in der Produktion und Wasserstoffverbrennung <br><br><br></li></ul><strong>Hiermit bringst Du Dich ein<br><br></strong><ul><li>Du studierst Maschinenbau, Wirtschaftsingenieurwesen, Physik oder eine vergleichbare Fachrichtung</li><li>Du hast erste Kenntnisse im Bereich der additiven Fertigung</li><li>Du kannst selbstständig arbeiten und hast Freude an interdisziplinärer Teamarbeit</li><li>Du verfügst über gute Sprachkenntnisse in Deutsch und/oder Englisch <br><br><br></li></ul><strong>Was wir für Dich bereithalten<br><br></strong><ul><li>Freie Wahl des Themas, Freiheit bei der Ausgestaltung deiner Arbeit und fachliche Unterstützung</li><li>Zugang zu modernsten Maschinen und digitaler Ausrüstung, z. B. Edge-Cloud-Systeme und 5G-Infrastruktur</li><li>Einblick in den wissenschaftlichen Betrieb und Industriekontakte</li><li>Ein teamorientiertes Umfeld, geprägt von Respekt und Zusammenarbeit auf Augenhöhe<br><br><br></li></ul>Wir wertschätzen und fördern die Vielfalt der Kompetenzen unserer Mitarbeitenden und begrüßen daher alle Bewerbungen – unabhängig von Alter, Geschlecht, Nationalität, ethnischer und sozialer Herkunft, Religion, Weltanschauung, Behinderung sowie sexueller Orientierung und Identität. Schwerbehinderte Menschen werden bei gleicher Eignung bevorzugt eingestellt. Unsere Aufgaben sind vielfältig und anpassbar – für Bewerber*innen mit Behinderung finden wir gemeinsam Lösungen, die ihre Fähigkeiten optimal fördern.<br><br>Mit ihrer Fokussierung auf zukunftsrelevante Schlüsseltechnologien sowie auf die Verwertung der Ergebnisse in Wirtschaft und Industrie spielt die Fraunhofer-Gesellschaft eine zentrale Rolle im Innovationsprozess. Als Wegweiser und Impulsgeber für innovative Entwicklungen und wissenschaftliche Exzellenz wirkt sie mit an der Gestaltung unserer Gesellschaft und unserer Zukunft.<br><br><strong>Bereit für Veränderung? Dann bewirb Dich jetzt, und mach einen Unterschied! Nach Eingang Deiner Online-Bewerbung erhältst Du eine automatische Empfangsbestätigung. Dann melden wir uns schnellstmöglich und sagen Dir, wie es weitergeht.<br><br></strong><strong>Auf deine Fragen zu dieser Abschlussarbeit freut sich:<br><br></strong>Stefan Gräfe M.Eng.<br><br>Teamleiter Additive Fertigung, Abteilung Energetische Strahlverfahren<br><br>Telefon: +49 241 8904-254<br><br>Fraunhofer-Institut für Produktionstechnologie IPT<br><br>www.ipt.fraunhofer.de<br><br>Kennziffer: 68757 Bewerbungsfrist:"
+      },
+      "application": {
+        "jobUrl": "https://de.linkedin.com/jobs/view/bachelor-masterarbeit-%C2%BBentwicklung-und-optimierung-nachhaltiger-additiver-produktionsprozesse%C2%AB-at-fraunhofer-institute-for-production-technology-ipt-4326765416?position=9&pageNum=2&refId=ZkBk9KEY5h2S8tg5%2BGHJDQ%3D%3D&trackingId=rdJI4ZlPB6bpFXm8L9htkQ%3D%3D",
+        "applyUrl": "https://jobs.fraunhofer.de/job/Aachen-Bachelor-Masterarbeit-%C2%BBEntwicklung-und-Optimierung-nachhaltiger-additiver-Produktionsprozesse%C2%AB-52074/983538901/",
+        "applyMethod": "OffsiteApply"
+      },
+      "employment": {
+        "seniorityLevel": "Internship",
+        "employmentType": "Full-time",
+        "jobFunction": "Education and Training",
+        "salaryText": ""
+      },
+      "timing": {
+        "postedAt": "2025-12-11T12:37:50Z",
+        "expiresAt": "2026-05-15T12:44:38.000Z",
+        "collectedAt": "2026-04-25T11:42:34.4948603+02:00"
+      },
+      "sightings": [
+        {
+          "source": "linkedin",
+          "rawFile": "data/raw/linkedin-2026-04-25-114234.json",
+          "sourceJobId": "4326765416",
+          "jobUrl": "https://de.linkedin.com/jobs/view/bachelor-masterarbeit-%C2%BBentwicklung-und-optimierung-nachhaltiger-additiver-produktionsprozesse%C2%AB-at-fraunhofer-institute-for-production-technology-ipt-4326765416?position=9&pageNum=2&refId=ZkBk9KEY5h2S8tg5%2BGHJDQ%3D%3D&trackingId=rdJI4ZlPB6bpFXm8L9htkQ%3D%3D",
+          "seenAt": "2026-04-25T11:42:34.4948603+02:00"
+        }
       ],
-      "workRemoteAllowed": false,
-      "standardizedTitle": "Masters Student",
-      "country": "DE",
       "_selection": {
         "passed": true,
         "must": [
@@ -261,37 +384,68 @@
       }
     },
     {
-      "id": "4326609053",
-      "trackingId": "nTo0Mrg63wLCDF7w2SDDBQ==",
-      "refId": "ZkBk9KEY5h2S8tg5+GHJDQ==",
-      "link": "https://de.linkedin.com/jobs/view/bachelor-masterarbeit-%C2%BBproduktion-in-der-industrie-5-0%C2%AB-at-fraunhofer-institute-for-production-technology-ipt-4326609053?position=3&pageNum=2&refId=ZkBk9KEY5h2S8tg5%2BGHJDQ%3D%3D&trackingId=nTo0Mrg63wLCDF7w2SDDBQ%3D%3D",
-      "title": "Bachelor-/Masterarbeit: »Produktion in der Industrie 5.0«",
-      "companyName": "Fraunhofer Institute for Production Technology IPT",
-      "companyLinkedinUrl": "https://de.linkedin.com/company/fraunhofer-ipt?trk=public_jobs_jserp-result_job-search-card-subtitle",
-      "companyLogo": "https://media.licdn.com/dms/image/v2/D4E0BAQEeIcUBa82VXQ/company-logo_100_100/company-logo_100_100/0/1685707196846/fraunhofer_ipt_logo?e=2147483647&v=beta&t=qHVkLJV9f9GH3SWjLXpsdXq0igUE3NDNQngHuMK6no4",
-      "location": "Aachen, North Rhine-Westphalia, Germany",
-      "postedAt": "2025-12-11T12:36:45Z",
-      "benefits": [],
-      "descriptionHtml": "Neue Paradigmen der Industrie 5.0 setzten den Menschen in den Mittelpunkt und erfordern auf verschiedensten Ebenen der Produktion neuartige Konzepte und Methoden für eine effiziente Mensch-Maschine Interaktion. Beispiele von Anwendungsfällen stellen die intelligente und flexible Personaleinsatzplanung oder die Integration von Large Language Models (LLMs) in der laufenden Produktion dar.<br><br>Im Rahmen deiner Abschlussarbeit untersuchst du das methodische Vorgehen, mit dem diese neuen Paradigmen der Industrie 5.0 umgesetzt werden können und arbeitest Konzepte in Zusammenarbeit mit der Industrie aus.<br><br><strong>Hier sorgst Du für Veränderung<br><br></strong><ul><li>Erstellung von Konzepten und Methoden für die Umsetzung neuartiger Paradigmen der Industrie 5.0 </li><li>Durchführung von Workshops und Experteninterviews</li><li>Validierung deiner Ergebnisse an realen Prozessen der Industrie</li><li>Mitarbeit in spannenden Forschungs- und Industrieprojekten<br><br><br></li></ul><strong>Hiermit bringst Du Dich ein<br><br></strong><ul><li>Du studierst Maschinenbau, Wirtschaftsingenieurwesen, Physik oder eine vergleichbare Fachrichtung</li><li>Du verfügst über eine strukturierte Arbeitsweise </li><li>Eigenmotivation zur Einarbeitung in neue Themenfelder</li><li>Eine selbstständige Arbeitsweise und Freude an interdisziplinärer Teamarbeit</li><li>Gute Sprachkenntnisse in Deutsch und/oder Englisch<br><br><br></li></ul><strong>Was wir für Dich bereithalten<br><br></strong><ul><li>Wissenschaftliche Bearbeitung eines aktuellen und praxisrelevanten Themas</li><li>Eine professionelle Betreuung und fachliche Unterstützung bei der Erstellung deiner Abschlussarbeit</li><li>Mitwirkung in innovativen Forschungs- und Entwicklungsprojekten mit namhaften Industriepartnern</li><li>Ein hochmoderner Maschinenpark, ausgestattet mit Edge-Cloud-Systemen und einer 5G-Infrastruktur<br><br><br></li></ul>Wir wertschätzen und fördern die Vielfalt der Kompetenzen unserer Mitarbeitenden und begrüßen daher alle Bewerbungen – unabhängig von Alter, Geschlecht, Nationalität, ethnischer und sozialer Herkunft, Religion, Weltanschauung, Behinderung sowie sexueller Orientierung und Identität. Schwerbehinderte Menschen werden bei gleicher Eignung bevorzugt eingestellt. Unsere Aufgaben sind vielfältig und anpassbar – für Bewerber*innen mit Behinderung finden wir gemeinsam Lösungen, die ihre Fähigkeiten optimal fördern.<br><br>Mit ihrer Fokussierung auf zukunftsrelevante Schlüsseltechnologien sowie auf die Verwertung der Ergebnisse in Wirtschaft und Industrie spielt die Fraunhofer-Gesellschaft eine zentrale Rolle im Innovationsprozess. Als Wegweiser und Impulsgeber für innovative Entwicklungen und wissenschaftliche Exzellenz wirkt sie mit an der Gestaltung unserer Gesellschaft und unserer Zukunft.<br><br><strong>Bereit für Veränderung? Dann bewirb Dich jetzt, und mach einen Unterschied! Nach Eingang Deiner Online-Bewerbung erhältst Du eine automatische Empfangsbestätigung. Dann melden wir uns schnellstmöglich und sagen Dir, wie es weitergeht.<br><br></strong><strong>Auf deine Fragen zu dieser Abschlussarbeit freut sich:<br><br></strong>Leo Hemmerich<br><br>Wissenschaftlicher Mitarbeiter »Produktionsqualität«<br><br>Telefon: +49 241 8904-584<br><br>Fraunhofer-Institut für Produktionstechnologie IPT<br><br>www.ipt.fraunhofer.de<br><br>Kennziffer: 81179 Bewerbungsfrist:",
-      "applicantsCount": "25",
-      "applyUrl": "https://jobs.fraunhofer.de/job/Aachen-Bachelor-Masterarbeit-%C2%BBProduktion-in-der-Industrie-5_0%C2%AB-52074/1243198101/",
-      "salary": "",
-      "descriptionText": "Neue Paradigmen der Industrie 5.0 setzten den Menschen in den Mittelpunkt und erfordern auf verschiedensten Ebenen der Produktion neuartige Konzepte und Methoden für eine effiziente Mensch-Maschine Interaktion. Beispiele von Anwendungsfällen stellen die intelligente und flexible Personaleinsatzplanung oder die Integration von Large Language Models (LLMs) in der laufenden Produktion dar.\n\nIm Rahmen deiner Abschlussarbeit untersuchst du das methodische Vorgehen, mit dem diese neuen Paradigmen der Industrie 5.0 umgesetzt werden können und arbeitest Konzepte in Zusammenarbeit mit der Industrie aus.\n\nHier sorgst Du für Veränderung\n\nErstellung von Konzepten und Methoden für die Umsetzung neuartiger Paradigmen der Industrie 5.0 Durchführung von Workshops und ExperteninterviewsValidierung deiner Ergebnisse an realen Prozessen der IndustrieMitarbeit in spannenden Forschungs- und Industrieprojekten\n\n\nHiermit bringst Du Dich ein\n\nDu studierst Maschinenbau, Wirtschaftsingenieurwesen, Physik oder eine vergleichbare FachrichtungDu verfügst über eine strukturierte Arbeitsweise Eigenmotivation zur Einarbeitung in neue ThemenfelderEine selbstständige Arbeitsweise und Freude an interdisziplinärer TeamarbeitGute Sprachkenntnisse in Deutsch und/oder Englisch\n\n\nWas wir für Dich bereithalten\n\nWissenschaftliche Bearbeitung eines aktuellen und praxisrelevanten ThemasEine professionelle Betreuung und fachliche Unterstützung bei der Erstellung deiner AbschlussarbeitMitwirkung in innovativen Forschungs- und Entwicklungsprojekten mit namhaften IndustriepartnernEin hochmoderner Maschinenpark, ausgestattet mit Edge-Cloud-Systemen und einer 5G-Infrastruktur\n\n\nWir wertschätzen und fördern die Vielfalt der Kompetenzen unserer Mitarbeitenden und begrüßen daher alle Bewerbungen – unabhängig von Alter, Geschlecht, Nationalität, ethnischer und sozialer Herkunft, Religion, Weltanschauung, Behinderung sowie sexueller Orientierung und Identität. Schwerbehinderte Menschen werden bei gleicher Eignung bevorzugt eingestellt. Unsere Aufgaben sind vielfältig und anpassbar – für Bewerber*innen mit Behinderung finden wir gemeinsam Lösungen, die ihre Fähigkeiten optimal fördern.\n\nMit ihrer Fokussierung auf zukunftsrelevante Schlüsseltechnologien sowie auf die Verwertung der Ergebnisse in Wirtschaft und Industrie spielt die Fraunhofer-Gesellschaft eine zentrale Rolle im Innovationsprozess. Als Wegweiser und Impulsgeber für innovative Entwicklungen und wissenschaftliche Exzellenz wirkt sie mit an der Gestaltung unserer Gesellschaft und unserer Zukunft.\n\nBereit für Veränderung? Dann bewirb Dich jetzt, und mach einen Unterschied! Nach Eingang Deiner Online-Bewerbung erhältst Du eine automatische Empfangsbestätigung. Dann melden wir uns schnellstmöglich und sagen Dir, wie es weitergeht.\n\nAuf deine Fragen zu dieser Abschlussarbeit freut sich:\n\nLeo Hemmerich\n\nWissenschaftlicher Mitarbeiter »Produktionsqualität«\n\nTelefon: +49 241 8904-584\n\nFraunhofer-Institut für Produktionstechnologie IPT\n\nwww.ipt.fraunhofer.de\n\nKennziffer: 81179 Bewerbungsfrist:",
-      "seniorityLevel": "Internship",
-      "employmentType": "Full-time",
-      "jobFunction": "Education and Training",
-      "industries": "Research Services",
-      "inputUrl": "https://www.linkedin.com/jobs/search?keywords=Masterarbeit&location=Germany&geoId=101282230&trk=public_jobs_jobs-search-bar_search-submit&position=1&pageNum=0",
-      "salaryInsights": {},
-      "applyMethod": "OffsiteApply",
-      "expireAt": 1778179432000,
-      "postedAtTimestamp": 1765456605000,
-      "workplaceTypes": [
-        "Hybrid"
+      "schemaVersion": 1,
+      "identity": {
+        "jobId": "linkedin:4326609053",
+        "dedupeKey": "source-id:linkedin:4326609053",
+        "dedupeKeys": [
+          "source-id:linkedin:4326609053",
+          "url:https://de.linkedin.com/jobs/view/bachelor-masterarbeit-%C2%BBproduktion-in-der-industrie-5-0%C2%AB-at-fraunhofer-institute-for-production-technology-ipt-4326609053"
+        ],
+        "source": "linkedin",
+        "sourceJobId": "4326609053",
+        "sourceJobUrl": "https://de.linkedin.com/jobs/view/bachelor-masterarbeit-%C2%BBproduktion-in-der-industrie-5-0%C2%AB-at-fraunhofer-institute-for-production-technology-ipt-4326609053?position=3&pageNum=2&refId=ZkBk9KEY5h2S8tg5%2BGHJDQ%3D%3D&trackingId=nTo0Mrg63wLCDF7w2SDDBQ%3D%3D",
+        "sourceRunId": "aeWWMhq38NBlLwFUf",
+        "sourceDatasetId": "gTibyfv4TVpQQxvVb",
+        "sourceInputUrl": "https://www.linkedin.com/jobs/search?keywords=Masterarbeit&location=Germany&geoId=101282230&trk=public_jobs_jobs-search-bar_search-submit&position=1&pageNum=0",
+        "rawFile": "data/raw/linkedin-2026-04-25-114234.json"
+      },
+      "title": {
+        "raw": "Bachelor-/Masterarbeit: »Produktion in der Industrie 5.0«",
+        "normalized": "Masters Student"
+      },
+      "company": {
+        "name": "Fraunhofer Institute for Production Technology IPT",
+        "profileUrl": "https://de.linkedin.com/company/fraunhofer-ipt?trk=public_jobs_jserp-result_job-search-card-subtitle",
+        "logoUrl": "https://media.licdn.com/dms/image/v2/D4E0BAQEeIcUBa82VXQ/company-logo_100_100/company-logo_100_100/0/1685707196846/fraunhofer_ipt_logo?e=2147483647&v=beta&t=qHVkLJV9f9GH3SWjLXpsdXq0igUE3NDNQngHuMK6no4",
+        "industry": "Research Services"
+      },
+      "location": {
+        "raw": "Aachen, North Rhine-Westphalia, Germany",
+        "city": "Aachen",
+        "state": "North Rhine-Westphalia",
+        "country": "DE",
+        "workplaceType": "hybrid"
+      },
+      "description": {
+        "text": "Neue Paradigmen der Industrie 5.0 setzten den Menschen in den Mittelpunkt und erfordern auf verschiedensten Ebenen der Produktion neuartige Konzepte und Methoden für eine effiziente Mensch-Maschine Interaktion. Beispiele von Anwendungsfällen stellen die intelligente und flexible Personaleinsatzplanung oder die Integration von Large Language Models (LLMs) in der laufenden Produktion dar.\n\nIm Rahmen deiner Abschlussarbeit untersuchst du das methodische Vorgehen, mit dem diese neuen Paradigmen der Industrie 5.0 umgesetzt werden können und arbeitest Konzepte in Zusammenarbeit mit der Industrie aus.\n\nHier sorgst Du für Veränderung\n\nErstellung von Konzepten und Methoden für die Umsetzung neuartiger Paradigmen der Industrie 5.0 Durchführung von Workshops und ExperteninterviewsValidierung deiner Ergebnisse an realen Prozessen der IndustrieMitarbeit in spannenden Forschungs- und Industrieprojekten\n\n\nHiermit bringst Du Dich ein\n\nDu studierst Maschinenbau, Wirtschaftsingenieurwesen, Physik oder eine vergleichbare FachrichtungDu verfügst über eine strukturierte Arbeitsweise Eigenmotivation zur Einarbeitung in neue ThemenfelderEine selbstständige Arbeitsweise und Freude an interdisziplinärer TeamarbeitGute Sprachkenntnisse in Deutsch und/oder Englisch\n\n\nWas wir für Dich bereithalten\n\nWissenschaftliche Bearbeitung eines aktuellen und praxisrelevanten ThemasEine professionelle Betreuung und fachliche Unterstützung bei der Erstellung deiner AbschlussarbeitMitwirkung in innovativen Forschungs- und Entwicklungsprojekten mit namhaften IndustriepartnernEin hochmoderner Maschinenpark, ausgestattet mit Edge-Cloud-Systemen und einer 5G-Infrastruktur\n\n\nWir wertschätzen und fördern die Vielfalt der Kompetenzen unserer Mitarbeitenden und begrüßen daher alle Bewerbungen – unabhängig von Alter, Geschlecht, Nationalität, ethnischer und sozialer Herkunft, Religion, Weltanschauung, Behinderung sowie sexueller Orientierung und Identität. Schwerbehinderte Menschen werden bei gleicher Eignung bevorzugt eingestellt. Unsere Aufgaben sind vielfältig und anpassbar – für Bewerber*innen mit Behinderung finden wir gemeinsam Lösungen, die ihre Fähigkeiten optimal fördern.\n\nMit ihrer Fokussierung auf zukunftsrelevante Schlüsseltechnologien sowie auf die Verwertung der Ergebnisse in Wirtschaft und Industrie spielt die Fraunhofer-Gesellschaft eine zentrale Rolle im Innovationsprozess. Als Wegweiser und Impulsgeber für innovative Entwicklungen und wissenschaftliche Exzellenz wirkt sie mit an der Gestaltung unserer Gesellschaft und unserer Zukunft.\n\nBereit für Veränderung? Dann bewirb Dich jetzt, und mach einen Unterschied! Nach Eingang Deiner Online-Bewerbung erhältst Du eine automatische Empfangsbestätigung. Dann melden wir uns schnellstmöglich und sagen Dir, wie es weitergeht.\n\nAuf deine Fragen zu dieser Abschlussarbeit freut sich:\n\nLeo Hemmerich\n\nWissenschaftlicher Mitarbeiter »Produktionsqualität«\n\nTelefon: +49 241 8904-584\n\nFraunhofer-Institut für Produktionstechnologie IPT\n\nwww.ipt.fraunhofer.de\n\nKennziffer: 81179 Bewerbungsfrist:",
+        "html": "Neue Paradigmen der Industrie 5.0 setzten den Menschen in den Mittelpunkt und erfordern auf verschiedensten Ebenen der Produktion neuartige Konzepte und Methoden für eine effiziente Mensch-Maschine Interaktion. Beispiele von Anwendungsfällen stellen die intelligente und flexible Personaleinsatzplanung oder die Integration von Large Language Models (LLMs) in der laufenden Produktion dar.<br><br>Im Rahmen deiner Abschlussarbeit untersuchst du das methodische Vorgehen, mit dem diese neuen Paradigmen der Industrie 5.0 umgesetzt werden können und arbeitest Konzepte in Zusammenarbeit mit der Industrie aus.<br><br><strong>Hier sorgst Du für Veränderung<br><br></strong><ul><li>Erstellung von Konzepten und Methoden für die Umsetzung neuartiger Paradigmen der Industrie 5.0 </li><li>Durchführung von Workshops und Experteninterviews</li><li>Validierung deiner Ergebnisse an realen Prozessen der Industrie</li><li>Mitarbeit in spannenden Forschungs- und Industrieprojekten<br><br><br></li></ul><strong>Hiermit bringst Du Dich ein<br><br></strong><ul><li>Du studierst Maschinenbau, Wirtschaftsingenieurwesen, Physik oder eine vergleichbare Fachrichtung</li><li>Du verfügst über eine strukturierte Arbeitsweise </li><li>Eigenmotivation zur Einarbeitung in neue Themenfelder</li><li>Eine selbstständige Arbeitsweise und Freude an interdisziplinärer Teamarbeit</li><li>Gute Sprachkenntnisse in Deutsch und/oder Englisch<br><br><br></li></ul><strong>Was wir für Dich bereithalten<br><br></strong><ul><li>Wissenschaftliche Bearbeitung eines aktuellen und praxisrelevanten Themas</li><li>Eine professionelle Betreuung und fachliche Unterstützung bei der Erstellung deiner Abschlussarbeit</li><li>Mitwirkung in innovativen Forschungs- und Entwicklungsprojekten mit namhaften Industriepartnern</li><li>Ein hochmoderner Maschinenpark, ausgestattet mit Edge-Cloud-Systemen und einer 5G-Infrastruktur<br><br><br></li></ul>Wir wertschätzen und fördern die Vielfalt der Kompetenzen unserer Mitarbeitenden und begrüßen daher alle Bewerbungen – unabhängig von Alter, Geschlecht, Nationalität, ethnischer und sozialer Herkunft, Religion, Weltanschauung, Behinderung sowie sexueller Orientierung und Identität. Schwerbehinderte Menschen werden bei gleicher Eignung bevorzugt eingestellt. Unsere Aufgaben sind vielfältig und anpassbar – für Bewerber*innen mit Behinderung finden wir gemeinsam Lösungen, die ihre Fähigkeiten optimal fördern.<br><br>Mit ihrer Fokussierung auf zukunftsrelevante Schlüsseltechnologien sowie auf die Verwertung der Ergebnisse in Wirtschaft und Industrie spielt die Fraunhofer-Gesellschaft eine zentrale Rolle im Innovationsprozess. Als Wegweiser und Impulsgeber für innovative Entwicklungen und wissenschaftliche Exzellenz wirkt sie mit an der Gestaltung unserer Gesellschaft und unserer Zukunft.<br><br><strong>Bereit für Veränderung? Dann bewirb Dich jetzt, und mach einen Unterschied! Nach Eingang Deiner Online-Bewerbung erhältst Du eine automatische Empfangsbestätigung. Dann melden wir uns schnellstmöglich und sagen Dir, wie es weitergeht.<br><br></strong><strong>Auf deine Fragen zu dieser Abschlussarbeit freut sich:<br><br></strong>Leo Hemmerich<br><br>Wissenschaftlicher Mitarbeiter »Produktionsqualität«<br><br>Telefon: +49 241 8904-584<br><br>Fraunhofer-Institut für Produktionstechnologie IPT<br><br>www.ipt.fraunhofer.de<br><br>Kennziffer: 81179 Bewerbungsfrist:"
+      },
+      "application": {
+        "jobUrl": "https://de.linkedin.com/jobs/view/bachelor-masterarbeit-%C2%BBproduktion-in-der-industrie-5-0%C2%AB-at-fraunhofer-institute-for-production-technology-ipt-4326609053?position=3&pageNum=2&refId=ZkBk9KEY5h2S8tg5%2BGHJDQ%3D%3D&trackingId=nTo0Mrg63wLCDF7w2SDDBQ%3D%3D",
+        "applyUrl": "https://jobs.fraunhofer.de/job/Aachen-Bachelor-Masterarbeit-%C2%BBProduktion-in-der-Industrie-5_0%C2%AB-52074/1243198101/",
+        "applyMethod": "OffsiteApply"
+      },
+      "employment": {
+        "seniorityLevel": "Internship",
+        "employmentType": "Full-time",
+        "jobFunction": "Education and Training",
+        "salaryText": ""
+      },
+      "timing": {
+        "postedAt": "2025-12-11T12:36:45Z",
+        "expiresAt": "2026-05-07T18:43:52.000Z",
+        "collectedAt": "2026-04-25T11:42:34.4948603+02:00"
+      },
+      "sightings": [
+        {
+          "source": "linkedin",
+          "rawFile": "data/raw/linkedin-2026-04-25-114234.json",
+          "sourceJobId": "4326609053",
+          "jobUrl": "https://de.linkedin.com/jobs/view/bachelor-masterarbeit-%C2%BBproduktion-in-der-industrie-5-0%C2%AB-at-fraunhofer-institute-for-production-technology-ipt-4326609053?position=3&pageNum=2&refId=ZkBk9KEY5h2S8tg5%2BGHJDQ%3D%3D&trackingId=nTo0Mrg63wLCDF7w2SDDBQ%3D%3D",
+          "seenAt": "2026-04-25T11:42:34.4948603+02:00"
+        }
       ],
-      "workRemoteAllowed": false,
-      "standardizedTitle": "Masters Student",
-      "country": "DE",
       "_selection": {
         "passed": true,
         "must": [
@@ -323,37 +477,68 @@
       }
     },
     {
-      "id": "4343929920",
-      "trackingId": "EhFb87k1LUcKqbeRoBo5Og==",
-      "refId": "ZkBk9KEY5h2S8tg5+GHJDQ==",
-      "link": "https://de.linkedin.com/jobs/view/masterarbeit-und-praktika-ki-modellentwicklung-und-%E2%80%91anwendung-at-fraunhofer-institute-for-microelectronic-circuits-and-systems-4343929920?position=1&pageNum=2&refId=ZkBk9KEY5h2S8tg5%2BGHJDQ%3D%3D&trackingId=EhFb87k1LUcKqbeRoBo5Og%3D%3D",
-      "title": "Masterarbeit und Praktika: KI-Modellentwicklung und ‑anwendung",
-      "companyName": "Fraunhofer-Institute for Microelectronic Circuits and Systems",
-      "companyLinkedinUrl": "https://de.linkedin.com/company/fraunhofer-ims?trk=public_jobs_jserp-result_job-search-card-subtitle",
-      "companyLogo": "https://media.licdn.com/dms/image/v2/C4E0BAQF0qlPMYc_g5A/company-logo_100_100/company-logo_100_100/0/1630579179908?e=2147483647&v=beta&t=6Ve2Iu_IdSdPiMRG8GWF_fmh0tVmZCSLnnPFKiWC2Zk",
-      "location": "Duisburg, North Rhine-Westphalia, Germany",
-      "postedAt": "2025-12-16T18:39:00Z",
-      "benefits": [],
-      "descriptionHtml": "Am Fraunhofer IMS beschäftigen wir uns mit spannenden Möglichkeiten im Bereich Embedded Software und KI. Unser Ziel ist es, KI weiter im industriellen Bereich zu integrieren, um Effizienz, Qualität und Sicherheit der Prozesse zu steigern. Ihre Aufgaben umfassen dabei abwechslungsreiche Programmierherausforderungen (vorwiegend in Python) sowie projektbezogene Tätigkeiten zur Integration von KI-Technologien im Bereich Daten- und Bildverarbeitung, Sensorfusion, Robotik und generativer KI.<br><br><strong>Hier sorgen Sie für Veränderung<br><br></strong><strong>Mögliche Themengebiete für Masterarbeit:<br><br></strong><ul><li>Optimierung von KI-Modellen für den Einsatz in eingebetteten Systemen</li><li>KI-basierte RFID/Radar-Multipath-Analyse für passive Objekterkennung</li><li>Entwicklung und Optimierung von Trustworthy AI Pipelines</li><li>Verifikation von Edge-KI-Systemen mit 3D-Grafik-Engines: Potenziale und Grenzen für Bilderkennung und Roboterregelung</li><li>Entwicklung und Optimierung von robotischen Systemen und KI-Modellen für die Robotik</li><li>Vergleichende Analyse von zentralisiertem und föderiertem Lernen für Robotermanipulation (Masterarbeit wird auf Englisch verfasst)<br><br><br></li></ul><strong>Mögliche Themenbereiche für ein Praktikum:<br><br></strong><ul><li>Übernahme spannender Programmieraufgaben, vorwiegend in Python</li><li>Unterstützung bei der Datenaufnahme, -verarbeitung und -analyse im Bereich KI</li><li>Entwicklung von KI-Modellen für Zeitreihenanalyse, Generative KI und Computer Vision</li><li>Evaluierung und Optimierung bestehender KI-Modelle (Performance, Speicherbedarf, Explainability)<br><br><br></li></ul><strong>Hiermit bringen Sie sich ein <br><br></strong><ul><li>Studium der Ingenieurswissenschaften, Elektrotechnik, Informatik, Physik oder vergleichbar mit sehr guten bis guten Noten</li><li>Gute Programmierkenntnisse in Python </li><li>Grundkenntnisse in Machine-Learning-Frameworks (z. B. PyTorch, TensorFlow, scikit-learn)</li><li>Analytisches Denken, Eigeninitiative und Lust, Neues auszuprobieren</li><li>Eigenständige und zuverlässige Arbeitsweise, Eigeninitiative sowie ein hohes Maß an Kommunikations- und Teamfähigkeit<br><br><br></li></ul><strong>Was wir für Sie bereithalten<br><br></strong><ul><li>Vergütung, flexible Arbeitszeiten (Gleitzeitmodell) und ein fester Urlaubsanspruch</li><li>Möglichkeit, Ihre Ergebnisse als Forschungsdemonstrator umzusetzen oder auf Fachkonferenzen als Paper/Poster zu präsentieren</li><li>Vielfältige Einblicke in die Arbeit von wissenschaftlichen Mitarbeitenden an einem Forschungsinstitut unter anderem in Kooperation mit der Universität Duisburg-Essen</li><li>Zentrale Lage direkt neben dem Campus Duisburg (Linie 933: Haltestelle Universität) <br><br><br></li></ul>Wir wertschätzen und fördern die Vielfalt der Kompetenzen unserer Mitarbeitenden und begrüßen daher alle Bewerbungen – unabhängig von Alter, Geschlecht, Nationalität, ethnischer und sozialer Herkunft, Religion, Weltanschauung, Behinderung sowie sexueller Orientierung und Identität. Schwerbehinderte Menschen werden bei gleicher Eignung bevorzugt eingestellt.<br><br>Mit ihrer Fokussierung auf zukunftsrelevante Schlüsseltechnologien sowie auf die Verwertung der Ergebnisse in Wirtschaft und Industrie spielt die Fraunhofer-Gesellschaft eine zentrale Rolle im Innovationsprozess. Als Wegweiser und Impulsgeber für innovative Entwicklungen und wissenschaftliche Exzellenz wirkt sie mit an der Gestaltung unserer Gesellschaft und unserer Zukunft.<br><br><strong>Bereit für Veränderung? Dann bewerben Sie sich jetzt, und machen Sie einen Unterschied! Nach Eingang Ihrer Online-Bewerbung erhalten Sie eine automatische Empfangsbestätigung. Dann melden wir uns schnellstmöglich und sagen Ihnen, wie es weitergeht.<br><br></strong>Fragen zu dieser Position beantwortet Ihnen gerne:<br><br>Frau Irini Tsiftsi<br><br>personal@ims.fraunhofer.de<br><br>Tel.: 0203-3783-268<br><br>www.fraunhofer.de<br><br>Kennziffer: 82101<br><br>Fraunhofer-Institut für Mikroelektronische Schaltungen und Systeme IMS<br><br>www.ims.fraunhofer.de<br><br>Kennziffer: 82101 Bewerbungsfrist:",
-      "applicantsCount": "25",
-      "applyUrl": "https://jobs.fraunhofer.de/job/Duisburg-Masterarbeit-und-Praktika-KI-Modellentwicklung-und-%E2%80%91anwendung-47057/1276799901/",
-      "salary": "",
-      "descriptionText": "Am Fraunhofer IMS beschäftigen wir uns mit spannenden Möglichkeiten im Bereich Embedded Software und KI. Unser Ziel ist es, KI weiter im industriellen Bereich zu integrieren, um Effizienz, Qualität und Sicherheit der Prozesse zu steigern. Ihre Aufgaben umfassen dabei abwechslungsreiche Programmierherausforderungen (vorwiegend in Python) sowie projektbezogene Tätigkeiten zur Integration von KI-Technologien im Bereich Daten- und Bildverarbeitung, Sensorfusion, Robotik und generativer KI.\n\nHier sorgen Sie für Veränderung\n\nMögliche Themengebiete für Masterarbeit:\n\nOptimierung von KI-Modellen für den Einsatz in eingebetteten SystemenKI-basierte RFID/Radar-Multipath-Analyse für passive ObjekterkennungEntwicklung und Optimierung von Trustworthy AI PipelinesVerifikation von Edge-KI-Systemen mit 3D-Grafik-Engines: Potenziale und Grenzen für Bilderkennung und RoboterregelungEntwicklung und Optimierung von robotischen Systemen und KI-Modellen für die RobotikVergleichende Analyse von zentralisiertem und föderiertem Lernen für Robotermanipulation (Masterarbeit wird auf Englisch verfasst)\n\n\nMögliche Themenbereiche für ein Praktikum:\n\nÜbernahme spannender Programmieraufgaben, vorwiegend in PythonUnterstützung bei der Datenaufnahme, -verarbeitung und -analyse im Bereich KIEntwicklung von KI-Modellen für Zeitreihenanalyse, Generative KI und Computer VisionEvaluierung und Optimierung bestehender KI-Modelle (Performance, Speicherbedarf, Explainability)\n\n\nHiermit bringen Sie sich ein \n\nStudium der Ingenieurswissenschaften, Elektrotechnik, Informatik, Physik oder vergleichbar mit sehr guten bis guten NotenGute Programmierkenntnisse in Python Grundkenntnisse in Machine-Learning-Frameworks (z. B. PyTorch, TensorFlow, scikit-learn)Analytisches Denken, Eigeninitiative und Lust, Neues auszuprobierenEigenständige und zuverlässige Arbeitsweise, Eigeninitiative sowie ein hohes Maß an Kommunikations- und Teamfähigkeit\n\n\nWas wir für Sie bereithalten\n\nVergütung, flexible Arbeitszeiten (Gleitzeitmodell) und ein fester UrlaubsanspruchMöglichkeit, Ihre Ergebnisse als Forschungsdemonstrator umzusetzen oder auf Fachkonferenzen als Paper/Poster zu präsentierenVielfältige Einblicke in die Arbeit von wissenschaftlichen Mitarbeitenden an einem Forschungsinstitut unter anderem in Kooperation mit der Universität Duisburg-EssenZentrale Lage direkt neben dem Campus Duisburg (Linie 933: Haltestelle Universität) \n\n\nWir wertschätzen und fördern die Vielfalt der Kompetenzen unserer Mitarbeitenden und begrüßen daher alle Bewerbungen – unabhängig von Alter, Geschlecht, Nationalität, ethnischer und sozialer Herkunft, Religion, Weltanschauung, Behinderung sowie sexueller Orientierung und Identität. Schwerbehinderte Menschen werden bei gleicher Eignung bevorzugt eingestellt.\n\nMit ihrer Fokussierung auf zukunftsrelevante Schlüsseltechnologien sowie auf die Verwertung der Ergebnisse in Wirtschaft und Industrie spielt die Fraunhofer-Gesellschaft eine zentrale Rolle im Innovationsprozess. Als Wegweiser und Impulsgeber für innovative Entwicklungen und wissenschaftliche Exzellenz wirkt sie mit an der Gestaltung unserer Gesellschaft und unserer Zukunft.\n\nBereit für Veränderung? Dann bewerben Sie sich jetzt, und machen Sie einen Unterschied! Nach Eingang Ihrer Online-Bewerbung erhalten Sie eine automatische Empfangsbestätigung. Dann melden wir uns schnellstmöglich und sagen Ihnen, wie es weitergeht.\n\nFragen zu dieser Position beantwortet Ihnen gerne:\n\nFrau Irini Tsiftsi\n\npersonal@ims.fraunhofer.de\n\nTel.: 0203-3783-268\n\nwww.fraunhofer.de\n\nKennziffer: 82101\n\nFraunhofer-Institut für Mikroelektronische Schaltungen und Systeme IMS\n\nwww.ims.fraunhofer.de\n\nKennziffer: 82101 Bewerbungsfrist:",
-      "seniorityLevel": "Internship",
-      "employmentType": "Full-time",
-      "jobFunction": "Education and Training",
-      "industries": "Research Services",
-      "inputUrl": "https://www.linkedin.com/jobs/search?keywords=Masterarbeit&location=Germany&geoId=101282230&trk=public_jobs_jobs-search-bar_search-submit&position=1&pageNum=0",
-      "salaryInsights": {},
-      "applyMethod": "OffsiteApply",
-      "expireAt": 1777877096000,
-      "postedAtTimestamp": 1765910340000,
-      "workplaceTypes": [
-        "Hybrid"
+      "schemaVersion": 1,
+      "identity": {
+        "jobId": "linkedin:4343929920",
+        "dedupeKey": "source-id:linkedin:4343929920",
+        "dedupeKeys": [
+          "source-id:linkedin:4343929920",
+          "url:https://de.linkedin.com/jobs/view/masterarbeit-und-praktika-ki-modellentwicklung-und-%E2%80%91anwendung-at-fraunhofer-institute-for-microelectronic-circuits-and-systems-4343929920"
+        ],
+        "source": "linkedin",
+        "sourceJobId": "4343929920",
+        "sourceJobUrl": "https://de.linkedin.com/jobs/view/masterarbeit-und-praktika-ki-modellentwicklung-und-%E2%80%91anwendung-at-fraunhofer-institute-for-microelectronic-circuits-and-systems-4343929920?position=1&pageNum=2&refId=ZkBk9KEY5h2S8tg5%2BGHJDQ%3D%3D&trackingId=EhFb87k1LUcKqbeRoBo5Og%3D%3D",
+        "sourceRunId": "aeWWMhq38NBlLwFUf",
+        "sourceDatasetId": "gTibyfv4TVpQQxvVb",
+        "sourceInputUrl": "https://www.linkedin.com/jobs/search?keywords=Masterarbeit&location=Germany&geoId=101282230&trk=public_jobs_jobs-search-bar_search-submit&position=1&pageNum=0",
+        "rawFile": "data/raw/linkedin-2026-04-25-114234.json"
+      },
+      "title": {
+        "raw": "Masterarbeit und Praktika: KI-Modellentwicklung und ‑anwendung",
+        "normalized": "Masters Student"
+      },
+      "company": {
+        "name": "Fraunhofer-Institute for Microelectronic Circuits and Systems",
+        "profileUrl": "https://de.linkedin.com/company/fraunhofer-ims?trk=public_jobs_jserp-result_job-search-card-subtitle",
+        "logoUrl": "https://media.licdn.com/dms/image/v2/C4E0BAQF0qlPMYc_g5A/company-logo_100_100/company-logo_100_100/0/1630579179908?e=2147483647&v=beta&t=6Ve2Iu_IdSdPiMRG8GWF_fmh0tVmZCSLnnPFKiWC2Zk",
+        "industry": "Research Services"
+      },
+      "location": {
+        "raw": "Duisburg, North Rhine-Westphalia, Germany",
+        "city": "Duisburg",
+        "state": "North Rhine-Westphalia",
+        "country": "DE",
+        "workplaceType": "hybrid"
+      },
+      "description": {
+        "text": "Am Fraunhofer IMS beschäftigen wir uns mit spannenden Möglichkeiten im Bereich Embedded Software und KI. Unser Ziel ist es, KI weiter im industriellen Bereich zu integrieren, um Effizienz, Qualität und Sicherheit der Prozesse zu steigern. Ihre Aufgaben umfassen dabei abwechslungsreiche Programmierherausforderungen (vorwiegend in Python) sowie projektbezogene Tätigkeiten zur Integration von KI-Technologien im Bereich Daten- und Bildverarbeitung, Sensorfusion, Robotik und generativer KI.\n\nHier sorgen Sie für Veränderung\n\nMögliche Themengebiete für Masterarbeit:\n\nOptimierung von KI-Modellen für den Einsatz in eingebetteten SystemenKI-basierte RFID/Radar-Multipath-Analyse für passive ObjekterkennungEntwicklung und Optimierung von Trustworthy AI PipelinesVerifikation von Edge-KI-Systemen mit 3D-Grafik-Engines: Potenziale und Grenzen für Bilderkennung und RoboterregelungEntwicklung und Optimierung von robotischen Systemen und KI-Modellen für die RobotikVergleichende Analyse von zentralisiertem und föderiertem Lernen für Robotermanipulation (Masterarbeit wird auf Englisch verfasst)\n\n\nMögliche Themenbereiche für ein Praktikum:\n\nÜbernahme spannender Programmieraufgaben, vorwiegend in PythonUnterstützung bei der Datenaufnahme, -verarbeitung und -analyse im Bereich KIEntwicklung von KI-Modellen für Zeitreihenanalyse, Generative KI und Computer VisionEvaluierung und Optimierung bestehender KI-Modelle (Performance, Speicherbedarf, Explainability)\n\n\nHiermit bringen Sie sich ein \n\nStudium der Ingenieurswissenschaften, Elektrotechnik, Informatik, Physik oder vergleichbar mit sehr guten bis guten NotenGute Programmierkenntnisse in Python Grundkenntnisse in Machine-Learning-Frameworks (z. B. PyTorch, TensorFlow, scikit-learn)Analytisches Denken, Eigeninitiative und Lust, Neues auszuprobierenEigenständige und zuverlässige Arbeitsweise, Eigeninitiative sowie ein hohes Maß an Kommunikations- und Teamfähigkeit\n\n\nWas wir für Sie bereithalten\n\nVergütung, flexible Arbeitszeiten (Gleitzeitmodell) und ein fester UrlaubsanspruchMöglichkeit, Ihre Ergebnisse als Forschungsdemonstrator umzusetzen oder auf Fachkonferenzen als Paper/Poster zu präsentierenVielfältige Einblicke in die Arbeit von wissenschaftlichen Mitarbeitenden an einem Forschungsinstitut unter anderem in Kooperation mit der Universität Duisburg-EssenZentrale Lage direkt neben dem Campus Duisburg (Linie 933: Haltestelle Universität) \n\n\nWir wertschätzen und fördern die Vielfalt der Kompetenzen unserer Mitarbeitenden und begrüßen daher alle Bewerbungen – unabhängig von Alter, Geschlecht, Nationalität, ethnischer und sozialer Herkunft, Religion, Weltanschauung, Behinderung sowie sexueller Orientierung und Identität. Schwerbehinderte Menschen werden bei gleicher Eignung bevorzugt eingestellt.\n\nMit ihrer Fokussierung auf zukunftsrelevante Schlüsseltechnologien sowie auf die Verwertung der Ergebnisse in Wirtschaft und Industrie spielt die Fraunhofer-Gesellschaft eine zentrale Rolle im Innovationsprozess. Als Wegweiser und Impulsgeber für innovative Entwicklungen und wissenschaftliche Exzellenz wirkt sie mit an der Gestaltung unserer Gesellschaft und unserer Zukunft.\n\nBereit für Veränderung? Dann bewerben Sie sich jetzt, und machen Sie einen Unterschied! Nach Eingang Ihrer Online-Bewerbung erhalten Sie eine automatische Empfangsbestätigung. Dann melden wir uns schnellstmöglich und sagen Ihnen, wie es weitergeht.\n\nFragen zu dieser Position beantwortet Ihnen gerne:\n\nFrau Irini Tsiftsi\n\npersonal@ims.fraunhofer.de\n\nTel.: 0203-3783-268\n\nwww.fraunhofer.de\n\nKennziffer: 82101\n\nFraunhofer-Institut für Mikroelektronische Schaltungen und Systeme IMS\n\nwww.ims.fraunhofer.de\n\nKennziffer: 82101 Bewerbungsfrist:",
+        "html": "Am Fraunhofer IMS beschäftigen wir uns mit spannenden Möglichkeiten im Bereich Embedded Software und KI. Unser Ziel ist es, KI weiter im industriellen Bereich zu integrieren, um Effizienz, Qualität und Sicherheit der Prozesse zu steigern. Ihre Aufgaben umfassen dabei abwechslungsreiche Programmierherausforderungen (vorwiegend in Python) sowie projektbezogene Tätigkeiten zur Integration von KI-Technologien im Bereich Daten- und Bildverarbeitung, Sensorfusion, Robotik und generativer KI.<br><br><strong>Hier sorgen Sie für Veränderung<br><br></strong><strong>Mögliche Themengebiete für Masterarbeit:<br><br></strong><ul><li>Optimierung von KI-Modellen für den Einsatz in eingebetteten Systemen</li><li>KI-basierte RFID/Radar-Multipath-Analyse für passive Objekterkennung</li><li>Entwicklung und Optimierung von Trustworthy AI Pipelines</li><li>Verifikation von Edge-KI-Systemen mit 3D-Grafik-Engines: Potenziale und Grenzen für Bilderkennung und Roboterregelung</li><li>Entwicklung und Optimierung von robotischen Systemen und KI-Modellen für die Robotik</li><li>Vergleichende Analyse von zentralisiertem und föderiertem Lernen für Robotermanipulation (Masterarbeit wird auf Englisch verfasst)<br><br><br></li></ul><strong>Mögliche Themenbereiche für ein Praktikum:<br><br></strong><ul><li>Übernahme spannender Programmieraufgaben, vorwiegend in Python</li><li>Unterstützung bei der Datenaufnahme, -verarbeitung und -analyse im Bereich KI</li><li>Entwicklung von KI-Modellen für Zeitreihenanalyse, Generative KI und Computer Vision</li><li>Evaluierung und Optimierung bestehender KI-Modelle (Performance, Speicherbedarf, Explainability)<br><br><br></li></ul><strong>Hiermit bringen Sie sich ein <br><br></strong><ul><li>Studium der Ingenieurswissenschaften, Elektrotechnik, Informatik, Physik oder vergleichbar mit sehr guten bis guten Noten</li><li>Gute Programmierkenntnisse in Python </li><li>Grundkenntnisse in Machine-Learning-Frameworks (z. B. PyTorch, TensorFlow, scikit-learn)</li><li>Analytisches Denken, Eigeninitiative und Lust, Neues auszuprobieren</li><li>Eigenständige und zuverlässige Arbeitsweise, Eigeninitiative sowie ein hohes Maß an Kommunikations- und Teamfähigkeit<br><br><br></li></ul><strong>Was wir für Sie bereithalten<br><br></strong><ul><li>Vergütung, flexible Arbeitszeiten (Gleitzeitmodell) und ein fester Urlaubsanspruch</li><li>Möglichkeit, Ihre Ergebnisse als Forschungsdemonstrator umzusetzen oder auf Fachkonferenzen als Paper/Poster zu präsentieren</li><li>Vielfältige Einblicke in die Arbeit von wissenschaftlichen Mitarbeitenden an einem Forschungsinstitut unter anderem in Kooperation mit der Universität Duisburg-Essen</li><li>Zentrale Lage direkt neben dem Campus Duisburg (Linie 933: Haltestelle Universität) <br><br><br></li></ul>Wir wertschätzen und fördern die Vielfalt der Kompetenzen unserer Mitarbeitenden und begrüßen daher alle Bewerbungen – unabhängig von Alter, Geschlecht, Nationalität, ethnischer und sozialer Herkunft, Religion, Weltanschauung, Behinderung sowie sexueller Orientierung und Identität. Schwerbehinderte Menschen werden bei gleicher Eignung bevorzugt eingestellt.<br><br>Mit ihrer Fokussierung auf zukunftsrelevante Schlüsseltechnologien sowie auf die Verwertung der Ergebnisse in Wirtschaft und Industrie spielt die Fraunhofer-Gesellschaft eine zentrale Rolle im Innovationsprozess. Als Wegweiser und Impulsgeber für innovative Entwicklungen und wissenschaftliche Exzellenz wirkt sie mit an der Gestaltung unserer Gesellschaft und unserer Zukunft.<br><br><strong>Bereit für Veränderung? Dann bewerben Sie sich jetzt, und machen Sie einen Unterschied! Nach Eingang Ihrer Online-Bewerbung erhalten Sie eine automatische Empfangsbestätigung. Dann melden wir uns schnellstmöglich und sagen Ihnen, wie es weitergeht.<br><br></strong>Fragen zu dieser Position beantwortet Ihnen gerne:<br><br>Frau Irini Tsiftsi<br><br>personal@ims.fraunhofer.de<br><br>Tel.: 0203-3783-268<br><br>www.fraunhofer.de<br><br>Kennziffer: 82101<br><br>Fraunhofer-Institut für Mikroelektronische Schaltungen und Systeme IMS<br><br>www.ims.fraunhofer.de<br><br>Kennziffer: 82101 Bewerbungsfrist:"
+      },
+      "application": {
+        "jobUrl": "https://de.linkedin.com/jobs/view/masterarbeit-und-praktika-ki-modellentwicklung-und-%E2%80%91anwendung-at-fraunhofer-institute-for-microelectronic-circuits-and-systems-4343929920?position=1&pageNum=2&refId=ZkBk9KEY5h2S8tg5%2BGHJDQ%3D%3D&trackingId=EhFb87k1LUcKqbeRoBo5Og%3D%3D",
+        "applyUrl": "https://jobs.fraunhofer.de/job/Duisburg-Masterarbeit-und-Praktika-KI-Modellentwicklung-und-%E2%80%91anwendung-47057/1276799901/",
+        "applyMethod": "OffsiteApply"
+      },
+      "employment": {
+        "seniorityLevel": "Internship",
+        "employmentType": "Full-time",
+        "jobFunction": "Education and Training",
+        "salaryText": ""
+      },
+      "timing": {
+        "postedAt": "2025-12-16T18:39:00Z",
+        "expiresAt": "2026-05-04T06:44:56.000Z",
+        "collectedAt": "2026-04-25T11:42:34.4948603+02:00"
+      },
+      "sightings": [
+        {
+          "source": "linkedin",
+          "rawFile": "data/raw/linkedin-2026-04-25-114234.json",
+          "sourceJobId": "4343929920",
+          "jobUrl": "https://de.linkedin.com/jobs/view/masterarbeit-und-praktika-ki-modellentwicklung-und-%E2%80%91anwendung-at-fraunhofer-institute-for-microelectronic-circuits-and-systems-4343929920?position=1&pageNum=2&refId=ZkBk9KEY5h2S8tg5%2BGHJDQ%3D%3D&trackingId=EhFb87k1LUcKqbeRoBo5Og%3D%3D",
+          "seenAt": "2026-04-25T11:42:34.4948603+02:00"
+        }
       ],
-      "workRemoteAllowed": false,
-      "standardizedTitle": "Masters Student",
-      "country": "DE",
       "_selection": {
         "passed": true,
         "must": [
@@ -388,37 +573,68 @@
       }
     },
     {
-      "id": "4382893287",
-      "trackingId": "1Mcnv+5Xf+fAhqqIZzpDfw==",
-      "refId": "9maq1JXlL5Pqf7xwdtWOVw==",
-      "link": "https://de.linkedin.com/jobs/view/masterarbeit-gro%C3%9Fskalige-optimierung-in-der-supply-chain-logistik-at-fraunhofer-iks-4382893287?position=7&pageNum=5&refId=9maq1JXlL5Pqf7xwdtWOVw%3D%3D&trackingId=1Mcnv%2B5Xf%2BfAhqqIZzpDfw%3D%3D",
-      "title": "Masterarbeit - Großskalige Optimierung in der Supply-Chain-Logistik",
-      "companyName": "Fraunhofer IKS",
-      "companyLinkedinUrl": "https://de.linkedin.com/company/fraunhofer-iks?trk=public_jobs_jserp-result_job-search-card-subtitle",
-      "companyLogo": "https://media.licdn.com/dms/image/v2/C4D0BAQHpM5QOy0VDUw/company-logo_100_100/company-logo_100_100/0/1630565429240/fraunhofer_esk_logo?e=2147483647&v=beta&t=st5h91-2_T0tUJGmCspQFfQ3JpwF7MdGjeyZnqAnCts",
-      "location": "Munich, Bavaria, Germany",
-      "postedAt": "2026-03-11T12:36:49Z",
-      "benefits": [],
-      "descriptionHtml": "Safe Intelligence – das ist der Markenkern des <strong>Fraunhofer-Instituts für Kognitive Systeme IKS</strong>. Vernetzte Kognitive Systeme sind der Innovationstreiber in vielen Anwendungsbereichen, etwa in der Mobilität, im Gesundheitswesen, oder der Automatisierung in der Industrie. Dabei spielen disruptive Technologien wie künstliche Intelligenz oder Quantencomputing eine zentrale Rolle. Das Fraunhofer IKS forscht daran, dass entsprechende Anwendungen zuverlässig und nachweislich sicher sind. Wir denken Resilienz und Intelligenz zusammen.<br><br><strong>Hier sorgst Du für Veränderung<br><br></strong>In dieser Masterarbeit entwickelst Du ein modulares Optimierungsframework für ein Inventory-Routing-Problem. Diese Problemklasse kombiniert Aspekte der Bestandsverwaltung, Lieferplanung und Routenoptimierung (siehe z. B. arXiv:2209.00412 ). Du beginnst mit einer Literaturrecherche und der Analyse bestehender Lösungsansätze, formulierst und modellierst dann den Anwendungsfall inkl. Größenordnungen, Nebenbedingungen und verfügbaren Daten. Darauf aufbauend entwirfst und implementierst Du ein prototypisches End-to-End-System. Insbesondere wirst Du dazu verschiedene Zerlegungsstrategien (z. B. zeitlich, räumlich und mathematisch) untersuchen und eine modulare Lösung unter Verwendung klassischer Optimierungstechniken, quanteninspirierter Methoden und/oder KI-Techniken implementieren. Die Orchestrierung der Gesamtlösung kann z. B. durch eine agentenbasierte Komponente gesteuert werden.<br><br><strong>Hiermit bringst Du Dich ein</strong> <br><br><ul><li>Programmierkenntnisse (vorzugsweise Python), und Software Engineering Best Practices</li><li>Erfahrung mit Linux, Git-basierte Versionskontrolle</li><li>Kenntnisse in kombinatorischer Optimierung</li><li>Erfahrung in der Implementierung von Machine-Learning-Lösungen (insbesondere Reinforcement Learning)</li><li>Erfahrung mit einem oder mehreren der folgenden Bereiche ist von Vorteil:</li><ul><li>Gängige Optimierungsbibliotheken (z. B. Gurobi, CPLEX, HiGHS)</li><li>Machine-Learning-Bibliotheken (PyTorch, TensorFlow)</li><li>Arbeit mit realen Daten (Bereinigung, Umgang mit fehlenden Daten, Robustheit)<br></li></ul><li>Immatrikulation an einer deutschen Universität, vorzugsweise in München oder Umgebung</li><li>Besonders geeignet für Studierende der M.Sc. Informatik, M.Sc. Data Engineering, M.Sc. Mathematik und verwandte Fächer<br><br></li></ul><strong>Was wir für Dich bereithalten<br><br></strong><ul><li>Zugängliche Betreuende, Integration in ein dynamisches Team mit innovativen Aufgabenbereichen</li><li>Flexible Arbeitsweise (einschließlich eines Arbeitsplatzes in unserem neuen Institutsgebäude in Garching)</li><li>Einblicke in angewandte Forschungspraktiken und Arbeitsweisen bei Fraunhofer</li><li>Praxisnahe Ergänzung zu Deinem Studium<br><br><br></li></ul>Wir wertschätzen und fördern die Vielfalt der Kompetenzen unserer Mitarbeitenden und begrüßen daher alle Bewerbungen – unabhängig von Alter, Geschlecht, Nationalität, ethnischer und sozialer Herkunft, Religion, Weltanschauung, Behinderung sowie sexueller Orientierung und Identität. Schwerbehinderte Menschen werden bei gleicher Eignung bevorzugt eingestellt. Unsere Aufgaben sind vielfältig und anpassbar – für Bewerber*innen mit Behinderung finden wir gemeinsam Lösungen, die ihre Fähigkeiten optimal fördern.<br><br>Mit ihrer Fokussierung auf zukunftsrelevante Schlüsseltechnologien sowie auf die Verwertung der Ergebnisse in Wirtschaft und Industrie spielt die Fraunhofer-Gesellschaft eine zentrale Rolle im Innovationsprozess. Als Wegweiser und Impulsgeber für innovative Entwicklungen und wissenschaftliche Exzellenz wirkt sie mit an der Gestaltung unserer Gesellschaft und unserer Zukunft.<br><br><strong>Bereit für Veränderung? Dann bewirb Dich jetzt mit Deinem Motivationsschreiben, Lebenslauf und Deinen aktuellen Noten , und mach einen Unterschied! Nach Eingang Deiner Online-Bewerbung erhältst Du eine automatische Empfangsbestätigung. Dann melden wir uns schnellstmöglich und sagen Dir, wie es weitergeht.<br><br></strong><strong>Technische Fragen werden gerne beantwortet von <br><br></strong>Benedikt Poggel, benedikt.poggel@iks.fraunhofer.de<br><br>Bei sonstigen Fragen kannst Du Dich an unsere Kolleg*innen aus der Personalabteilung wenden: recruiting@iks.fraunhofer.de<br><br>Fraunhofer-Institut für Kognitive Systeme IKS<br><br>www.iks.fraunhofer.de<br><br>Kennziffer: 83607 Bewerbungsfrist:",
-      "applicantsCount": "25",
-      "applyUrl": "https://jobs.fraunhofer.de/job/M%C3%BCnchen-Masterarbeit-Gro%C3%9Fskalige-Optimierung-in-der-Supply-Chain-Logistik-80686/1372496033/",
-      "salary": "",
-      "descriptionText": "Safe Intelligence – das ist der Markenkern des Fraunhofer-Instituts für Kognitive Systeme IKS. Vernetzte Kognitive Systeme sind der Innovationstreiber in vielen Anwendungsbereichen, etwa in der Mobilität, im Gesundheitswesen, oder der Automatisierung in der Industrie. Dabei spielen disruptive Technologien wie künstliche Intelligenz oder Quantencomputing eine zentrale Rolle. Das Fraunhofer IKS forscht daran, dass entsprechende Anwendungen zuverlässig und nachweislich sicher sind. Wir denken Resilienz und Intelligenz zusammen.\n\nHier sorgst Du für Veränderung\n\nIn dieser Masterarbeit entwickelst Du ein modulares Optimierungsframework für ein Inventory-Routing-Problem. Diese Problemklasse kombiniert Aspekte der Bestandsverwaltung, Lieferplanung und Routenoptimierung (siehe z. B. arXiv:2209.00412 ). Du beginnst mit einer Literaturrecherche und der Analyse bestehender Lösungsansätze, formulierst und modellierst dann den Anwendungsfall inkl. Größenordnungen, Nebenbedingungen und verfügbaren Daten. Darauf aufbauend entwirfst und implementierst Du ein prototypisches End-to-End-System. Insbesondere wirst Du dazu verschiedene Zerlegungsstrategien (z. B. zeitlich, räumlich und mathematisch) untersuchen und eine modulare Lösung unter Verwendung klassischer Optimierungstechniken, quanteninspirierter Methoden und/oder KI-Techniken implementieren. Die Orchestrierung der Gesamtlösung kann z. B. durch eine agentenbasierte Komponente gesteuert werden.\n\nHiermit bringst Du Dich ein \n\nProgrammierkenntnisse (vorzugsweise Python), und Software Engineering Best PracticesErfahrung mit Linux, Git-basierte VersionskontrolleKenntnisse in kombinatorischer OptimierungErfahrung in der Implementierung von Machine-Learning-Lösungen (insbesondere Reinforcement Learning)Erfahrung mit einem oder mehreren der folgenden Bereiche ist von Vorteil:Gängige Optimierungsbibliotheken (z. B. Gurobi, CPLEX, HiGHS)Machine-Learning-Bibliotheken (PyTorch, TensorFlow)Arbeit mit realen Daten (Bereinigung, Umgang mit fehlenden Daten, Robustheit)\nImmatrikulation an einer deutschen Universität, vorzugsweise in München oder UmgebungBesonders geeignet für Studierende der M.Sc. Informatik, M.Sc. Data Engineering, M.Sc. Mathematik und verwandte Fächer\n\nWas wir für Dich bereithalten\n\nZugängliche Betreuende, Integration in ein dynamisches Team mit innovativen AufgabenbereichenFlexible Arbeitsweise (einschließlich eines Arbeitsplatzes in unserem neuen Institutsgebäude in Garching)Einblicke in angewandte Forschungspraktiken und Arbeitsweisen bei FraunhoferPraxisnahe Ergänzung zu Deinem Studium\n\n\nWir wertschätzen und fördern die Vielfalt der Kompetenzen unserer Mitarbeitenden und begrüßen daher alle Bewerbungen – unabhängig von Alter, Geschlecht, Nationalität, ethnischer und sozialer Herkunft, Religion, Weltanschauung, Behinderung sowie sexueller Orientierung und Identität. Schwerbehinderte Menschen werden bei gleicher Eignung bevorzugt eingestellt. Unsere Aufgaben sind vielfältig und anpassbar – für Bewerber*innen mit Behinderung finden wir gemeinsam Lösungen, die ihre Fähigkeiten optimal fördern.\n\nMit ihrer Fokussierung auf zukunftsrelevante Schlüsseltechnologien sowie auf die Verwertung der Ergebnisse in Wirtschaft und Industrie spielt die Fraunhofer-Gesellschaft eine zentrale Rolle im Innovationsprozess. Als Wegweiser und Impulsgeber für innovative Entwicklungen und wissenschaftliche Exzellenz wirkt sie mit an der Gestaltung unserer Gesellschaft und unserer Zukunft.\n\nBereit für Veränderung? Dann bewirb Dich jetzt mit Deinem Motivationsschreiben, Lebenslauf und Deinen aktuellen Noten , und mach einen Unterschied! Nach Eingang Deiner Online-Bewerbung erhältst Du eine automatische Empfangsbestätigung. Dann melden wir uns schnellstmöglich und sagen Dir, wie es weitergeht.\n\nTechnische Fragen werden gerne beantwortet von \n\nBenedikt Poggel, benedikt.poggel@iks.fraunhofer.de\n\nBei sonstigen Fragen kannst Du Dich an unsere Kolleg*innen aus der Personalabteilung wenden: recruiting@iks.fraunhofer.de\n\nFraunhofer-Institut für Kognitive Systeme IKS\n\nwww.iks.fraunhofer.de\n\nKennziffer: 83607 Bewerbungsfrist:",
-      "seniorityLevel": "Internship",
-      "employmentType": "Full-time",
-      "jobFunction": "Education and Training",
-      "industries": "Research Services",
-      "inputUrl": "https://www.linkedin.com/jobs/search?keywords=Masterarbeit&location=Germany&geoId=101282230&trk=public_jobs_jobs-search-bar_search-submit&position=1&pageNum=0",
-      "salaryInsights": {},
-      "applyMethod": "OffsiteApply",
-      "expireAt": 1778160908000,
-      "postedAtTimestamp": 1773232609000,
-      "workplaceTypes": [
-        "Hybrid"
+      "schemaVersion": 1,
+      "identity": {
+        "jobId": "linkedin:4382893287",
+        "dedupeKey": "source-id:linkedin:4382893287",
+        "dedupeKeys": [
+          "source-id:linkedin:4382893287",
+          "url:https://de.linkedin.com/jobs/view/masterarbeit-gro%C3%9Fskalige-optimierung-in-der-supply-chain-logistik-at-fraunhofer-iks-4382893287"
+        ],
+        "source": "linkedin",
+        "sourceJobId": "4382893287",
+        "sourceJobUrl": "https://de.linkedin.com/jobs/view/masterarbeit-gro%C3%9Fskalige-optimierung-in-der-supply-chain-logistik-at-fraunhofer-iks-4382893287?position=7&pageNum=5&refId=9maq1JXlL5Pqf7xwdtWOVw%3D%3D&trackingId=1Mcnv%2B5Xf%2BfAhqqIZzpDfw%3D%3D",
+        "sourceRunId": "aeWWMhq38NBlLwFUf",
+        "sourceDatasetId": "gTibyfv4TVpQQxvVb",
+        "sourceInputUrl": "https://www.linkedin.com/jobs/search?keywords=Masterarbeit&location=Germany&geoId=101282230&trk=public_jobs_jobs-search-bar_search-submit&position=1&pageNum=0",
+        "rawFile": "data/raw/linkedin-2026-04-25-114234.json"
+      },
+      "title": {
+        "raw": "Masterarbeit - Großskalige Optimierung in der Supply-Chain-Logistik",
+        "normalized": "Masters Student"
+      },
+      "company": {
+        "name": "Fraunhofer IKS",
+        "profileUrl": "https://de.linkedin.com/company/fraunhofer-iks?trk=public_jobs_jserp-result_job-search-card-subtitle",
+        "logoUrl": "https://media.licdn.com/dms/image/v2/C4D0BAQHpM5QOy0VDUw/company-logo_100_100/company-logo_100_100/0/1630565429240/fraunhofer_esk_logo?e=2147483647&v=beta&t=st5h91-2_T0tUJGmCspQFfQ3JpwF7MdGjeyZnqAnCts",
+        "industry": "Research Services"
+      },
+      "location": {
+        "raw": "Munich, Bavaria, Germany",
+        "city": "Munich",
+        "state": "Bavaria",
+        "country": "DE",
+        "workplaceType": "hybrid"
+      },
+      "description": {
+        "text": "Safe Intelligence – das ist der Markenkern des Fraunhofer-Instituts für Kognitive Systeme IKS. Vernetzte Kognitive Systeme sind der Innovationstreiber in vielen Anwendungsbereichen, etwa in der Mobilität, im Gesundheitswesen, oder der Automatisierung in der Industrie. Dabei spielen disruptive Technologien wie künstliche Intelligenz oder Quantencomputing eine zentrale Rolle. Das Fraunhofer IKS forscht daran, dass entsprechende Anwendungen zuverlässig und nachweislich sicher sind. Wir denken Resilienz und Intelligenz zusammen.\n\nHier sorgst Du für Veränderung\n\nIn dieser Masterarbeit entwickelst Du ein modulares Optimierungsframework für ein Inventory-Routing-Problem. Diese Problemklasse kombiniert Aspekte der Bestandsverwaltung, Lieferplanung und Routenoptimierung (siehe z. B. arXiv:2209.00412 ). Du beginnst mit einer Literaturrecherche und der Analyse bestehender Lösungsansätze, formulierst und modellierst dann den Anwendungsfall inkl. Größenordnungen, Nebenbedingungen und verfügbaren Daten. Darauf aufbauend entwirfst und implementierst Du ein prototypisches End-to-End-System. Insbesondere wirst Du dazu verschiedene Zerlegungsstrategien (z. B. zeitlich, räumlich und mathematisch) untersuchen und eine modulare Lösung unter Verwendung klassischer Optimierungstechniken, quanteninspirierter Methoden und/oder KI-Techniken implementieren. Die Orchestrierung der Gesamtlösung kann z. B. durch eine agentenbasierte Komponente gesteuert werden.\n\nHiermit bringst Du Dich ein \n\nProgrammierkenntnisse (vorzugsweise Python), und Software Engineering Best PracticesErfahrung mit Linux, Git-basierte VersionskontrolleKenntnisse in kombinatorischer OptimierungErfahrung in der Implementierung von Machine-Learning-Lösungen (insbesondere Reinforcement Learning)Erfahrung mit einem oder mehreren der folgenden Bereiche ist von Vorteil:Gängige Optimierungsbibliotheken (z. B. Gurobi, CPLEX, HiGHS)Machine-Learning-Bibliotheken (PyTorch, TensorFlow)Arbeit mit realen Daten (Bereinigung, Umgang mit fehlenden Daten, Robustheit)\nImmatrikulation an einer deutschen Universität, vorzugsweise in München oder UmgebungBesonders geeignet für Studierende der M.Sc. Informatik, M.Sc. Data Engineering, M.Sc. Mathematik und verwandte Fächer\n\nWas wir für Dich bereithalten\n\nZugängliche Betreuende, Integration in ein dynamisches Team mit innovativen AufgabenbereichenFlexible Arbeitsweise (einschließlich eines Arbeitsplatzes in unserem neuen Institutsgebäude in Garching)Einblicke in angewandte Forschungspraktiken und Arbeitsweisen bei FraunhoferPraxisnahe Ergänzung zu Deinem Studium\n\n\nWir wertschätzen und fördern die Vielfalt der Kompetenzen unserer Mitarbeitenden und begrüßen daher alle Bewerbungen – unabhängig von Alter, Geschlecht, Nationalität, ethnischer und sozialer Herkunft, Religion, Weltanschauung, Behinderung sowie sexueller Orientierung und Identität. Schwerbehinderte Menschen werden bei gleicher Eignung bevorzugt eingestellt. Unsere Aufgaben sind vielfältig und anpassbar – für Bewerber*innen mit Behinderung finden wir gemeinsam Lösungen, die ihre Fähigkeiten optimal fördern.\n\nMit ihrer Fokussierung auf zukunftsrelevante Schlüsseltechnologien sowie auf die Verwertung der Ergebnisse in Wirtschaft und Industrie spielt die Fraunhofer-Gesellschaft eine zentrale Rolle im Innovationsprozess. Als Wegweiser und Impulsgeber für innovative Entwicklungen und wissenschaftliche Exzellenz wirkt sie mit an der Gestaltung unserer Gesellschaft und unserer Zukunft.\n\nBereit für Veränderung? Dann bewirb Dich jetzt mit Deinem Motivationsschreiben, Lebenslauf und Deinen aktuellen Noten , und mach einen Unterschied! Nach Eingang Deiner Online-Bewerbung erhältst Du eine automatische Empfangsbestätigung. Dann melden wir uns schnellstmöglich und sagen Dir, wie es weitergeht.\n\nTechnische Fragen werden gerne beantwortet von \n\nBenedikt Poggel, benedikt.poggel@iks.fraunhofer.de\n\nBei sonstigen Fragen kannst Du Dich an unsere Kolleg*innen aus der Personalabteilung wenden: recruiting@iks.fraunhofer.de\n\nFraunhofer-Institut für Kognitive Systeme IKS\n\nwww.iks.fraunhofer.de\n\nKennziffer: 83607 Bewerbungsfrist:",
+        "html": "Safe Intelligence – das ist der Markenkern des <strong>Fraunhofer-Instituts für Kognitive Systeme IKS</strong>. Vernetzte Kognitive Systeme sind der Innovationstreiber in vielen Anwendungsbereichen, etwa in der Mobilität, im Gesundheitswesen, oder der Automatisierung in der Industrie. Dabei spielen disruptive Technologien wie künstliche Intelligenz oder Quantencomputing eine zentrale Rolle. Das Fraunhofer IKS forscht daran, dass entsprechende Anwendungen zuverlässig und nachweislich sicher sind. Wir denken Resilienz und Intelligenz zusammen.<br><br><strong>Hier sorgst Du für Veränderung<br><br></strong>In dieser Masterarbeit entwickelst Du ein modulares Optimierungsframework für ein Inventory-Routing-Problem. Diese Problemklasse kombiniert Aspekte der Bestandsverwaltung, Lieferplanung und Routenoptimierung (siehe z. B. arXiv:2209.00412 ). Du beginnst mit einer Literaturrecherche und der Analyse bestehender Lösungsansätze, formulierst und modellierst dann den Anwendungsfall inkl. Größenordnungen, Nebenbedingungen und verfügbaren Daten. Darauf aufbauend entwirfst und implementierst Du ein prototypisches End-to-End-System. Insbesondere wirst Du dazu verschiedene Zerlegungsstrategien (z. B. zeitlich, räumlich und mathematisch) untersuchen und eine modulare Lösung unter Verwendung klassischer Optimierungstechniken, quanteninspirierter Methoden und/oder KI-Techniken implementieren. Die Orchestrierung der Gesamtlösung kann z. B. durch eine agentenbasierte Komponente gesteuert werden.<br><br><strong>Hiermit bringst Du Dich ein</strong> <br><br><ul><li>Programmierkenntnisse (vorzugsweise Python), und Software Engineering Best Practices</li><li>Erfahrung mit Linux, Git-basierte Versionskontrolle</li><li>Kenntnisse in kombinatorischer Optimierung</li><li>Erfahrung in der Implementierung von Machine-Learning-Lösungen (insbesondere Reinforcement Learning)</li><li>Erfahrung mit einem oder mehreren der folgenden Bereiche ist von Vorteil:</li><ul><li>Gängige Optimierungsbibliotheken (z. B. Gurobi, CPLEX, HiGHS)</li><li>Machine-Learning-Bibliotheken (PyTorch, TensorFlow)</li><li>Arbeit mit realen Daten (Bereinigung, Umgang mit fehlenden Daten, Robustheit)<br></li></ul><li>Immatrikulation an einer deutschen Universität, vorzugsweise in München oder Umgebung</li><li>Besonders geeignet für Studierende der M.Sc. Informatik, M.Sc. Data Engineering, M.Sc. Mathematik und verwandte Fächer<br><br></li></ul><strong>Was wir für Dich bereithalten<br><br></strong><ul><li>Zugängliche Betreuende, Integration in ein dynamisches Team mit innovativen Aufgabenbereichen</li><li>Flexible Arbeitsweise (einschließlich eines Arbeitsplatzes in unserem neuen Institutsgebäude in Garching)</li><li>Einblicke in angewandte Forschungspraktiken und Arbeitsweisen bei Fraunhofer</li><li>Praxisnahe Ergänzung zu Deinem Studium<br><br><br></li></ul>Wir wertschätzen und fördern die Vielfalt der Kompetenzen unserer Mitarbeitenden und begrüßen daher alle Bewerbungen – unabhängig von Alter, Geschlecht, Nationalität, ethnischer und sozialer Herkunft, Religion, Weltanschauung, Behinderung sowie sexueller Orientierung und Identität. Schwerbehinderte Menschen werden bei gleicher Eignung bevorzugt eingestellt. Unsere Aufgaben sind vielfältig und anpassbar – für Bewerber*innen mit Behinderung finden wir gemeinsam Lösungen, die ihre Fähigkeiten optimal fördern.<br><br>Mit ihrer Fokussierung auf zukunftsrelevante Schlüsseltechnologien sowie auf die Verwertung der Ergebnisse in Wirtschaft und Industrie spielt die Fraunhofer-Gesellschaft eine zentrale Rolle im Innovationsprozess. Als Wegweiser und Impulsgeber für innovative Entwicklungen und wissenschaftliche Exzellenz wirkt sie mit an der Gestaltung unserer Gesellschaft und unserer Zukunft.<br><br><strong>Bereit für Veränderung? Dann bewirb Dich jetzt mit Deinem Motivationsschreiben, Lebenslauf und Deinen aktuellen Noten , und mach einen Unterschied! Nach Eingang Deiner Online-Bewerbung erhältst Du eine automatische Empfangsbestätigung. Dann melden wir uns schnellstmöglich und sagen Dir, wie es weitergeht.<br><br></strong><strong>Technische Fragen werden gerne beantwortet von <br><br></strong>Benedikt Poggel, benedikt.poggel@iks.fraunhofer.de<br><br>Bei sonstigen Fragen kannst Du Dich an unsere Kolleg*innen aus der Personalabteilung wenden: recruiting@iks.fraunhofer.de<br><br>Fraunhofer-Institut für Kognitive Systeme IKS<br><br>www.iks.fraunhofer.de<br><br>Kennziffer: 83607 Bewerbungsfrist:"
+      },
+      "application": {
+        "jobUrl": "https://de.linkedin.com/jobs/view/masterarbeit-gro%C3%9Fskalige-optimierung-in-der-supply-chain-logistik-at-fraunhofer-iks-4382893287?position=7&pageNum=5&refId=9maq1JXlL5Pqf7xwdtWOVw%3D%3D&trackingId=1Mcnv%2B5Xf%2BfAhqqIZzpDfw%3D%3D",
+        "applyUrl": "https://jobs.fraunhofer.de/job/M%C3%BCnchen-Masterarbeit-Gro%C3%9Fskalige-Optimierung-in-der-Supply-Chain-Logistik-80686/1372496033/",
+        "applyMethod": "OffsiteApply"
+      },
+      "employment": {
+        "seniorityLevel": "Internship",
+        "employmentType": "Full-time",
+        "jobFunction": "Education and Training",
+        "salaryText": ""
+      },
+      "timing": {
+        "postedAt": "2026-03-11T12:36:49Z",
+        "expiresAt": "2026-05-07T13:35:08.000Z",
+        "collectedAt": "2026-04-25T11:42:34.4948603+02:00"
+      },
+      "sightings": [
+        {
+          "source": "linkedin",
+          "rawFile": "data/raw/linkedin-2026-04-25-114234.json",
+          "sourceJobId": "4382893287",
+          "jobUrl": "https://de.linkedin.com/jobs/view/masterarbeit-gro%C3%9Fskalige-optimierung-in-der-supply-chain-logistik-at-fraunhofer-iks-4382893287?position=7&pageNum=5&refId=9maq1JXlL5Pqf7xwdtWOVw%3D%3D&trackingId=1Mcnv%2B5Xf%2BfAhqqIZzpDfw%3D%3D",
+          "seenAt": "2026-04-25T11:42:34.4948603+02:00"
+        }
       ],
-      "workRemoteAllowed": false,
-      "standardizedTitle": "Masters Student",
-      "country": "DE",
       "_selection": {
         "passed": true,
         "must": [
@@ -451,35 +667,68 @@
       }
     },
     {
-      "id": "4399267230",
-      "trackingId": "KKmLjmpMrF05nWh2Mvrm+w==",
-      "refId": "9maq1JXlL5Pqf7xwdtWOVw==",
-      "link": "https://de.linkedin.com/jobs/view/masterarbeit-lean-production-wertstromdesign-at-endress%2Bhauser-group-4399267230?position=9&pageNum=5&refId=9maq1JXlL5Pqf7xwdtWOVw%3D%3D&trackingId=KKmLjmpMrF05nWh2Mvrm%2Bw%3D%3D",
-      "title": "Masterarbeit Lean Production / Wertstromdesign",
-      "companyName": "Endress+Hauser Group",
-      "companyLinkedinUrl": "https://ch.linkedin.com/company/endress-hauser-group?trk=public_jobs_jserp-result_job-search-card-subtitle",
-      "companyLogo": "https://media.licdn.com/dms/image/v2/C4D0BAQGrf2dRogLFEA/company-logo_100_100/company-logo_100_100/0/1630552740242/endress_hauser_group_logo?e=2147483647&v=beta&t=OqGXn3nuMRUOpJfWVcPw6s7mf3JoNXDTqsgdvbFLE64",
-      "location": "Maulburg, Baden-Württemberg, Germany",
-      "postedAt": "2026-04-08T14:22:23Z",
-      "benefits": [],
-      "descriptionHtml": "Bei Endress+Hauser geschieht Fortschritt durch Zusammenarbeit. Als weltweit führender Anbieter von Messgeräten gestalten unsere rund 17.000 Mitarbeitenden die Zukunft im Bereich der Prozessautomatisierung. Ob bei der Innovation und Umsetzung neuer Technologien im Team, der Zusammenarbeit in der Entwicklung neuer Geräte oder der Stärkung wichtiger Beziehungen zu verschiedenen globalen Industrien: Unsere Arbeit basiert darauf, vertrauensvolle Beziehungen aufzubauen, die allen zum Erfolg verhelfen. Als familiengeführtes Unternehmen schauen wir über kurzfristige Ziele hinaus und arbeiten daran, eine zukunftsorientierte Vision für unsere Mitarbeitenden, unsere Kundinnen und Kunden und die Welt im Allgemeinen zu schaffen.<br><br><strong>Worum geht es bei der Stelle?<br><br></strong>Begeisterst du dich für den Bereich Wertstromanalyse? Möchtest du erste Erfahrungen im produktionsnahen Bereich sammeln oder bereits bestehende Kenntnisse vertiefen? Bei uns hast du die Chance aktiv in spannenden Projekten mitzuwirken.<br><br><strong>Welche Aufgaben wirst Du übernehmen?<br><br></strong><ul><li>Entwicklung eines optimierten Wertstromdesigns zur Reduzierung von Durchlaufzeiten und zur Steigerung der Kapazität</li><li>Analyse und Bewertung von Arbeitsplatzstrukturen sowie Steuerungskonzepten</li><li>Konzeption, Ausarbeitung und Vergleich verschiedener Soll‑Konzepte</li><li>Vorbereitung der Implementierung der favorisierten Lösung<br><br></li></ul><strong>Was erwarten wir von Dir?<br><br></strong><ul><li>Du studierst im Bereich Industrial Engineering, Maschinenbau, Produktionstechnik, Data Science, Wirtschaftsingenieurwesen oder vergleichbar</li><li>Wir suchen eine teamorientierte und kontaktfreudige Persönlichkeit mit sehr gutem Analytischem Denkvermögen sowie hoher Problemlösungsorientierung</li><li>Idealerweise hast du schon erste Erfahrungen mit Lean-Methoden, Datenanalyse und Wertstromdesign</li><li>Der Umgang mit SAP sowie der Programmiersprache Python fällt dir leicht</li><li>Du verfügst über einen sicheren Umgang mit den gängigen MS-Office-Programmen</li><li>Fließende Deutschkenntnisse runden dein Profil ab<br><br></li></ul><strong>Was kannst Du von uns erwarten?  <br><br></strong><ul><li>Fachliche und persönliche Unterstützung durch erfahrene Betreuerinnen und Betreuer</li><li>Modernes Arbeitsumfeld in einem international tätigen Familienunternehmen</li><li>Reichhaltiges Frühstücks- und Mittagsangebot in unserem Betriebsrestaurant</li><li>Diverse Firmen- und Teamevents</li><li>Flexible Gestaltung von Arbeitszeit und -ort je nach Tätigkeit möglich<br><br></li></ul><strong>Wie bewirbst Du Dich? <br><br></strong>Um dich zu bewerben bitten wir dich, deine Unterlagen (Lebenslauf, Zeugnisse, Immatrikulationsbescheinigung) auf unserer Karriereseite hochzuladen. Wenn du Fragen hast, wende dich bitte an Jasmin Utz. Bewerbungen, die uns per E-Mail oder per Post erreichen, können aus Datenschutzgründen leider nicht berücksichtigt werden.",
-      "applicantsCount": "25",
-      "applyUrl": "https://careers.endress.com/other-countries-regions/job/Maulburg-Masterarbeit-Lean-Production-Wertstromdesign-79689/1381702633/?feedId=455133&utm_source=LinkedInJobPostings&utm_campaign=Endress_LinkedIn",
-      "salary": "",
-      "descriptionText": "Bei Endress+Hauser geschieht Fortschritt durch Zusammenarbeit. Als weltweit führender Anbieter von Messgeräten gestalten unsere rund 17.000 Mitarbeitenden die Zukunft im Bereich der Prozessautomatisierung. Ob bei der Innovation und Umsetzung neuer Technologien im Team, der Zusammenarbeit in der Entwicklung neuer Geräte oder der Stärkung wichtiger Beziehungen zu verschiedenen globalen Industrien: Unsere Arbeit basiert darauf, vertrauensvolle Beziehungen aufzubauen, die allen zum Erfolg verhelfen. Als familiengeführtes Unternehmen schauen wir über kurzfristige Ziele hinaus und arbeiten daran, eine zukunftsorientierte Vision für unsere Mitarbeitenden, unsere Kundinnen und Kunden und die Welt im Allgemeinen zu schaffen.\n\nWorum geht es bei der Stelle?\n\nBegeisterst du dich für den Bereich Wertstromanalyse? Möchtest du erste Erfahrungen im produktionsnahen Bereich sammeln oder bereits bestehende Kenntnisse vertiefen? Bei uns hast du die Chance aktiv in spannenden Projekten mitzuwirken.\n\nWelche Aufgaben wirst Du übernehmen?\n\nEntwicklung eines optimierten Wertstromdesigns zur Reduzierung von Durchlaufzeiten und zur Steigerung der KapazitätAnalyse und Bewertung von Arbeitsplatzstrukturen sowie SteuerungskonzeptenKonzeption, Ausarbeitung und Vergleich verschiedener Soll‑KonzepteVorbereitung der Implementierung der favorisierten Lösung\n\nWas erwarten wir von Dir?\n\nDu studierst im Bereich Industrial Engineering, Maschinenbau, Produktionstechnik, Data Science, Wirtschaftsingenieurwesen oder vergleichbarWir suchen eine teamorientierte und kontaktfreudige Persönlichkeit mit sehr gutem Analytischem Denkvermögen sowie hoher ProblemlösungsorientierungIdealerweise hast du schon erste Erfahrungen mit Lean-Methoden, Datenanalyse und WertstromdesignDer Umgang mit SAP sowie der Programmiersprache Python fällt dir leichtDu verfügst über einen sicheren Umgang mit den gängigen MS-Office-ProgrammenFließende Deutschkenntnisse runden dein Profil ab\n\nWas kannst Du von uns erwarten?  \n\nFachliche und persönliche Unterstützung durch erfahrene Betreuerinnen und BetreuerModernes Arbeitsumfeld in einem international tätigen FamilienunternehmenReichhaltiges Frühstücks- und Mittagsangebot in unserem BetriebsrestaurantDiverse Firmen- und TeameventsFlexible Gestaltung von Arbeitszeit und -ort je nach Tätigkeit möglich\n\nWie bewirbst Du Dich? \n\nUm dich zu bewerben bitten wir dich, deine Unterlagen (Lebenslauf, Zeugnisse, Immatrikulationsbescheinigung) auf unserer Karriereseite hochzuladen. Wenn du Fragen hast, wende dich bitte an Jasmin Utz. Bewerbungen, die uns per E-Mail oder per Post erreichen, können aus Datenschutzgründen leider nicht berücksichtigt werden.",
-      "seniorityLevel": "Not Applicable",
-      "employmentType": "Full-time",
-      "jobFunction": "Education and Training",
-      "industries": "Automation Machinery Manufacturing",
-      "inputUrl": "https://www.linkedin.com/jobs/search?keywords=Masterarbeit&location=Germany&geoId=101282230&trk=public_jobs_jobs-search-bar_search-submit&position=1&pageNum=0",
-      "salaryInsights": {},
-      "applyMethod": "OffsiteApply",
-      "expireAt": 1778250143000,
-      "postedAtTimestamp": 1775658143000,
-      "workplaceTypes": [],
-      "workRemoteAllowed": false,
-      "standardizedTitle": "Masters Student",
-      "country": "DE",
+      "schemaVersion": 1,
+      "identity": {
+        "jobId": "linkedin:4399267230",
+        "dedupeKey": "source-id:linkedin:4399267230",
+        "dedupeKeys": [
+          "source-id:linkedin:4399267230",
+          "url:https://de.linkedin.com/jobs/view/masterarbeit-lean-production-wertstromdesign-at-endress%2Bhauser-group-4399267230"
+        ],
+        "source": "linkedin",
+        "sourceJobId": "4399267230",
+        "sourceJobUrl": "https://de.linkedin.com/jobs/view/masterarbeit-lean-production-wertstromdesign-at-endress%2Bhauser-group-4399267230?position=9&pageNum=5&refId=9maq1JXlL5Pqf7xwdtWOVw%3D%3D&trackingId=KKmLjmpMrF05nWh2Mvrm%2Bw%3D%3D",
+        "sourceRunId": "aeWWMhq38NBlLwFUf",
+        "sourceDatasetId": "gTibyfv4TVpQQxvVb",
+        "sourceInputUrl": "https://www.linkedin.com/jobs/search?keywords=Masterarbeit&location=Germany&geoId=101282230&trk=public_jobs_jobs-search-bar_search-submit&position=1&pageNum=0",
+        "rawFile": "data/raw/linkedin-2026-04-25-114234.json"
+      },
+      "title": {
+        "raw": "Masterarbeit Lean Production / Wertstromdesign",
+        "normalized": "Masters Student"
+      },
+      "company": {
+        "name": "Endress+Hauser Group",
+        "profileUrl": "https://ch.linkedin.com/company/endress-hauser-group?trk=public_jobs_jserp-result_job-search-card-subtitle",
+        "logoUrl": "https://media.licdn.com/dms/image/v2/C4D0BAQGrf2dRogLFEA/company-logo_100_100/company-logo_100_100/0/1630552740242/endress_hauser_group_logo?e=2147483647&v=beta&t=OqGXn3nuMRUOpJfWVcPw6s7mf3JoNXDTqsgdvbFLE64",
+        "industry": "Automation Machinery Manufacturing"
+      },
+      "location": {
+        "raw": "Maulburg, Baden-Württemberg, Germany",
+        "city": "Maulburg",
+        "state": "Baden-Württemberg",
+        "country": "DE",
+        "workplaceType": "unknown"
+      },
+      "description": {
+        "text": "Bei Endress+Hauser geschieht Fortschritt durch Zusammenarbeit. Als weltweit führender Anbieter von Messgeräten gestalten unsere rund 17.000 Mitarbeitenden die Zukunft im Bereich der Prozessautomatisierung. Ob bei der Innovation und Umsetzung neuer Technologien im Team, der Zusammenarbeit in der Entwicklung neuer Geräte oder der Stärkung wichtiger Beziehungen zu verschiedenen globalen Industrien: Unsere Arbeit basiert darauf, vertrauensvolle Beziehungen aufzubauen, die allen zum Erfolg verhelfen. Als familiengeführtes Unternehmen schauen wir über kurzfristige Ziele hinaus und arbeiten daran, eine zukunftsorientierte Vision für unsere Mitarbeitenden, unsere Kundinnen und Kunden und die Welt im Allgemeinen zu schaffen.\n\nWorum geht es bei der Stelle?\n\nBegeisterst du dich für den Bereich Wertstromanalyse? Möchtest du erste Erfahrungen im produktionsnahen Bereich sammeln oder bereits bestehende Kenntnisse vertiefen? Bei uns hast du die Chance aktiv in spannenden Projekten mitzuwirken.\n\nWelche Aufgaben wirst Du übernehmen?\n\nEntwicklung eines optimierten Wertstromdesigns zur Reduzierung von Durchlaufzeiten und zur Steigerung der KapazitätAnalyse und Bewertung von Arbeitsplatzstrukturen sowie SteuerungskonzeptenKonzeption, Ausarbeitung und Vergleich verschiedener Soll‑KonzepteVorbereitung der Implementierung der favorisierten Lösung\n\nWas erwarten wir von Dir?\n\nDu studierst im Bereich Industrial Engineering, Maschinenbau, Produktionstechnik, Data Science, Wirtschaftsingenieurwesen oder vergleichbarWir suchen eine teamorientierte und kontaktfreudige Persönlichkeit mit sehr gutem Analytischem Denkvermögen sowie hoher ProblemlösungsorientierungIdealerweise hast du schon erste Erfahrungen mit Lean-Methoden, Datenanalyse und WertstromdesignDer Umgang mit SAP sowie der Programmiersprache Python fällt dir leichtDu verfügst über einen sicheren Umgang mit den gängigen MS-Office-ProgrammenFließende Deutschkenntnisse runden dein Profil ab\n\nWas kannst Du von uns erwarten?  \n\nFachliche und persönliche Unterstützung durch erfahrene Betreuerinnen und BetreuerModernes Arbeitsumfeld in einem international tätigen FamilienunternehmenReichhaltiges Frühstücks- und Mittagsangebot in unserem BetriebsrestaurantDiverse Firmen- und TeameventsFlexible Gestaltung von Arbeitszeit und -ort je nach Tätigkeit möglich\n\nWie bewirbst Du Dich? \n\nUm dich zu bewerben bitten wir dich, deine Unterlagen (Lebenslauf, Zeugnisse, Immatrikulationsbescheinigung) auf unserer Karriereseite hochzuladen. Wenn du Fragen hast, wende dich bitte an Jasmin Utz. Bewerbungen, die uns per E-Mail oder per Post erreichen, können aus Datenschutzgründen leider nicht berücksichtigt werden.",
+        "html": "Bei Endress+Hauser geschieht Fortschritt durch Zusammenarbeit. Als weltweit führender Anbieter von Messgeräten gestalten unsere rund 17.000 Mitarbeitenden die Zukunft im Bereich der Prozessautomatisierung. Ob bei der Innovation und Umsetzung neuer Technologien im Team, der Zusammenarbeit in der Entwicklung neuer Geräte oder der Stärkung wichtiger Beziehungen zu verschiedenen globalen Industrien: Unsere Arbeit basiert darauf, vertrauensvolle Beziehungen aufzubauen, die allen zum Erfolg verhelfen. Als familiengeführtes Unternehmen schauen wir über kurzfristige Ziele hinaus und arbeiten daran, eine zukunftsorientierte Vision für unsere Mitarbeitenden, unsere Kundinnen und Kunden und die Welt im Allgemeinen zu schaffen.<br><br><strong>Worum geht es bei der Stelle?<br><br></strong>Begeisterst du dich für den Bereich Wertstromanalyse? Möchtest du erste Erfahrungen im produktionsnahen Bereich sammeln oder bereits bestehende Kenntnisse vertiefen? Bei uns hast du die Chance aktiv in spannenden Projekten mitzuwirken.<br><br><strong>Welche Aufgaben wirst Du übernehmen?<br><br></strong><ul><li>Entwicklung eines optimierten Wertstromdesigns zur Reduzierung von Durchlaufzeiten und zur Steigerung der Kapazität</li><li>Analyse und Bewertung von Arbeitsplatzstrukturen sowie Steuerungskonzepten</li><li>Konzeption, Ausarbeitung und Vergleich verschiedener Soll‑Konzepte</li><li>Vorbereitung der Implementierung der favorisierten Lösung<br><br></li></ul><strong>Was erwarten wir von Dir?<br><br></strong><ul><li>Du studierst im Bereich Industrial Engineering, Maschinenbau, Produktionstechnik, Data Science, Wirtschaftsingenieurwesen oder vergleichbar</li><li>Wir suchen eine teamorientierte und kontaktfreudige Persönlichkeit mit sehr gutem Analytischem Denkvermögen sowie hoher Problemlösungsorientierung</li><li>Idealerweise hast du schon erste Erfahrungen mit Lean-Methoden, Datenanalyse und Wertstromdesign</li><li>Der Umgang mit SAP sowie der Programmiersprache Python fällt dir leicht</li><li>Du verfügst über einen sicheren Umgang mit den gängigen MS-Office-Programmen</li><li>Fließende Deutschkenntnisse runden dein Profil ab<br><br></li></ul><strong>Was kannst Du von uns erwarten?  <br><br></strong><ul><li>Fachliche und persönliche Unterstützung durch erfahrene Betreuerinnen und Betreuer</li><li>Modernes Arbeitsumfeld in einem international tätigen Familienunternehmen</li><li>Reichhaltiges Frühstücks- und Mittagsangebot in unserem Betriebsrestaurant</li><li>Diverse Firmen- und Teamevents</li><li>Flexible Gestaltung von Arbeitszeit und -ort je nach Tätigkeit möglich<br><br></li></ul><strong>Wie bewirbst Du Dich? <br><br></strong>Um dich zu bewerben bitten wir dich, deine Unterlagen (Lebenslauf, Zeugnisse, Immatrikulationsbescheinigung) auf unserer Karriereseite hochzuladen. Wenn du Fragen hast, wende dich bitte an Jasmin Utz. Bewerbungen, die uns per E-Mail oder per Post erreichen, können aus Datenschutzgründen leider nicht berücksichtigt werden."
+      },
+      "application": {
+        "jobUrl": "https://de.linkedin.com/jobs/view/masterarbeit-lean-production-wertstromdesign-at-endress%2Bhauser-group-4399267230?position=9&pageNum=5&refId=9maq1JXlL5Pqf7xwdtWOVw%3D%3D&trackingId=KKmLjmpMrF05nWh2Mvrm%2Bw%3D%3D",
+        "applyUrl": "https://careers.endress.com/other-countries-regions/job/Maulburg-Masterarbeit-Lean-Production-Wertstromdesign-79689/1381702633/?feedId=455133&utm_source=LinkedInJobPostings&utm_campaign=Endress_LinkedIn",
+        "applyMethod": "OffsiteApply"
+      },
+      "employment": {
+        "seniorityLevel": "Not Applicable",
+        "employmentType": "Full-time",
+        "jobFunction": "Education and Training",
+        "salaryText": ""
+      },
+      "timing": {
+        "postedAt": "2026-04-08T14:22:23Z",
+        "expiresAt": "2026-05-08T14:22:23.000Z",
+        "collectedAt": "2026-04-25T11:42:34.4948603+02:00"
+      },
+      "sightings": [
+        {
+          "source": "linkedin",
+          "rawFile": "data/raw/linkedin-2026-04-25-114234.json",
+          "sourceJobId": "4399267230",
+          "jobUrl": "https://de.linkedin.com/jobs/view/masterarbeit-lean-production-wertstromdesign-at-endress%2Bhauser-group-4399267230?position=9&pageNum=5&refId=9maq1JXlL5Pqf7xwdtWOVw%3D%3D&trackingId=KKmLjmpMrF05nWh2Mvrm%2Bw%3D%3D",
+          "seenAt": "2026-04-25T11:42:34.4948603+02:00"
+        }
+      ],
       "_selection": {
         "passed": true,
         "must": [

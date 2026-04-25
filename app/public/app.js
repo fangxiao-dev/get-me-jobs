@@ -136,7 +136,7 @@ async function loadDashboard() {
 }
 
 async function saveAnnotation(id, patch) {
-  const existing = state.data.annotations[id] ?? { id, decision: null, note: "", tags: [] };
+  const existing = effectiveAnnotation(id);
   const payload = {
     date: state.date,
     source: state.source,
@@ -211,6 +211,15 @@ function debounceSave(id, patchFactory) {
 function showError(error) {
   const banner = document.querySelector(".error-banner");
   if (banner) banner.textContent = error.message ?? String(error);
+}
+
+function effectiveAnnotation(id) {
+  const existing = state.data.annotations[id] ?? { id, decision: null, note: "", tags: [] };
+  if (existing.decision) return existing;
+  if (state.view === "review" && state.activeTab === "rejected") {
+    return { ...existing, id, decision: "reject" };
+  }
+  return existing;
 }
 
 function renderShell(title, subtitle) {
@@ -493,7 +502,7 @@ function filteredDashboardItems() {
 
 function renderJobCard(job) {
   const id = jobId(job);
-  const annotation = state.data.annotations[id] ?? {};
+  const annotation = effectiveAnnotation(id);
   const article = createEl("article", "job-card");
   article.dataset.jobId = id;
 
@@ -657,7 +666,7 @@ function renderSelection(job) {
 function updateCardStatus(id) {
   const card = document.querySelector(`[data-job-id="${CSS.escape(id)}"]`);
   if (!card) return;
-  const annotation = state.data.annotations[id] ?? {};
+  const annotation = effectiveAnnotation(id);
   const status = card.querySelector(".save-status");
   if (status) status.textContent = annotation.reviewedAt ? `Saved ${new Date(annotation.reviewedAt).toLocaleString()}` : "Not reviewed";
 

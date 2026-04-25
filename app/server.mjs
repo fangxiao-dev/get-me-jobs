@@ -8,6 +8,10 @@ const rootDir = path.resolve(__dirname, "..");
 const publicDir = path.join(__dirname, "public");
 const host = "127.0.0.1";
 const port = Number(process.env.PORT ?? 4173);
+const dataDir = path.join(rootDir, "data");
+const rawDir = path.join(dataDir, "raw");
+const selectedDir = path.join(dataDir, "selected");
+const annotationsDir = path.join(dataDir, "annotations");
 const acceptedJobsPath = path.join(rootDir, "data", "accepted-jobs.json");
 const applicationsPath = path.join(rootDir, "data", "applications.json");
 
@@ -135,7 +139,6 @@ function batchIdFromFile(filePath) {
 }
 
 function latestRawFile() {
-  const rawDir = path.join(rootDir, "raw");
   const files = fs.existsSync(rawDir) ? fs.readdirSync(rawDir) : [];
   const latestName = files
     .filter((name) => /^\d{4}-\d{2}-\d{2}(?:-\d{4})?\.json$/.test(name))
@@ -158,15 +161,15 @@ function relativeDataPath(filePath) {
 }
 
 function annotationPath(date, source) {
-  return path.join(rootDir, "annotations", `${date}.${source}.json`);
+  return path.join(annotationsDir, `${date}.${source}.json`);
 }
 
 function readAnnotationFile(filePath, date, source) {
   try {
     return readJson(filePath, {
       source,
-      rawFile: `raw/${date}.json`,
-      selectedFile: `selected/${date}.json`,
+      rawFile: `data/raw/${date}.json`,
+      selectedFile: `data/selected/${date}.json`,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       items: [],
@@ -178,8 +181,8 @@ function readAnnotationFile(filePath, date, source) {
       fs.copyFileSync(filePath, backupPath);
       return {
         source,
-        rawFile: `raw/${date}.json`,
-        selectedFile: `selected/${date}.json`,
+        rawFile: `data/raw/${date}.json`,
+        selectedFile: `data/selected/${date}.json`,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         items: [],
@@ -191,18 +194,18 @@ function readAnnotationFile(filePath, date, source) {
 }
 
 function readAnnotationFileByRelativePath(relativePath, source) {
-  const filePath = path.resolve(rootDir, relativePath);
+  const filePath = resolveDataFile(relativePath, annotationsDir);
   const batchId = path.basename(filePath, ".json").replace(`.${source}`, "");
   return { filePath, annotationFile: readAnnotationFile(filePath, batchId, source) };
 }
 
 function resolvePayloadFiles(payload) {
   const rawPath = payload.rawFile
-    ? resolveDataFile(payload.rawFile, path.join(rootDir, "raw"))
-    : path.join(rootDir, "raw", `${payload.date}.json`);
+    ? resolveDataFile(payload.rawFile, rawDir)
+    : path.join(rawDir, `${payload.date}.json`);
   const selectedPath = payload.selectedFile
-    ? resolveDataFile(payload.selectedFile, path.join(rootDir, "selected"))
-    : path.join(rootDir, "selected", `${batchIdFromFile(rawPath)}.json`);
+    ? resolveDataFile(payload.selectedFile, selectedDir)
+    : path.join(selectedDir, `${batchIdFromFile(rawPath)}.json`);
   return {
     rawPath,
     selectedPath,
@@ -310,11 +313,11 @@ function upsertAcceptedApplication(payload, context) {
 function loadReviewState(options) {
   const { batchId, source, rawFile, selectedFile } = options;
   const rawPath = rawFile
-    ? resolveDataFile(rawFile, path.join(rootDir, "raw"))
-    : path.join(rootDir, "raw", `${batchId}.json`);
+    ? resolveDataFile(rawFile, rawDir)
+    : path.join(rawDir, `${batchId}.json`);
   const selectedPath = selectedFile
-    ? resolveDataFile(selectedFile, path.join(rootDir, "selected"))
-    : path.join(rootDir, "selected", `${batchIdFromFile(rawPath)}.json`);
+    ? resolveDataFile(selectedFile, selectedDir)
+    : path.join(selectedDir, `${batchIdFromFile(rawPath)}.json`);
   const effectiveBatchId = batchId ?? batchIdFromFile(rawPath);
   const annotationsPath = annotationPath(effectiveBatchId, source);
   const accepted = loadAcceptedJobs();

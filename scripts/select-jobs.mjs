@@ -69,7 +69,7 @@ if (!rawPathArg) {
 
 const rawPath = path.resolve(rawPathArg);
 const selectedPath = path.resolve(
-  selectedPathArg ?? path.join("selected", path.basename(rawPath)),
+  selectedPathArg ?? path.join("data", "selected", path.basename(rawPath)),
 );
 const preferencesPath = path.resolve(preferencesPathArg ?? "config/preferences.linkedin.json");
 

@@ -8,11 +8,11 @@ const port = Number(process.env.PORT ?? 4173);
 
 function usage() {
   console.log("Usage: node scripts/start-review.mjs [raw-file] [--no-open]");
-  console.log("Default: use the latest raw/*.json batch.");
+  console.log("Default: use the latest data/raw/*.json batch.");
 }
 
 function latestRawFile() {
-  const rawDir = path.join(rootDir, "raw");
+  const rawDir = path.join(rootDir, "data", "raw");
   if (!fs.existsSync(rawDir)) return null;
   const latest = fs.readdirSync(rawDir)
     .filter((name) => /^\d{4}-\d{2}-\d{2}(?:-\d{4})?\.json$/.test(name))
@@ -60,12 +60,12 @@ if (args.includes("--help") || args.includes("-h")) {
 
 const rawPath = rawArg ? path.resolve(rootDir, rawArg) : latestRawFile();
 if (!rawPath || !fs.existsSync(rawPath)) {
-  console.error(rawArg ? `Raw file not found: ${rawArg}` : "No raw/*.json batches found.");
+  console.error(rawArg ? `Raw file not found: ${rawArg}` : "No data/raw/*.json batches found.");
   process.exit(1);
 }
 
 const batchId = path.basename(rawPath, ".json");
-const selectedPath = path.join(rootDir, "selected", `${batchId}.json`);
+const selectedPath = path.join(rootDir, "data", "selected", `${batchId}.json`);
 if (!fs.existsSync(selectedPath)) {
   await runNode([
     "scripts/select-jobs.mjs",

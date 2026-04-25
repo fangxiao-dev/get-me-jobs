@@ -12,11 +12,11 @@
 
 ```text
 Apify Task
-  -> raw/<date>.json
+  -> data/raw/<date>.json
   -> scripts/select-jobs.mjs + config/preferences.linkedin.json
-  -> selected/<date>.json
+  -> data/selected/<date>.json
   -> local Review UI
-  -> annotations/<date>.<source>.json
+  -> data/annotations/<date>.<source>.json
   -> data/accepted-jobs.json
   -> data/applications.json
   -> Application Dashboard
@@ -46,8 +46,8 @@ Preference learning and market feedback are separate loops:
 ## Repository Facts
 
 - `.env`: local Apify token and Task IDs. Do not commit.
-- `raw/2026-04-25.json`: successful LinkedIn Apify run output.
-- `selected/2026-04-25.json`: filtered output from current preferences.
+- `data/raw/2026-04-25.json`: successful LinkedIn Apify run output.
+- `data/selected/2026-04-25.json`: filtered output from current preferences.
 - `config/preferences.linkedin.json`: data-driven filter rules.
 - `scripts/select-jobs.mjs`: deterministic filtering script.
 - `docs/plans/2026-04-25-review-ui-preference-analysis-design.md`: approved workflow design.
@@ -55,6 +55,7 @@ Preference learning and market feedback are separate loops:
 - `docs/plans/2026-04-25-feedback-loops-design.md`: preference vs market-fit signal boundary.
 - `data/accepted-jobs.json`: runtime accepted-job registry, created by the UI.
 - `data/applications.json`: runtime application timeline store, created by the UI.
+- `data/annotations/*.json`: human review labels.
 
 ## Scope
 

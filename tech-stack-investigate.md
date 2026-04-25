@@ -27,7 +27,7 @@ This document records the current technical direction for `job-finder`. It compl
 Re-run selection from raw data:
 
 ```powershell
-node scripts/select-jobs.mjs raw/2026-04-25.json selected/2026-04-25.json config/preferences.linkedin.json
+node scripts/select-jobs.mjs data/raw/2026-04-25.json data/selected/2026-04-25.json config/preferences.linkedin.json
 ```
 
 Planned local UI:

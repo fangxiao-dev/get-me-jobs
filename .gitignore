@@ -2,6 +2,11 @@
 node_modules/
 *.log
 
+# Local review/application state
+data/annotations/
+data/accepted-jobs.json
+data/applications.json
+
 # Local OS/editor noise
 .DS_Store
 Thumbs.db

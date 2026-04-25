@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "description": "LinkedIn job preference rules. Edit this file to tune selected/*.json without re-running Apify.",
+  "description": "LinkedIn job preference rules. Edit this file to tune data/selected/*.json without re-running Apify.",
   "rules": {
     "must": [
       {

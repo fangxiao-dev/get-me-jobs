@@ -75,7 +75,13 @@ const preferencesPath = path.resolve(preferencesPathArg ?? "config/preferences.l
 
 const raw = readJson(rawPath);
 const preferences = readJson(preferencesPath);
+const previousOutput = fs.existsSync(selectedPath) ? readJson(selectedPath) : null;
 const selected = selectItems(raw, preferences);
+const selectedIds = selected.map(({ item }) => item.id ?? item.sourceJobId ?? item.link ?? item.url);
+const previousIds = (previousOutput?.items ?? []).map((item) => item.id ?? item.sourceJobId ?? item.link ?? item.url);
+const selectionUnchanged = JSON.stringify(selectedIds) === JSON.stringify(previousIds)
+  && previousOutput?.preferencesVersion === preferences.version
+  && previousOutput?.preferencesFile === path.relative(process.cwd(), preferencesPath);
 
 const output = {
   source: raw.source,
@@ -83,7 +89,7 @@ const output = {
   taskName: raw.taskName,
   runId: raw.runId,
   datasetId: raw.datasetId,
-  savedAt: new Date().toISOString(),
+  savedAt: selectionUnchanged ? previousOutput.savedAt : new Date().toISOString(),
   preferencesFile: path.relative(process.cwd(), preferencesPath),
   preferencesVersion: preferences.version,
   rawCount: raw.items?.length ?? raw.count ?? 0,
@@ -94,7 +100,9 @@ const output = {
   })),
 };
 
-writeJson(selectedPath, output);
+if (!selectionUnchanged) {
+  writeJson(selectedPath, output);
+}
 
 console.log(JSON.stringify({
   rawPath,
@@ -102,4 +110,5 @@ console.log(JSON.stringify({
   preferencesPath,
   rawCount: output.rawCount,
   selectedCount: output.selectedCount,
+  written: !selectionUnchanged,
 }, null, 2));

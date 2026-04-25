@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
@@ -64,57 +65,65 @@ function selectItems(raw, preferences) {
     .filter((result) => result.match.passed);
 }
 
-const [, , rawPathArg, selectedPathArg, preferencesPathArg] = process.argv;
-
-if (!rawPathArg) {
-  console.error("Usage: node scripts/select-jobs.mjs <raw.json> [selected.json] [preferences.json]");
-  process.exit(1);
-}
-
-const rawPath = path.resolve(rawPathArg);
-const selectedPath = path.resolve(
-  selectedPathArg ?? path.join("data", "selected", path.basename(rawPath)),
-);
-const preferencesPath = path.resolve(preferencesPathArg ?? "config/preferences.linkedin.json");
-
-const raw = readJson(rawPath);
-const preferences = readJson(preferencesPath);
-const previousOutput = fs.existsSync(selectedPath) ? readJson(selectedPath) : null;
-const selected = selectItems(raw, preferences);
-
 function stableId(item) {
   return item.identity?.jobId ?? item.id ?? item.sourceJobId ?? item.link ?? item.url;
 }
 
-const selectedIds = selected.map(({ item }) => stableId(item));
-const previousIds = (previousOutput?.items ?? []).map(stableId);
-const selectionUnchanged = JSON.stringify(selectedIds) === JSON.stringify(previousIds)
-  && previousOutput?.preferencesVersion === preferences.version
-  && previousOutput?.preferencesFile === path.relative(process.cwd(), preferencesPath);
+export function selectJobsFile(rawPathArg, selectedPathArg, preferencesPathArg, options = {}) {
+  const cwd = options.cwd ?? process.cwd();
+  const rawPath = path.resolve(cwd, rawPathArg);
+  const selectedPath = path.resolve(
+    cwd,
+    selectedPathArg ?? path.join("data", "selected", path.basename(rawPath)),
+  );
+  const preferencesPath = path.resolve(cwd, preferencesPathArg ?? "config/preferences.linkedin.json");
 
-const output = {
-  schemaVersion: raw.schemaVersion ?? 1,
-  date: raw.date,
-  savedAt: selectionUnchanged ? previousOutput.savedAt : new Date().toISOString(),
-  preferencesFile: path.relative(process.cwd(), preferencesPath),
-  preferencesVersion: preferences.version,
-  rawCount: raw.items?.length ?? 0,
-  selectedCount: selected.length,
-  items: selected.map(({ item, match }) => ({
-    ...item,
-    _selection: match,
-  })),
-};
+  const raw = readJson(rawPath);
+  const preferences = readJson(preferencesPath);
+  const previousOutput = fs.existsSync(selectedPath) ? readJson(selectedPath) : null;
+  const selected = selectItems(raw, preferences);
+  const preferencesFile = path.relative(cwd, preferencesPath);
+  const selectedIds = selected.map(({ item }) => stableId(item));
+  const previousIds = (previousOutput?.items ?? []).map(stableId);
+  const selectionUnchanged = JSON.stringify(selectedIds) === JSON.stringify(previousIds)
+    && previousOutput?.preferencesVersion === preferences.version
+    && previousOutput?.preferencesFile === preferencesFile;
 
-if (!selectionUnchanged) {
-  writeJson(selectedPath, output);
+  const output = {
+    schemaVersion: raw.schemaVersion ?? 1,
+    date: raw.date,
+    savedAt: selectionUnchanged ? previousOutput.savedAt : new Date().toISOString(),
+    preferencesFile,
+    preferencesVersion: preferences.version,
+    rawCount: raw.items?.length ?? 0,
+    selectedCount: selected.length,
+    items: selected.map(({ item, match }) => ({
+      ...item,
+      _selection: match,
+    })),
+  };
+
+  if (!selectionUnchanged) {
+    writeJson(selectedPath, output);
+  }
+
+  return {
+    rawPath,
+    selectedPath,
+    preferencesPath,
+    rawCount: output.rawCount,
+    selectedCount: output.selectedCount,
+    written: !selectionUnchanged,
+  };
 }
 
-console.log(JSON.stringify({
-  rawPath,
-  selectedPath,
-  preferencesPath,
-  rawCount: output.rawCount,
-  selectedCount: output.selectedCount,
-  written: !selectionUnchanged,
-}, null, 2));
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  const [, , rawPathArg, selectedPathArg, preferencesPathArg] = process.argv;
+
+  if (!rawPathArg) {
+    console.error("Usage: node scripts/select-jobs.mjs <raw.json> [selected.json] [preferences.json]");
+    process.exit(1);
+  }
+
+  console.log(JSON.stringify(selectJobsFile(rawPathArg, selectedPathArg, preferencesPathArg), null, 2));
+}

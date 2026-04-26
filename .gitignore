@@ -6,6 +6,10 @@ node_modules/
 data/annotations/
 data/accepted-jobs.json
 data/applications.json
+data/canonical/
+data/raw/
+data/selected/
+.claude/
 
 # Local OS/editor noise
 .DS_Store

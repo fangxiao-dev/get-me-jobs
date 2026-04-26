@@ -87,6 +87,19 @@ data/applications.json
 }
 ```
 
+Stage notes are derived from timeline events, not stored as a separate notes object. Each status-changing stage can carry its own event note:
+
+- `applied`
+- `interview_scheduled`
+- `interview_completed`
+- `employer_agreed`
+- `closed`
+- `note` for general application notes
+
+`accepted` events are provenance events used to explain how the job entered the dashboard. They are not counted or rendered as stage notes.
+
+When a user adds a free-form note from a dashboard card, the note belongs to the card's current application stage. New note events should persist that stage so the note does not move if the application status changes later. Older note events without explicit stage metadata may be displayed under the current status as a compatibility fallback.
+
 ## Deduplication
 
 Use this stable key order:
@@ -135,6 +148,9 @@ Layout:
 - Dense job list on the left.
 - Detail panel or expanded card on the right/within the list.
 - Timeline visible for the selected job.
+- Stage notes are hidden behind one outer collapsed `Stage notes (N)` disclosure by default. Expanding it reveals the per-stage disclosures, such as `Applied`, `Interview scheduled`, and `Employer agreed`.
+- The outer `Stage notes (N)` count includes only visible stage-note event types. It excludes provenance events such as `accepted`.
+- Only stage groups that contain at least one note are shown inside the outer disclosure. Empty stage groups are omitted.
 
 Statuses:
 

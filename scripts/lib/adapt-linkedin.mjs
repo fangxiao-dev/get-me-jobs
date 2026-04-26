@@ -84,7 +84,7 @@ export function adaptLinkedinItem(item, { rawFile, collectedAt, runId, datasetId
     },
     application: {
       jobUrl: item.link ?? undefined,
-      applyUrl: item.applyUrl ?? undefined,
+      applyUrl: item.applyUrl || undefined,
       applyMethod: item.applyMethod ?? undefined,
     },
     employment: {

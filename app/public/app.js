@@ -8,12 +8,17 @@ const state = {
   reviewCities: [],
   reviewStates: [],
   reviewCompanies: [],
+  reviewWorkplaceTypes: [],
   dashboardStatus: "all",
   dashboardSearch: "",
   dashboardCities: [],
   dashboardStates: [],
   dashboardCompanies: [],
+  dashboardWorkplaceTypes: [],
   dashboardAction: null,
+  dashboardImportUrl: "",
+  dashboardImportRunning: false,
+  dashboardImportStatus: "",
   mergeRunning: false,
   mergeStatus: "",
   data: null,
@@ -44,6 +49,35 @@ const actionLabels = {
   reject: "Reject",
   note: "Add Note",
 };
+
+const stageNoteLabels = {
+  applied: "Applied",
+  interview_scheduled: "Interview scheduled",
+  interview_completed: "Interview completed",
+  employer_agreed: "Employer agreed",
+  closed: "Closed",
+  note: "General note",
+};
+
+const stageNoteOrder = ["applied", "interview_scheduled", "interview_completed", "employer_agreed", "closed", "note"];
+
+const statusStageMap = {
+  accepted: "note",
+  applied_waiting: "applied",
+  interview_scheduled: "interview_scheduled",
+  interview_completed: "interview_completed",
+  employer_agreed: "employer_agreed",
+  closed: "closed",
+};
+
+const workplaceTypeLabels = {
+  remote: "Remote",
+  hybrid: "Hybrid",
+  on_site: "On-site",
+  unknown: "Unknown",
+};
+
+const workplaceTypeOrder = ["remote", "hybrid", "on_site", "unknown"];
 
 function jobId(job) {
   return String(job.identity?.jobId ?? job.id ?? job.sourceJobId ?? job.link ?? job.url ?? "");
@@ -159,11 +193,15 @@ async function saveAnnotation(id, patch) {
   if (!response.ok) throw new Error((await response.json()).error ?? "Failed to save annotation");
   const result = await response.json();
   state.data.annotations = result.annotations;
-  if (payload.decision === "accept") {
+  if (shouldReloadReviewAfterDecision(payload.decision)) {
     await loadState();
   } else {
     updateCardStatus(id);
   }
+}
+
+function shouldReloadReviewAfterDecision(decision) {
+  return decision === "accept" || decision === "reject";
 }
 
 async function saveApplicationEvent(jobKey, form) {
@@ -237,6 +275,51 @@ async function rejectDashboardJob(jobKey, note) {
   });
   if (!response.ok) throw new Error((await response.json()).error ?? "Failed to reject application");
   state.dashboardAction = null;
+  await loadDashboard();
+}
+
+async function postManualLinkedinImport(url) {
+  const response = await fetch("/api/applications/import-linkedin-url", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ url: String(url ?? "").trim() }),
+  });
+  if (!response.ok) throw new Error((await response.json()).error ?? "Failed to import LinkedIn job");
+  return response.json();
+}
+
+async function saveManualLinkedinImport(form) {
+  if (state.dashboardImportRunning) return;
+  const data = new FormData(form);
+  const url = String(data.get("url") ?? "").trim();
+  if (!url) return;
+  state.dashboardImportRunning = true;
+  state.dashboardImportStatus = "Importing...";
+  renderDashboard();
+  try {
+    await postManualLinkedinImport(url);
+    state.dashboardImportUrl = "";
+    state.dashboardImportStatus = "Imported";
+    await loadDashboard();
+  } finally {
+    state.dashboardImportRunning = false;
+    renderDashboard();
+  }
+}
+
+async function saveApplicationDetails(jobKey, form) {
+  const data = new FormData(form);
+  const payload = {
+    jobKey,
+    statusUrl: data.get("statusUrl") ?? "",
+  };
+
+  const response = await fetch("/api/applications/details", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) throw new Error((await response.json()).error ?? "Failed to save application details");
   await loadDashboard();
 }
 
@@ -331,11 +414,13 @@ function renderReviewToolbar(baseItems, visibleCount) {
     cityValues: state.reviewCities,
     stateValues: state.reviewStates,
     companyValues: state.reviewCompanies,
+    workplaceTypeValues: state.reviewWorkplaceTypes,
     prefix: "review",
     onChange: (kind, values) => {
       if (kind === "city") state.reviewCities = values;
       else if (kind === "state") state.reviewStates = values;
-      else state.reviewCompanies = values;
+      else if (kind === "company") state.reviewCompanies = values;
+      else state.reviewWorkplaceTypes = values;
       reconcileReviewFilters(kind);
       renderReview();
     },
@@ -356,24 +441,30 @@ function jobFilterOptions(items, filters = {}) {
   const cities = new Map();
   const states = new Map();
   const companies = new Map();
+  const workplaceTypes = new Map();
   for (const item of items) {
     const job = item.job ?? item;
     const location = locationParts(job.location?.raw ?? job.location);
     const companyName = job.company?.name ?? job.companyName;
-    if (location.city && jobFilterMatches(job, location, [], filters.stateValues ?? [], filters.companyValues ?? [])) {
+    const workplaceType = normalizeWorkplaceType(job.location?.workplaceType ?? job.workplaceType);
+    if (location.city && jobFilterMatches(job, location, [], filters.stateValues ?? [], filters.companyValues ?? [], filters.workplaceTypeValues ?? [])) {
       cities.set(normalizeOption(location.city), location.city);
     }
-    if (location.state && jobFilterMatches(job, location, filters.cityValues ?? [], [], filters.companyValues ?? [])) {
+    if (location.state && jobFilterMatches(job, location, filters.cityValues ?? [], [], filters.companyValues ?? [], filters.workplaceTypeValues ?? [])) {
       states.set(normalizeOption(location.state), location.state);
     }
-    if (companyName && jobFilterMatches(job, location, filters.cityValues ?? [], filters.stateValues ?? [], [])) {
+    if (companyName && jobFilterMatches(job, location, filters.cityValues ?? [], filters.stateValues ?? [], [], filters.workplaceTypeValues ?? [])) {
       companies.set(normalizeOption(companyName), companyName);
+    }
+    if (jobFilterMatches(job, location, filters.cityValues ?? [], filters.stateValues ?? [], filters.companyValues ?? [], [])) {
+      workplaceTypes.set(workplaceType, workplaceTypeLabels[workplaceType]);
     }
   }
   return {
     city: [...cities].map(([value, label]) => ({ value, label })).sort(optionSort),
     state: [...states].map(([value, label]) => ({ value, label })).sort(optionSort),
     company: [...companies].map(([value, label]) => ({ value, label })).sort(optionSort),
+    workplaceType: [...workplaceTypes].map(([value, label]) => ({ value, label })).sort(workplaceTypeSort),
   };
 }
 
@@ -381,13 +472,36 @@ function normalizeOption(value) {
   return String(value ?? "").trim().toLowerCase();
 }
 
+function normalizeWorkplaceType(value) {
+  const normalized = normalizeOption(value).replaceAll("-", "_").replaceAll(" ", "_");
+  return workplaceTypeLabels[normalized] ? normalized : "unknown";
+}
+
+function workplaceTypeLabel(job) {
+  return workplaceTypeLabels[normalizeWorkplaceType(job.location?.workplaceType ?? job.workplaceType)] ?? workplaceTypeLabels.unknown;
+}
+
+function jobMetaParts(job) {
+  return [
+    job.company?.name ?? job.companyName,
+    job.location?.raw ?? job.location,
+    workplaceTypeLabel(job),
+    job.postedAt?.raw ?? job.postedAt,
+    job.source,
+  ].filter(Boolean);
+}
+
 function optionSort(a, b) {
   return a.label.localeCompare(b.label);
 }
 
-function renderJobFilters({ items, cityValues, stateValues, companyValues, prefix, onChange }) {
+function workplaceTypeSort(a, b) {
+  return workplaceTypeOrder.indexOf(a.value) - workplaceTypeOrder.indexOf(b.value);
+}
+
+function renderJobFilters({ items, cityValues, stateValues, companyValues, workplaceTypeValues, prefix, onChange }) {
   const wrap = createEl("div", "job-filters");
-  const options = jobFilterOptions(items, { cityValues, stateValues, companyValues });
+  const options = jobFilterOptions(items, { cityValues, stateValues, companyValues, workplaceTypeValues });
   wrap.append(
     renderMultiSelectFilter({
       key: `${prefix}-city`,
@@ -409,6 +523,13 @@ function renderJobFilters({ items, cityValues, stateValues, companyValues, prefi
       options: options.company,
       selected: companyValues,
       onChange: (values) => onChange("company", values),
+    }),
+    renderMultiSelectFilter({
+      key: `${prefix}-workplace-type`,
+      label: "Work mode",
+      options: options.workplaceType,
+      selected: workplaceTypeValues,
+      onChange: (values) => onChange("workplaceType", values),
     }),
   );
   return wrap;
@@ -456,7 +577,7 @@ function baseReviewItems() {
 function filteredReviewItems() {
   return baseReviewItems().filter((job) => {
     const parts = locationParts(job.location?.raw ?? job.location);
-    return jobFilterMatches(job, parts, state.reviewCities, state.reviewStates, state.reviewCompanies);
+    return jobFilterMatches(job, parts, state.reviewCities, state.reviewStates, state.reviewCompanies, state.reviewWorkplaceTypes);
   });
 }
 
@@ -465,10 +586,12 @@ function reconcileReviewFilters(changedKind) {
     cityValues: state.reviewCities,
     stateValues: state.reviewStates,
     companyValues: state.reviewCompanies,
+    workplaceTypeValues: state.reviewWorkplaceTypes,
   }, changedKind);
   state.reviewCities = next.cityValues;
   state.reviewStates = next.stateValues;
   state.reviewCompanies = next.companyValues;
+  state.reviewWorkplaceTypes = next.workplaceTypeValues;
 }
 
 function reconcileDashboardFilters(changedKind) {
@@ -476,10 +599,12 @@ function reconcileDashboardFilters(changedKind) {
     cityValues: state.dashboardCities,
     stateValues: state.dashboardStates,
     companyValues: state.dashboardCompanies,
+    workplaceTypeValues: state.dashboardWorkplaceTypes,
   }, changedKind);
   state.dashboardCities = next.cityValues;
   state.dashboardStates = next.stateValues;
   state.dashboardCompanies = next.companyValues;
+  state.dashboardWorkplaceTypes = next.workplaceTypeValues;
 }
 
 function reconcileFilterValues(items, filters, changedKind) {
@@ -487,11 +612,13 @@ function reconcileFilterValues(items, filters, changedKind) {
     cityValues: [...filters.cityValues],
     stateValues: [...filters.stateValues],
     companyValues: [...filters.companyValues],
+    workplaceTypeValues: [...filters.workplaceTypeValues],
   };
   const kinds = [
     ["city", "cityValues", "city"],
     ["state", "stateValues", "state"],
     ["company", "companyValues", "company"],
+    ["workplaceType", "workplaceTypeValues", "workplaceType"],
   ];
 
   for (const [kind, valuesKey, optionsKey] of kinds) {
@@ -504,13 +631,15 @@ function reconcileFilterValues(items, filters, changedKind) {
   return next;
 }
 
-function jobFilterMatches(job, parts, cities, states, companies) {
+function jobFilterMatches(job, parts, cities, states, companies, workplaceTypes = []) {
   const city = normalizeOption(parts.city);
   const region = normalizeOption(parts.state);
   const company = normalizeOption(job.company?.name ?? job.companyName);
+  const workplaceType = normalizeWorkplaceType(job.location?.workplaceType ?? job.workplaceType);
   return (!cities.length || cities.includes(city))
     && (!states.length || states.includes(region))
-    && (!companies.length || companies.includes(company));
+    && (!companies.length || companies.includes(company))
+    && (!workplaceTypes.length || workplaceTypes.includes(workplaceType));
 }
 
 function restoreReviewFilterFocus(key) {
@@ -531,6 +660,7 @@ function renderDashboard(focusFilter) {
   const active = total - (state.dashboard.counts.closed ?? 0);
   const summary = createEl("p", "summary", `${total} accepted · ${active} active · ${state.dashboard.counts.closed ?? 0} closed`);
   app.querySelector(".page-header").insertBefore(summary, app.querySelector(".error-banner"));
+  app.append(renderManualLinkedinImportForm());
 
   const toolbar = createEl("section", "dashboard-toolbar");
   const statusTabs = createEl("div", "status-tabs");
@@ -559,11 +689,13 @@ function renderDashboard(focusFilter) {
     cityValues: state.dashboardCities,
     stateValues: state.dashboardStates,
     companyValues: state.dashboardCompanies,
+    workplaceTypeValues: state.dashboardWorkplaceTypes,
     prefix: "dashboard",
     onChange: (kind, values) => {
       if (kind === "city") state.dashboardCities = values;
       else if (kind === "state") state.dashboardStates = values;
-      else state.dashboardCompanies = values;
+      else if (kind === "company") state.dashboardCompanies = values;
+      else state.dashboardWorkplaceTypes = values;
       reconcileDashboardFilters(kind);
       renderDashboard();
     },
@@ -584,6 +716,39 @@ function renderDashboard(focusFilter) {
   restoreFilterFocus(focusFilter);
 }
 
+function renderManualLinkedinImportForm() {
+  const form = createEl("form", "manual-import-form");
+  const label = createEl("label");
+  label.append(createEl("span", null, "Add LinkedIn JD"));
+  const input = document.createElement("input");
+  input.name = "url";
+  input.type = "url";
+  input.placeholder = "https://www.linkedin.com/jobs/view/...";
+  input.value = state.dashboardImportUrl;
+  input.disabled = state.dashboardImportRunning;
+  input.addEventListener("input", () => {
+    state.dashboardImportUrl = input.value;
+  });
+  label.append(input);
+  const button = createEl("button", null, state.dashboardImportRunning ? "Adding..." : "Add");
+  button.type = "submit";
+  button.disabled = state.dashboardImportRunning;
+  form.append(label, button);
+  if (state.dashboardImportStatus) {
+    form.append(createEl("span", "manual-import-status", state.dashboardImportStatus));
+  }
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    saveManualLinkedinImport(form).catch((error) => {
+      state.dashboardImportRunning = false;
+      state.dashboardImportStatus = "";
+      renderDashboard();
+      showError(error);
+    });
+  });
+  return form;
+}
+
 function dashboardBaseItems() {
   const search = state.dashboardSearch.trim().toLowerCase();
   return (state.dashboard.items ?? []).filter(({ job, application }) => {
@@ -596,7 +761,7 @@ function dashboardBaseItems() {
 function filteredDashboardItems() {
   return dashboardBaseItems().filter(({ job }) => {
     const parts = locationParts(job.location);
-    return jobFilterMatches(job, parts, state.dashboardCities, state.dashboardStates, state.dashboardCompanies);
+    return jobFilterMatches(job, parts, state.dashboardCities, state.dashboardStates, state.dashboardCompanies, state.dashboardWorkplaceTypes);
   });
 }
 
@@ -609,7 +774,7 @@ function renderJobCard(job) {
   const titleRow = createEl("div", "job-title-row");
   const titleBlock = createEl("div");
   titleBlock.append(createEl("h2", null, text(job.title?.raw ?? job.title, "Untitled")));
-  titleBlock.append(createEl("p", "meta", [job.company?.name ?? job.companyName, job.location?.raw ?? job.location, job.postedAt?.raw ?? job.postedAt].filter(Boolean).join(" · ")));
+  titleBlock.append(createEl("p", "meta", jobMetaParts(job).join(" · ")));
   titleRow.append(titleBlock);
   titleRow.append(renderDecisionControls(id, annotation.decision));
   article.append(titleRow);
@@ -646,7 +811,7 @@ function renderApplicationCard({ job, application }) {
   const titleRow = createEl("div", "job-title-row");
   const titleBlock = createEl("div");
   titleBlock.append(createEl("h2", null, text(job.title, "Untitled")));
-  titleBlock.append(createEl("p", "meta", [job.companyName, job.location, job.source].filter(Boolean).join(" · ")));
+  titleBlock.append(createEl("p", "meta", jobMetaParts(job).join(" · ")));
   titleRow.append(titleBlock);
   titleRow.append(createEl("span", "status-pill", state.dashboard.statuses[application.currentStatus] ?? application.currentStatus));
   article.append(titleRow);
@@ -654,23 +819,37 @@ function renderApplicationCard({ job, application }) {
   const links = createEl("div", "links");
   if (job.link) links.append(renderLink("Source", job.link));
   if (job.applyUrl) links.append(renderLink("Apply", job.applyUrl));
+  if (application.statusUrl) links.append(renderLink("Status", application.statusUrl));
   article.append(links);
 
+  article.append(renderApplicationDetailsForm(job.jobKey, application));
   article.append(renderApplicationActions(job.jobKey));
   if (state.dashboardAction?.jobKey === job.jobKey) {
     article.append(renderActionForm(job.jobKey, state.dashboardAction.type));
   }
 
-  const timeline = createEl("ol", "timeline");
-  for (const event of [...(application.events ?? [])].reverse()) {
-    const item = createEl("li");
-    item.append(createEl("strong", null, event.type.replaceAll("_", " ")));
-    item.append(document.createTextNode(` · ${event.date}`));
-    if (event.note) item.append(createEl("p", null, event.note));
-    timeline.append(item);
-  }
-  article.append(timeline);
+  article.append(renderStageNotes(application.events ?? [], application.currentStatus));
   return article;
+}
+
+function renderApplicationDetailsForm(jobKey, application) {
+  const form = createEl("form", "application-details-form");
+  const label = createEl("label", "status-url-field");
+  label.append(createEl("span", null, "Application status URL"));
+  const input = document.createElement("input");
+  input.name = "statusUrl";
+  input.type = "url";
+  input.placeholder = "https://.../Bewerbungsübersicht";
+  input.value = application.statusUrl ?? "";
+  label.append(input);
+  const save = createEl("button", null, "Save");
+  save.type = "submit";
+  form.append(label, save);
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    saveApplicationDetails(jobKey, form).catch(showError);
+  });
+  return form;
 }
 
 function renderApplicationActions(jobKey) {
@@ -716,6 +895,80 @@ function renderActionForm(jobKey, type) {
     saveApplicationEvent(jobKey, form).catch(showError);
   });
   return form;
+}
+
+function eventStageType(event, currentStatus) {
+  if (event.stage) return event.stage;
+  if (event.type === "note" && currentStatus) return statusStageMap[currentStatus] ?? "note";
+  return event.type ?? "note";
+}
+
+function stageNoteGroups(events, currentStatus) {
+  const byType = new Map();
+  for (const event of events ?? []) {
+    const type = eventStageType(event, currentStatus);
+    if (!stageNoteOrder.includes(type)) continue;
+    if (!event.note) continue;
+    if (!byType.has(type)) {
+      byType.set(type, {
+        type,
+        label: stageNoteLabels[type] ?? type.replaceAll("_", " "),
+        notes: [],
+      });
+    }
+    byType.get(type).notes.push({ date: event.date, note: event.note });
+  }
+
+  return [...byType.values()]
+    .sort((a, b) => stageNoteSort(a.type, b.type))
+    .map((group) => ({
+      ...group,
+      notes: group.notes.sort((a, b) => String(b.date ?? "").localeCompare(String(a.date ?? ""))),
+    }));
+}
+
+function stageNoteSummaryCount(events, currentStatus) {
+  return stageNoteGroups(events, currentStatus).reduce((sum, group) => sum + group.notes.length, 0);
+}
+
+function visibleStageNoteGroups(events, currentStatus) {
+  return stageNoteGroups(events, currentStatus).filter((group) => group.notes.length > 0);
+}
+
+function stageNoteSort(a, b) {
+  const aIndex = stageNoteOrder.indexOf(a);
+  const bIndex = stageNoteOrder.indexOf(b);
+  if (aIndex >= 0 && bIndex >= 0) return aIndex - bIndex;
+  if (aIndex >= 0) return -1;
+  if (bIndex >= 0) return 1;
+  return a.localeCompare(b);
+}
+
+function renderStageNotes(events, currentStatus) {
+  const section = createEl("details", "stage-notes");
+  section.append(createEl("summary", null, `Stage notes (${stageNoteSummaryCount(events, currentStatus)})`));
+  const groupsList = createEl("div", "stage-note-groups");
+  const groupedNotes = visibleStageNoteGroups(events, currentStatus);
+  if (!groupedNotes.length) {
+    groupsList.append(createEl("p", "empty", "No notes yet"));
+    section.append(groupsList);
+    return section;
+  }
+  for (const group of groupedNotes) {
+    const details = createEl("details", "stage-note-group");
+    details.append(createEl("summary", null, `${group.label} (${group.notes.length})`));
+    const list = createEl("ol", "stage-note-list");
+    for (const note of group.notes) {
+      const item = createEl("li");
+      item.append(createEl("span", "stage-note-date", note.date ?? ""));
+      item.append(createEl("p", null, note.note));
+      list.append(item);
+    }
+    details.append(list);
+    groupsList.append(details);
+  }
+  section.append(groupsList);
+  return section;
 }
 
 function renderLink(label, href) {

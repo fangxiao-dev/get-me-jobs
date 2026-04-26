@@ -120,7 +120,7 @@ h2 {
 
 .review-toolbar {
   display: grid;
-  grid-template-columns: minmax(320px, 520px) 1fr;
+  grid-template-columns: minmax(320px, 700px) 1fr;
   gap: 10px;
   align-items: end;
   margin-bottom: 16px;
@@ -140,7 +140,7 @@ h2 {
 
 .job-filters {
   display: grid;
-  grid-template-columns: repeat(3, minmax(140px, 1fr));
+  grid-template-columns: repeat(4, minmax(140px, 1fr));
   gap: 10px;
 }
 
@@ -262,8 +262,9 @@ h2 {
 .tags,
 .note,
 .save-status,
+.application-details-form,
 .application-actions,
-.timeline,
+.stage-notes,
 .action-form {
   margin-top: 12px;
 }
@@ -330,10 +331,53 @@ h2 {
 
 .dashboard-toolbar {
   display: grid;
-  grid-template-columns: 1fr minmax(420px, 520px);
+  grid-template-columns: 1fr minmax(420px, 700px);
   gap: 12px;
   align-items: start;
   margin-bottom: 16px;
+}
+
+.manual-import-form {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) auto auto;
+  gap: 8px;
+  align-items: end;
+  margin-bottom: 14px;
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.manual-import-form label {
+  display: grid;
+  gap: 4px;
+  color: var(--muted);
+}
+
+.manual-import-form input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 8px;
+  background: #fff;
+}
+
+.manual-import-form button {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+  padding: 7px 12px;
+  cursor: pointer;
+}
+
+.manual-import-form button:disabled {
+  cursor: wait;
+  color: var(--muted);
+}
+
+.manual-import-status {
+  color: var(--muted);
+  padding-bottom: 7px;
 }
 
 .dashboard-filters {
@@ -343,6 +387,7 @@ h2 {
 }
 
 .dashboard-search,
+.application-details-form input,
 .action-form input,
 .action-form textarea {
   width: 100%;
@@ -359,6 +404,29 @@ h2 {
 .application-list {
   display: grid;
   gap: 12px;
+}
+
+.application-details-form {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto;
+  gap: 8px;
+  align-items: end;
+  padding: 10px 0 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.application-details-form label {
+  display: grid;
+  gap: 4px;
+  color: var(--muted);
+}
+
+.application-details-form button {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+  padding: 7px 10px;
+  cursor: pointer;
 }
 
 .status-pill {
@@ -397,14 +465,47 @@ h2 {
   gap: 8px;
 }
 
-.timeline {
-  display: grid;
-  gap: 8px;
-  padding-left: 20px;
+.stage-notes {
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
 }
 
-.timeline p {
+.stage-notes > summary {
+  cursor: pointer;
+  color: var(--text);
+  font-weight: 700;
+}
+
+.stage-note-groups {
+  margin-top: 6px;
+}
+
+.stage-note-group {
+  border-top: 1px solid var(--border);
+  padding: 7px 0;
+}
+
+.stage-note-group summary {
+  cursor: pointer;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.stage-note-list {
+  display: grid;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.stage-note-list p {
+  margin-top: 2px;
   color: var(--muted);
+}
+
+.stage-note-date {
+  color: var(--muted);
+  font-size: 12px;
 }
 
 @media (max-width: 760px) {
@@ -413,6 +514,8 @@ h2 {
   .review-toolbar,
   .dashboard-filters,
   .job-filters,
+  .manual-import-form,
+  .application-details-form,
   .action-form {
     grid-template-columns: 1fr;
   }

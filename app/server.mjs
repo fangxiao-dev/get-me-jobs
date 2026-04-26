@@ -3,6 +3,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { mergeCanonicalForDate } from "../scripts/merge-canonical.mjs";
+import { adaptLinkedinItem } from "../scripts/lib/adapt-linkedin.mjs";
+import { extractedLinkedinJobToRawItem, scrapeLinkedinJob } from "../scripts/lib/scrape-linkedin-job.mjs";
 import { selectJobsFile } from "../scripts/select-jobs.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -11,6 +13,7 @@ const publicDir = path.join(__dirname, "public");
 const host = "127.0.0.1";
 const port = Number(process.env.PORT ?? 4173);
 const dataDir = path.join(rootDir, "data");
+const rawDir = path.join(dataDir, "raw");
 const canonicalDir = path.join(dataDir, "canonical");
 const selectedDir = path.join(dataDir, "selected");
 const annotationsDir = path.join(dataDir, "annotations");
@@ -34,6 +37,15 @@ const eventStatusMap = {
   rejected: "closed",
   withdrawn: "closed",
   contract_signed: "closed",
+  closed: "closed",
+};
+
+const statusStageMap = {
+  accepted: "note",
+  applied_waiting: "applied",
+  interview_scheduled: "interview_scheduled",
+  interview_completed: "interview_completed",
+  employer_agreed: "employer_agreed",
   closed: "closed",
 };
 
@@ -66,6 +78,11 @@ function readJson(filePath, fallback = null) {
 function writeJson(filePath, value) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
+}
+
+function timestampForFile(value = new Date()) {
+  const iso = value.toISOString();
+  return `${iso.slice(0, 10)}-${iso.slice(11, 19).replaceAll(":", "")}`;
 }
 
 function readStore(filePath, fallback) {
@@ -234,12 +251,13 @@ function acceptedJobFromItem(source, item, context) {
   return {
     jobKey: jobKey(source, item),
     source,
-    sourceJobId: safeJobId(item),
+    sourceJobId: item.identity?.sourceJobId ?? safeJobId(item),
     title: item.title?.raw ?? item.title ?? null,
     companyName: item.company?.name ?? item.companyName ?? null,
     location: item.location?.raw ?? item.location ?? null,
-    link: item.links?.detail ?? item.link ?? item.url ?? null,
-    applyUrl: item.links?.apply ?? item.applyUrl ?? null,
+    workplaceType: item.location?.workplaceType ?? item.workplaceType ?? "unknown",
+    link: item.application?.jobUrl ?? item.links?.detail ?? item.link ?? item.url ?? null,
+    applyUrl: item.application?.applyUrl ?? item.links?.apply ?? item.applyUrl ?? null,
     firstSeenAt: context.now,
     acceptedAt: context.now,
     canonicalFile: context.canonicalFile,
@@ -247,13 +265,66 @@ function acceptedJobFromItem(source, item, context) {
   };
 }
 
-function createEvent(type, note = "", date = new Date().toISOString().slice(0, 10)) {
+function createEvent(type, note = "", date = new Date().toISOString().slice(0, 10), extra = {}) {
   return {
     id: `evt_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     type,
     date,
     note,
+    ...extra,
   };
+}
+
+export function applicationEventStage(type, currentStatus) {
+  if (type !== "note") return undefined;
+  return statusStageMap[currentStatus] ?? "note";
+}
+
+export function upsertManualAcceptedApplication(stores, item, context) {
+  const acceptedJob = acceptedJobFromItem(item.identity?.source ?? "linkedin", item, {
+    now: context.now,
+    canonicalFile: context.canonicalFile ?? "",
+    annotationFile: "",
+  });
+  const accepted = {
+    version: stores.accepted?.version ?? 1,
+    items: [...(stores.accepted?.items ?? [])],
+  };
+  const applications = {
+    version: stores.applications?.version ?? 1,
+    items: [...(stores.applications?.items ?? [])],
+  };
+
+  const acceptedIndex = accepted.items.findIndex((entry) => entry.jobKey === acceptedJob.jobKey);
+  if (acceptedIndex >= 0) {
+    accepted.items[acceptedIndex] = {
+      ...accepted.items[acceptedIndex],
+      ...acceptedJob,
+      firstSeenAt: accepted.items[acceptedIndex].firstSeenAt ?? acceptedJob.firstSeenAt,
+      acceptedAt: accepted.items[acceptedIndex].acceptedAt ?? acceptedJob.acceptedAt,
+    };
+  } else {
+    accepted.items.push(acceptedJob);
+  }
+
+  const appIndex = applications.items.findIndex((entry) => entry.jobKey === acceptedJob.jobKey);
+  const acceptedEvent = createEvent("accepted", "Accepted from manual LinkedIn import", context.now.slice(0, 10));
+  if (appIndex >= 0) {
+    const existing = applications.items[appIndex];
+    const events = existing.events ?? [];
+    applications.items[appIndex] = {
+      ...defaultApplication(acceptedJob.jobKey),
+      ...existing,
+      events: events.some((event) => event.type === "accepted") ? events : [acceptedEvent, ...events],
+    };
+  } else {
+    applications.items.push({
+      ...defaultApplication(acceptedJob.jobKey),
+      events: [acceptedEvent],
+    });
+  }
+
+  return { accepted, applications };
 }
 
 function upsertAcceptedApplication(payload, context) {
@@ -306,6 +377,48 @@ function upsertAcceptedApplication(payload, context) {
     });
   }
   saveApplications({ version: applications.version ?? 1, items: applicationItems });
+}
+
+async function importLinkedinJobUrl(payload) {
+  const url = String(payload.url ?? "").trim();
+  if (!url) {
+    const error = new Error("url is required");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const now = new Date().toISOString();
+  const extracted = await scrapeLinkedinJob(url);
+  const rawItem = extractedLinkedinJobToRawItem(extracted, now);
+  const rawName = `linkedin-manual-${timestampForFile(new Date(now))}.json`;
+  const rawRelative = `data/raw/${rawName}`;
+  const rawFilePath = path.join(rawDir, rawName);
+  writeJson(rawFilePath, {
+    source: "linkedin",
+    taskName: "manual-linkedin-job-import",
+    runStatus: "MANUAL",
+    savedAt: now,
+    count: 1,
+    items: [rawItem],
+  });
+
+  const job = adaptLinkedinItem(rawItem, {
+    rawFile: rawRelative,
+    collectedAt: now,
+    runId: "manual",
+    datasetId: "manual",
+  });
+  const next = upsertManualAcceptedApplication({
+    accepted: loadAcceptedJobs(),
+    applications: loadApplications(),
+  }, job, {
+    now,
+    canonicalFile: "",
+    rawFile: rawRelative,
+  });
+  saveAcceptedJobs(next.accepted);
+  saveApplications(next.applications);
+  return { jobKey: job.identity.jobId, rawFile: rawRelative };
 }
 
 function loadReviewState(options) {
@@ -450,14 +563,22 @@ function upsertAnnotation(payload) {
   return nextFile;
 }
 
-function defaultApplication(jobKey) {
+export function defaultApplication(jobKey) {
   return {
     jobKey,
     currentStatus: "accepted",
     appliedAt: null,
     nextActionAt: null,
     ownerNote: "",
+    statusUrl: "",
     events: [],
+  };
+}
+
+export function normalizeApplicationDetails(current, payload) {
+  return {
+    ...current,
+    statusUrl: String(payload.statusUrl ?? current.statusUrl ?? "").trim(),
   };
 }
 
@@ -507,7 +628,9 @@ function appendApplicationEvent(payload) {
 
   const current = items[index];
   const nextStatus = eventStatusMap[type] ?? current.currentStatus ?? "accepted";
-  const event = createEvent(type, payload.note ?? "", payload.date || new Date().toISOString().slice(0, 10));
+  const event = createEvent(type, payload.note ?? "", payload.date || new Date().toISOString().slice(0, 10), {
+    stage: applicationEventStage(type, current.currentStatus ?? "accepted"),
+  });
   items[index] = {
     ...current,
     currentStatus: nextStatus,
@@ -517,6 +640,34 @@ function appendApplicationEvent(payload) {
     events: [...(current.events ?? []), event],
   };
 
+  saveApplications({ version: applications.version ?? 1, items });
+  return items[index];
+}
+
+function updateApplicationDetails(payload) {
+  const { jobKey } = payload;
+  if (!jobKey) {
+    const error = new Error("jobKey is required");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const accepted = loadAcceptedJobs();
+  if (!(accepted.items ?? []).some((job) => job.jobKey === jobKey)) {
+    const error = new Error(`Accepted job not found: ${jobKey}`);
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const applications = loadApplications();
+  const items = applications.items ?? [];
+  let index = items.findIndex((item) => item.jobKey === jobKey);
+  if (index < 0) {
+    items.push(defaultApplication(jobKey));
+    index = items.length - 1;
+  }
+
+  items[index] = normalizeApplicationDetails(items[index], payload);
   saveApplications({ version: applications.version ?? 1, items });
   return items[index];
 }
@@ -643,6 +794,20 @@ async function handleApi(req, res, url) {
     return;
   }
 
+  if (req.method === "POST" && url.pathname === "/api/applications/details") {
+    const payload = await readRequestJson(req);
+    const application = updateApplicationDetails(payload);
+    sendJson(res, 200, { ok: true, application, dashboard: loadDashboardState() });
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/applications/import-linkedin-url") {
+    const payload = await readRequestJson(req);
+    const imported = await importLinkedinJobUrl(payload);
+    sendJson(res, 200, { ok: true, imported, dashboard: loadDashboardState() });
+    return;
+  }
+
   if (req.method === "POST" && url.pathname === "/api/applications/reject") {
     const payload = await readRequestJson(req);
     const rejected = rejectDashboardJob(payload);
@@ -653,7 +818,7 @@ async function handleApi(req, res, url) {
   sendError(res, 404, "Unknown API route");
 }
 
-const server = http.createServer(async (req, res) => {
+export const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url ?? "/", `http://${host}:${port}`);
     if (url.pathname.startsWith("/api/")) {
@@ -666,6 +831,8 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(port, host, () => {
-  console.log(`Review UI server: http://${host}:${port}`);
-});
+if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
+  server.listen(port, host, () => {
+    console.log(`Review UI server: http://${host}:${port}`);
+  });
+}

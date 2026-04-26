@@ -1,0 +1,12 @@
+{
+  "name": "job-finder",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test scripts/lib/tests/*.test.mjs",
+    "start": "node app/server.mjs"
+  },
+  "dependencies": {
+    "playwright": "1.59.1"
+  }
+}

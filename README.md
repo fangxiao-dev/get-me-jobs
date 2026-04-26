@@ -91,6 +91,8 @@ Accepted jobs are collected across batches. From the Dashboard, track:
 - Closed / rejected / withdrawn
 
 Dashboard `Reject` moves a job out of accepted/application tracking and writes it back as a rejected annotation.
+Each dashboard job can also store a manual `Status` link for the employer application overview page, separate from the job description and apply links.
+Stage notes are shown as a collapsed `Stage notes (N)` section on each dashboard card. Expanding it reveals only stage groups with notes; `accepted` provenance events are not counted as stage notes.
 
 ## Feedback Loops
 

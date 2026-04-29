@@ -1,12 +1,12 @@
 .env
 node_modules/
 *.log
-
 # Local review/application state
 data/annotations/
 data/accepted-jobs.json
 data/applications.json
 data/canonical/
+data/manual/
 data/raw/
 data/selected/
 .claude/

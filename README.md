@@ -6,33 +6,63 @@ Local workflow for collecting job-description data, filtering thesis/AI-related 
 
 ```text
 Apify Task
-  -> data/raw/<batch>.json
+  -> data/raw/<source>-YYYY-MM-DD-HHMMSS.json
+  -> scripts/merge-canonical.mjs
+  -> data/canonical/YYYY-MM-DD.json
   -> scripts/select-jobs.mjs + config/preferences.linkedin.json
   -> data/selected/<batch>.json
   -> Review UI
-  -> data/annotations/<batch>.<source>.json
+  -> data/annotations/<batch>.json
   -> Dashboard
   -> preference-analyse
   -> confirmed preference update
 ```
 
+Manual LinkedIn JD import:
+
+```text
+Dashboard Add LinkedIn JD
+  -> data/manual/linkedin-YYYY-MM-DD.json
+  -> data/manual/audit/linkedin-manual-YYYY-MM-DD-HHMMSS.json
+  -> accepted/application upsert
+  -> scripts/merge-canonical.mjs can merge manual daily input
+```
+
 ## Data Layout
 
-- `data/raw/*.json`: raw Apify dataset exports.
-- `data/selected/*.json`: selected jobs generated from preferences.
+- `data/raw/*.json`: raw Apify dataset exports, named by source and timestamp.
+- `data/manual/linkedin-YYYY-MM-DD.json`: daily aggregate for manually imported LinkedIn JDs, deduped by LinkedIn job id.
+- `data/manual/audit/*.json`: one-file-per-manual-import audit records for debugging scraper/adapter behavior.
+- `data/canonical/*.json`: merged canonical jobs across raw and manual sources.
+- `data/selected/*.json`: selected jobs generated from canonical jobs and preferences.
 - `data/annotations/*.json`: local review labels, notes, and tags.
 - `data/accepted-jobs.json`: accepted jobs deduped across batches.
 - `data/applications.json`: application timeline and status tracking.
 - `config/preferences.linkedin.json`: editable input filter rules.
 
-`data/annotations/`, `data/accepted-jobs.json`, and `data/applications.json` are local runtime state and are ignored by git.
+`data/annotations/`, `data/accepted-jobs.json`, `data/applications.json`, `data/canonical/`, `data/manual/`, `data/raw/`, and `data/selected/` are local runtime state and are ignored by git.
 
 ## Common Commands
+
+Run all configured Apify `TASKID_*` tasks from `.env`, then merge/select today's review batch:
+
+```powershell
+npm run review:today
+```
+
+Project-local skill: `.agents/skills/get-jobs/SKILL.md` maps requests like "get jobs" or "收集工作" to this command.
 
 Regenerate selected jobs:
 
 ```powershell
-node scripts/select-jobs.mjs data/raw/2026-04-25.json data/selected/2026-04-25.json config/preferences.linkedin.json
+node scripts/merge-canonical.mjs 2026-04-25
+node scripts/select-jobs.mjs data/canonical/2026-04-25.json data/selected/2026-04-25.json config/preferences.linkedin.json
+```
+
+Migrate legacy one-job manual raw files into the daily manual aggregate:
+
+```powershell
+node scripts/migrate-manual-linkedin.mjs
 ```
 
 Start the Review UI with the latest raw batch:
@@ -93,6 +123,14 @@ Accepted jobs are collected across batches. From the Dashboard, track:
 Dashboard `Reject` moves a job out of accepted/application tracking and writes it back as a rejected annotation.
 Each dashboard job can also store a manual `Status` link for the employer application overview page, separate from the job description and apply links.
 Stage notes are shown as a collapsed `Stage notes (N)` section on each dashboard card. Expanding it reveals only stage groups with notes; `accepted` provenance events are not counted as stage notes.
+
+The Dashboard also supports manual LinkedIn JD import. Paste a LinkedIn job detail URL into `Add LinkedIn JD`; the app scrapes the public JD page, stores it in the daily manual aggregate, and upserts the job directly into Accepted/Application tracking. Manual imports intentionally leave `applyUrl` empty.
+
+Manual import dedupe is explicit:
+
+- Same job already in `data/manual/linkedin-YYYY-MM-DD.json`: update the daily manual item instead of appending a duplicate.
+- Same job already in `data/accepted-jobs.json` or `data/applications.json`: update base job fields and preserve existing status, timeline, status URL, and stage notes.
+- Same job already in canonical merge data: report the canonical duplicate in the Dashboard success message.
 
 ## Feedback Loops
 

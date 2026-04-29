@@ -15,12 +15,14 @@ const state = {
   dashboardStates: [],
   dashboardCompanies: [],
   dashboardWorkplaceTypes: [],
+  dashboardPostedDates: [],
   dashboardAction: null,
   dashboardImportUrl: "",
   dashboardImportRunning: false,
   dashboardImportStatus: "",
   mergeRunning: false,
   mergeStatus: "",
+  batches: [],
   data: null,
   dashboard: null,
   saveTimers: new Map(),
@@ -48,6 +50,14 @@ const actionLabels = {
   closed: "Close",
   reject: "Reject",
   note: "Add Note",
+};
+
+const actionStatusMap = {
+  applied: "applied_waiting",
+  interview_scheduled: "interview_scheduled",
+  interview_completed: "interview_completed",
+  employer_agreed: "employer_agreed",
+  closed: "closed",
 };
 
 const stageNoteLabels = {
@@ -105,11 +115,21 @@ function renderDescriptionBody(job) {
       if (rendered) body.append(rendered);
     }
   } else if (plain) {
-    body.textContent = String(plain).trim();
+    for (const paragraph of plainDescriptionParagraphs(plain)) {
+      body.append(createEl("p", null, paragraph));
+    }
   } else {
     body.textContent = "No description";
   }
   return body;
+}
+
+function plainDescriptionParagraphs(value) {
+  return String(value ?? "")
+    .replace(/\r\n/g, "\n")
+    .split(/\n{2,}/)
+    .map((part) => part.replace(/\s+/g, " ").replace(/([.!?])(?=[A-ZÄÖÜ])/g, "$1 ").trim())
+    .filter(Boolean);
 }
 
 function renderSafeDescriptionNode(node) {
@@ -149,8 +169,18 @@ async function loadApp() {
   if (state.view === "dashboard") {
     await loadDashboard();
   } else {
+    await loadBatchMetadata();
+    const initialBatch = chooseInitialBatch(state.batches, state.date);
+    if (initialBatch) setActiveBatch(initialBatch, { resetFilters: false });
     await loadState();
   }
+}
+
+async function loadBatchMetadata() {
+  const response = await fetch("/api/batches");
+  if (!response.ok) throw new Error((await response.json()).error ?? "Failed to load batches");
+  const payload = await response.json();
+  state.batches = payload.batches ?? [];
 }
 
 async function loadState() {
@@ -165,10 +195,45 @@ async function loadState() {
   renderReview();
 }
 
+function batchOptionLabel(batch) {
+  return `${batch.date} (${batch.selectedCount}/${batch.totalCount})`;
+}
+
+function chooseInitialBatch(batches, requestedDate) {
+  if (!batches.length) return null;
+  if (requestedDate) {
+    const requested = batches.find((batch) => batch.date === requestedDate);
+    if (requested) return requested;
+  }
+  return [...batches].sort((a, b) => a.date.localeCompare(b.date)).at(-1);
+}
+
+function setActiveBatch(batch, options = {}) {
+  state.date = batch.date;
+  state.canonicalFile = batch.canonicalFile;
+  state.selectedFile = batch.selectedFile;
+  if (options.resetFilters) {
+    state.activeTab = "selected";
+    state.reviewCities = [];
+    state.reviewStates = [];
+    state.reviewCompanies = [];
+    state.reviewWorkplaceTypes = [];
+  }
+}
+
+function syncReviewBatchUrl() {
+  const query = new URLSearchParams();
+  if (state.view !== "review") query.set("view", state.view);
+  if (state.date) query.set("batch", state.date);
+  const next = query.toString();
+  history.pushState(null, "", next ? `/?${next}` : "/");
+}
+
 async function loadDashboard() {
   const response = await fetch("/api/dashboard");
   if (!response.ok) throw new Error((await response.json()).error ?? "Failed to load dashboard");
   state.dashboard = await response.json();
+  reconcileDashboardFilters();
   renderDashboard();
 }
 
@@ -230,6 +295,25 @@ async function saveApplicationEvent(jobKey, form) {
   await loadDashboard();
 }
 
+async function saveApplicationStage(jobKey, type) {
+  const payload = {
+    jobKey,
+    type,
+    date: new Date().toISOString().slice(0, 10),
+    note: "",
+    nextActionAt: null,
+  };
+
+  const response = await fetch("/api/applications/event", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) throw new Error((await response.json()).error ?? "Failed to save stage");
+  state.dashboardAction = null;
+  if (typeof document.querySelector === "function") await loadDashboard();
+}
+
 async function mergeRawForCurrentDate() {
   if (!state.date || state.mergeRunning) return;
   state.mergeRunning = true;
@@ -288,6 +372,10 @@ async function postManualLinkedinImport(url) {
   return response.json();
 }
 
+function manualLinkedinImportStatusText(result) {
+  return String(result?.message ?? "").trim() || "Imported";
+}
+
 async function saveManualLinkedinImport(form) {
   if (state.dashboardImportRunning) return;
   const data = new FormData(form);
@@ -297,9 +385,9 @@ async function saveManualLinkedinImport(form) {
   state.dashboardImportStatus = "Importing...";
   renderDashboard();
   try {
-    await postManualLinkedinImport(url);
+    const result = await postManualLinkedinImport(url);
     state.dashboardImportUrl = "";
-    state.dashboardImportStatus = "Imported";
+    state.dashboardImportStatus = manualLinkedinImportStatusText(result);
     await loadDashboard();
   } finally {
     state.dashboardImportRunning = false;
@@ -369,7 +457,9 @@ function renderShell(title, subtitle) {
 }
 
 function renderReview(focusFilter) {
-  const app = renderShell("Job Review", state.date);
+  const app = renderShell("Job Review");
+  const selector = renderBatchSelector();
+  if (selector) app.querySelector(".page-header").insertBefore(selector, app.querySelector("h1"));
   const summary = createEl("p", "summary", `${state.data.counts.selected} selected · ${state.data.counts.rejected} rejected · ${state.data.counts.annotations} annotated`);
   app.querySelector(".page-header").insertBefore(summary, app.querySelector(".error-banner"));
   const actions = createEl("div", "review-actions");
@@ -407,6 +497,30 @@ function renderReview(focusFilter) {
   restoreReviewFilterFocus(focusFilter);
 }
 
+function renderBatchSelector() {
+  if (!state.batches.length) return null;
+  const wrap = createEl("label", "batch-selector");
+  wrap.append(createEl("span", null, "Batch"));
+  const select = document.createElement("select");
+  select.value = state.date ?? "";
+  for (const batch of state.batches) {
+    const option = document.createElement("option");
+    option.value = batch.date;
+    option.textContent = batchOptionLabel(batch);
+    option.selected = batch.date === state.date;
+    select.append(option);
+  }
+  select.addEventListener("change", async () => {
+    const batch = state.batches.find((candidate) => candidate.date === select.value);
+    if (!batch) return;
+    setActiveBatch(batch, { resetFilters: true });
+    syncReviewBatchUrl();
+    await loadState().catch(showError);
+  });
+  wrap.append(select);
+  return wrap;
+}
+
 function renderReviewToolbar(baseItems, visibleCount) {
   const toolbar = createEl("section", "review-toolbar");
   toolbar.append(renderJobFilters({
@@ -437,35 +551,46 @@ function locationParts(location) {
   };
 }
 
-function jobFilterOptions(items, filters = {}) {
+function jobFilterOptions(items, filters = {}, options = {}) {
   const cities = new Map();
   const states = new Map();
   const companies = new Map();
   const workplaceTypes = new Map();
+  const postedDates = new Map();
   for (const item of items) {
     const job = item.job ?? item;
     const location = locationParts(job.location?.raw ?? job.location);
     const companyName = job.company?.name ?? job.companyName;
     const workplaceType = normalizeWorkplaceType(job.location?.workplaceType ?? job.workplaceType);
-    if (location.city && jobFilterMatches(job, location, [], filters.stateValues ?? [], filters.companyValues ?? [], filters.workplaceTypeValues ?? [])) {
+    const postedDate = postedDateOption(job);
+    if (location.city && jobFilterMatches(job, location, [], filters.stateValues ?? [], filters.companyValues ?? [], filters.workplaceTypeValues ?? [], filters.postedDateValues ?? [])) {
       cities.set(normalizeOption(location.city), location.city);
     }
-    if (location.state && jobFilterMatches(job, location, filters.cityValues ?? [], [], filters.companyValues ?? [], filters.workplaceTypeValues ?? [])) {
+    if (location.state && jobFilterMatches(job, location, filters.cityValues ?? [], [], filters.companyValues ?? [], filters.workplaceTypeValues ?? [], filters.postedDateValues ?? [])) {
       states.set(normalizeOption(location.state), location.state);
     }
-    if (companyName && jobFilterMatches(job, location, filters.cityValues ?? [], filters.stateValues ?? [], [], filters.workplaceTypeValues ?? [])) {
+    if (companyName && jobFilterMatches(job, location, filters.cityValues ?? [], filters.stateValues ?? [], [], filters.workplaceTypeValues ?? [], filters.postedDateValues ?? [])) {
       companies.set(normalizeOption(companyName), companyName);
     }
-    if (jobFilterMatches(job, location, filters.cityValues ?? [], filters.stateValues ?? [], filters.companyValues ?? [], [])) {
+    if (jobFilterMatches(job, location, filters.cityValues ?? [], filters.stateValues ?? [], filters.companyValues ?? [], [], filters.postedDateValues ?? [])) {
       workplaceTypes.set(workplaceType, workplaceTypeLabels[workplaceType]);
     }
+    if (options.includePostedDates && postedDate && jobFilterMatches(job, location, filters.cityValues ?? [], filters.stateValues ?? [], filters.companyValues ?? [], filters.workplaceTypeValues ?? [], [])) {
+      postedDates.set(postedDate, postedDate);
+    }
   }
-  return {
+  const result = {
     city: [...cities].map(([value, label]) => ({ value, label })).sort(optionSort),
     state: [...states].map(([value, label]) => ({ value, label })).sort(optionSort),
     company: [...companies].map(([value, label]) => ({ value, label })).sort(optionSort),
     workplaceType: [...workplaceTypes].map(([value, label]) => ({ value, label })).sort(workplaceTypeSort),
   };
+  if (options.includePostedDates) {
+    result.postedDate = [...postedDates]
+      .map(([value, label]) => ({ value, label }))
+      .sort((a, b) => b.value.localeCompare(a.value));
+  }
+  return result;
 }
 
 function normalizeOption(value) {
@@ -481,12 +606,28 @@ function workplaceTypeLabel(job) {
   return workplaceTypeLabels[normalizeWorkplaceType(job.location?.workplaceType ?? job.workplaceType)] ?? workplaceTypeLabels.unknown;
 }
 
+function postedDateLabel(job) {
+  const date = postedDateOption(job);
+  return date ? `Posted: ${date}` : null;
+}
+
+function postedDateOption(job) {
+  const raw = job.timing?.postedAt ?? job.postedAt?.raw ?? job.postedAt;
+  if (!raw) return "";
+  const value = String(raw);
+  return /^\d{4}-\d{2}-\d{2}/.test(value)
+    ? value.slice(0, 10)
+    : Number.isNaN(Date.parse(value))
+      ? value
+      : new Date(value).toISOString().slice(0, 10);
+}
+
 function jobMetaParts(job) {
   return [
     job.company?.name ?? job.companyName,
     job.location?.raw ?? job.location,
     workplaceTypeLabel(job),
-    job.postedAt?.raw ?? job.postedAt,
+    postedDateLabel(job),
     job.source,
   ].filter(Boolean);
 }
@@ -499,9 +640,9 @@ function workplaceTypeSort(a, b) {
   return workplaceTypeOrder.indexOf(a.value) - workplaceTypeOrder.indexOf(b.value);
 }
 
-function renderJobFilters({ items, cityValues, stateValues, companyValues, workplaceTypeValues, prefix, onChange }) {
+function renderJobFilters({ items, cityValues, stateValues, companyValues, workplaceTypeValues, postedDateValues = [], prefix, onChange, includePostedDates = false }) {
   const wrap = createEl("div", "job-filters");
-  const options = jobFilterOptions(items, { cityValues, stateValues, companyValues, workplaceTypeValues });
+  const options = jobFilterOptions(items, { cityValues, stateValues, companyValues, workplaceTypeValues, postedDateValues }, { includePostedDates });
   wrap.append(
     renderMultiSelectFilter({
       key: `${prefix}-city`,
@@ -532,6 +673,15 @@ function renderJobFilters({ items, cityValues, stateValues, companyValues, workp
       onChange: (values) => onChange("workplaceType", values),
     }),
   );
+  if (includePostedDates) {
+    wrap.append(renderMultiSelectFilter({
+      key: `${prefix}-posted-date`,
+      label: "Posted",
+      options: options.postedDate,
+      selected: postedDateValues,
+      onChange: (values) => onChange("postedDate", values),
+    }));
+  }
   return wrap;
 }
 
@@ -600,11 +750,13 @@ function reconcileDashboardFilters(changedKind) {
     stateValues: state.dashboardStates,
     companyValues: state.dashboardCompanies,
     workplaceTypeValues: state.dashboardWorkplaceTypes,
+    postedDateValues: state.dashboardPostedDates,
   }, changedKind);
   state.dashboardCities = next.cityValues;
   state.dashboardStates = next.stateValues;
   state.dashboardCompanies = next.companyValues;
   state.dashboardWorkplaceTypes = next.workplaceTypeValues;
+  state.dashboardPostedDates = next.postedDateValues;
 }
 
 function reconcileFilterValues(items, filters, changedKind) {
@@ -613,6 +765,7 @@ function reconcileFilterValues(items, filters, changedKind) {
     stateValues: [...filters.stateValues],
     companyValues: [...filters.companyValues],
     workplaceTypeValues: [...filters.workplaceTypeValues],
+    postedDateValues: [...(filters.postedDateValues ?? [])],
   };
   const kinds = [
     ["city", "cityValues", "city"],
@@ -620,26 +773,29 @@ function reconcileFilterValues(items, filters, changedKind) {
     ["company", "companyValues", "company"],
     ["workplaceType", "workplaceTypeValues", "workplaceType"],
   ];
+  if (filters.postedDateValues) kinds.push(["postedDate", "postedDateValues", "postedDate"]);
 
   for (const [kind, valuesKey, optionsKey] of kinds) {
     if (kind === changedKind) continue;
     const options = jobFilterOptions(items, next);
-    const allowed = new Set(options[optionsKey].map((option) => option.value));
+    const allowed = new Set((options[optionsKey] ?? []).map((option) => option.value));
     next[valuesKey] = next[valuesKey].filter((value) => allowed.has(value));
   }
 
   return next;
 }
 
-function jobFilterMatches(job, parts, cities, states, companies, workplaceTypes = []) {
+function jobFilterMatches(job, parts, cities, states, companies, workplaceTypes = [], postedDates = []) {
   const city = normalizeOption(parts.city);
   const region = normalizeOption(parts.state);
   const company = normalizeOption(job.company?.name ?? job.companyName);
   const workplaceType = normalizeWorkplaceType(job.location?.workplaceType ?? job.workplaceType);
+  const postedDate = postedDateOption(job);
   return (!cities.length || cities.includes(city))
     && (!states.length || states.includes(region))
     && (!companies.length || companies.includes(company))
-    && (!workplaceTypes.length || workplaceTypes.includes(workplaceType));
+    && (!workplaceTypes.length || workplaceTypes.includes(workplaceType))
+    && (!postedDates.length || postedDates.includes(postedDate));
 }
 
 function restoreReviewFilterFocus(key) {
@@ -690,12 +846,15 @@ function renderDashboard(focusFilter) {
     stateValues: state.dashboardStates,
     companyValues: state.dashboardCompanies,
     workplaceTypeValues: state.dashboardWorkplaceTypes,
+    postedDateValues: state.dashboardPostedDates,
     prefix: "dashboard",
+    includePostedDates: true,
     onChange: (kind, values) => {
       if (kind === "city") state.dashboardCities = values;
       else if (kind === "state") state.dashboardStates = values;
       else if (kind === "company") state.dashboardCompanies = values;
-      else state.dashboardWorkplaceTypes = values;
+      else if (kind === "workplaceType") state.dashboardWorkplaceTypes = values;
+      else state.dashboardPostedDates = values;
       reconcileDashboardFilters(kind);
       renderDashboard();
     },
@@ -761,7 +920,7 @@ function dashboardBaseItems() {
 function filteredDashboardItems() {
   return dashboardBaseItems().filter(({ job }) => {
     const parts = locationParts(job.location);
-    return jobFilterMatches(job, parts, state.dashboardCities, state.dashboardStates, state.dashboardCompanies, state.dashboardWorkplaceTypes);
+    return jobFilterMatches(job, parts, state.dashboardCities, state.dashboardStates, state.dashboardCompanies, state.dashboardWorkplaceTypes, state.dashboardPostedDates);
   });
 }
 
@@ -810,26 +969,59 @@ function renderApplicationCard({ job, application }) {
   const article = createEl("article", "application-card");
   const titleRow = createEl("div", "job-title-row");
   const titleBlock = createEl("div");
+  const visualStatus = dashboardVisualStatus(application, state.dashboardAction);
   titleBlock.append(createEl("h2", null, text(job.title, "Untitled")));
   titleBlock.append(createEl("p", "meta", jobMetaParts(job).join(" · ")));
   titleRow.append(titleBlock);
-  titleRow.append(createEl("span", "status-pill", state.dashboard.statuses[application.currentStatus] ?? application.currentStatus));
+  titleRow.append(createEl("span", `status-pill status-${visualStatus.key}`, visualStatus.label));
   article.append(titleRow);
 
   const links = createEl("div", "links");
-  if (job.link) links.append(renderLink("Source", job.link));
-  if (job.applyUrl) links.append(renderLink("Apply", job.applyUrl));
-  if (application.statusUrl) links.append(renderLink("Status", application.statusUrl));
+  for (const link of dashboardLinkModels(job, application)) {
+    links.append(renderLink(link.label, link.href, { disabled: link.disabled }));
+  }
   article.append(links);
 
+  const description = createEl("details", "description");
+  description.append(createEl("summary", null, "Description"), renderDescriptionBody(job));
+  article.append(description);
+
   article.append(renderApplicationDetailsForm(job.jobKey, application));
-  article.append(renderApplicationActions(job.jobKey));
+  article.append(renderApplicationActions(job.jobKey, application.currentStatus));
   if (state.dashboardAction?.jobKey === job.jobKey) {
     article.append(renderActionForm(job.jobKey, state.dashboardAction.type));
   }
 
   article.append(renderStageNotes(application.events ?? [], application.currentStatus));
   return article;
+}
+
+function dashboardVisualStatus(application, selectedAction = state.dashboardAction) {
+  const selectedStatus = selectedAction?.jobKey === application.jobKey ? actionStatusMap[selectedAction.type] : null;
+  const key = selectedStatus ?? application.currentStatus ?? "accepted";
+  return {
+    key,
+    label: state.dashboard?.statuses?.[key] ?? statusFallbackLabels[key] ?? key,
+  };
+}
+
+const statusFallbackLabels = {
+  accepted: "Accepted",
+  applied_waiting: "Applied, waiting for response",
+  interview_scheduled: "Interview scheduled, preparing",
+  interview_completed: "Interview completed, waiting for result",
+  employer_agreed: "Employer agreed, waiting for contract",
+  closed: "Closed / rejected / withdrawn",
+};
+
+function dashboardLinkModels(job, application) {
+  const detailUrl = job.links?.detail ?? job.link;
+  const applyUrl = job.links?.apply ?? job.applyUrl ?? "";
+  return [
+    { label: "JD", href: detailUrl ?? "", disabled: !detailUrl },
+    { label: "Apply", href: applyUrl, disabled: !applyUrl },
+    ...(application?.statusUrl ? [{ label: "Status", href: application.statusUrl, disabled: false }] : []),
+  ];
 }
 
 function renderApplicationDetailsForm(jobKey, application) {
@@ -852,18 +1044,42 @@ function renderApplicationDetailsForm(jobKey, application) {
   return form;
 }
 
-function renderApplicationActions(jobKey) {
+function renderApplicationActions(jobKey, currentStatus) {
   const group = createEl("div", "application-actions");
-  for (const [type, label] of Object.entries(actionLabels)) {
-    const button = createEl("button", "action-button", label);
+  for (const { type, label, active } of applicationActionModels(jobKey, currentStatus, state.dashboardAction)) {
+    const button = createEl("button", active ? "action-button active" : "action-button", label);
     button.type = "button";
+    button.setAttribute("aria-pressed", active ? "true" : "false");
     button.addEventListener("click", () => {
-      state.dashboardAction = { jobKey, type };
-      renderDashboard();
+      if (actionStatusMap[type]) {
+        state.dashboardAction = { jobKey, type };
+        renderDashboard();
+        saveApplicationStage(jobKey, type).catch(showError);
+      } else {
+        state.dashboardAction = nextDashboardAction(state.dashboardAction, jobKey, type);
+        renderDashboard();
+      }
     });
     group.append(button);
   }
   return group;
+}
+
+function nextDashboardAction(currentAction, jobKey, type) {
+  if (currentAction?.jobKey === jobKey && currentAction?.type === type) return null;
+  return { jobKey, type };
+}
+
+function applicationActionModels(jobKey, currentStatus, selectedAction = state.dashboardAction) {
+  const selectedType = selectedAction?.jobKey === jobKey ? selectedAction.type : null;
+  return Object.entries(actionLabels).map(([type, label]) => {
+    const mappedStatus = actionStatusMap[type];
+    return {
+      type,
+      label,
+      active: selectedType ? selectedType === type : Boolean(mappedStatus && mappedStatus === currentStatus),
+    };
+  });
 }
 
 function renderActionForm(jobKey, type) {
@@ -971,7 +1187,12 @@ function renderStageNotes(events, currentStatus) {
   return section;
 }
 
-function renderLink(label, href) {
+function renderLink(label, href, options = {}) {
+  if (options.disabled) {
+    const span = createEl("span", "link-button disabled", label);
+    span.setAttribute("aria-disabled", "true");
+    return span;
+  }
   const a = createEl("a", "link-button", label);
   a.href = href;
   a.target = "_blank";
@@ -1037,6 +1258,9 @@ function showFatalError(error) {
 window.addEventListener("popstate", () => {
   const next = new URLSearchParams(window.location.search);
   state.view = next.get("view") ?? "review";
+  state.date = next.get("batch") ?? next.get("date");
+  state.canonicalFile = next.get("canonicalFile");
+  state.selectedFile = next.get("selectedFile");
   loadApp().catch(showFatalError);
 });
 

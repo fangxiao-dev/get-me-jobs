@@ -69,6 +69,23 @@ a {
   color: var(--muted);
 }
 
+.batch-selector {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 4px;
+  color: var(--muted);
+}
+
+.batch-selector select {
+  min-width: 190px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  padding: 5px 8px;
+}
+
 h1,
 h2,
 p {
@@ -250,6 +267,7 @@ h2 {
   color: var(--warn);
 }
 
+.action-button.active,
 .status-tab.active {
   border-color: var(--accent);
   background: #e6f4f1;
@@ -267,6 +285,14 @@ h2 {
 .stage-notes,
 .action-form {
   margin-top: 12px;
+}
+
+.link-button.disabled {
+  cursor: not-allowed;
+  color: var(--muted);
+  background: #f5f7fa;
+  border-color: var(--border);
+  opacity: 0.72;
 }
 
 .selection {
@@ -439,6 +465,27 @@ h2 {
   color: var(--muted);
   font-size: 12px;
   white-space: normal;
+}
+
+.status-pill.status-applied_waiting,
+.status-pill.status-interview_scheduled,
+.status-pill.status-interview_completed,
+.status-pill.status-employer_agreed {
+  border-color: #9bc9bd;
+  background: #edf8f5;
+  color: #126653;
+}
+
+.status-pill.status-closed {
+  border-color: #efb8b1;
+  background: #fff0ee;
+  color: var(--danger);
+}
+
+.status-pill.status-accepted {
+  border-color: #bfd1f5;
+  background: #f2f6ff;
+  color: #315c9d;
 }
 
 .action-form {

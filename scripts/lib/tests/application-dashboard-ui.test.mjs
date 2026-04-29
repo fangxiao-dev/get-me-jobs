@@ -12,6 +12,13 @@ globalThis.__dashboardUi = {
   stageNoteGroups,
   visibleStageNoteGroups,
   stageNoteSummaryCount,
+  manualLinkedinImportStatusText,
+  plainDescriptionParagraphs,
+  dashboardLinkModels,
+  dashboardVisualStatus,
+  applicationActionModels,
+  saveApplicationStage,
+  nextDashboardAction,
 };`;
   const fetchCalls = [];
   const context = {
@@ -70,6 +77,86 @@ test("manual LinkedIn import posts URL to the dashboard import API", async () =>
   assert.equal(fetchCalls[0].options.headers["content-type"], "application/json");
   assert.deepEqual(JSON.parse(fetchCalls[0].options.body), {
     url: "https://www.linkedin.com/jobs/view/4343336011/?trk=test",
+  });
+});
+
+test("manual LinkedIn import status uses API dedupe message", async () => {
+  const { manualLinkedinImportStatusText } = await loadDashboardUiFunctions();
+
+  assert.equal(
+    manualLinkedinImportStatusText({
+      deduped: true,
+      message: "Already existed, deduplicated and updated existing application.",
+    }),
+    "Already existed, deduplicated and updated existing application.",
+  );
+  assert.equal(manualLinkedinImportStatusText({}), "Imported");
+});
+
+test("plain descriptions preserve paragraph breaks for dashboard and review cards", async () => {
+  const { plainDescriptionParagraphs } = await loadDashboardUiFunctions();
+
+  assert.deepEqual(JSON.parse(JSON.stringify(plainDescriptionParagraphs(
+    "Intro paragraph.\n\nYour Team\n\nFirst item.Second item.\n\nDuration \n\nSix months.",
+  ))), [
+    "Intro paragraph.",
+    "Your Team",
+    "First item. Second item.",
+    "Duration",
+    "Six months.",
+  ]);
+});
+
+test("dashboard link model keeps JD and Apply actions visible", async () => {
+  const { dashboardLinkModels } = await loadDashboardUiFunctions();
+
+  assert.deepEqual(JSON.parse(JSON.stringify(dashboardLinkModels({
+    link: "https://www.linkedin.com/jobs/view/1/",
+    applyUrl: "",
+  }, { statusUrl: "https://portal.example/status" }))), [
+    { label: "JD", href: "https://www.linkedin.com/jobs/view/1/", disabled: false },
+    { label: "Apply", href: "", disabled: true },
+    { label: "Status", href: "https://portal.example/status", disabled: false },
+  ]);
+});
+
+test("dashboard action models expose one mutually exclusive active stage", async () => {
+  const { dashboardVisualStatus, applicationActionModels } = await loadDashboardUiFunctions();
+  const selectedAction = { jobKey: "linkedin:1", type: "applied" };
+
+  assert.deepEqual(JSON.parse(JSON.stringify(dashboardVisualStatus({
+    jobKey: "linkedin:1",
+    currentStatus: "accepted",
+  }, selectedAction))), {
+    key: "applied_waiting",
+    label: "Applied, waiting for response",
+  });
+
+  const models = applicationActionModels("linkedin:1", "accepted", selectedAction);
+  assert.equal(models.filter((model) => model.active).length, 1);
+  assert.equal(models.find((model) => model.type === "applied").active, true);
+  assert.equal(models.find((model) => model.type === "interview_scheduled").active, false);
+});
+
+test("dashboard stage buttons persist stage immediately", async () => {
+  const { saveApplicationStage, fetchCalls } = await loadDashboardUiFunctions();
+
+  await saveApplicationStage("linkedin:1", "applied");
+
+  assert.equal(fetchCalls[0].url, "/api/applications/event");
+  assert.equal(fetchCalls[0].options.method, "POST");
+  const payload = JSON.parse(fetchCalls[0].options.body);
+  assert.equal(payload.jobKey, "linkedin:1");
+  assert.equal(payload.type, "applied");
+});
+
+test("clicking the same non-stage dashboard action again cancels selection", async () => {
+  const { nextDashboardAction } = await loadDashboardUiFunctions();
+
+  assert.equal(nextDashboardAction({ jobKey: "linkedin:1", type: "reject" }, "linkedin:1", "reject"), null);
+  assert.deepEqual(JSON.parse(JSON.stringify(nextDashboardAction({ jobKey: "linkedin:1", type: "reject" }, "linkedin:1", "note"))), {
+    jobKey: "linkedin:1",
+    type: "note",
   });
 });
 

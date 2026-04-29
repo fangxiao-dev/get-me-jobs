@@ -14,9 +14,10 @@ export function emptyCanonicalFile(date) {
 
 export function mergeIntoCanonical(canonicalFile, newJobs, sourceMeta) {
   const { rawFile, rawFileTime, source, importedAt, rawCount } = sourceMeta;
+  const processKey = sourceMeta.processKey ?? rawFile;
 
   // idempotency guard
-  if (canonicalFile.mergeState.processedRawFiles.includes(rawFile)) {
+  if (canonicalFile.mergeState.processedRawFiles.includes(processKey)) {
     return canonicalFile;
   }
 
@@ -54,7 +55,7 @@ export function mergeIntoCanonical(canonicalFile, newJobs, sourceMeta) {
     }
   }
 
-  const processedRawFiles = [...canonicalFile.mergeState.processedRawFiles, rawFile];
+  const processedRawFiles = [...canonicalFile.mergeState.processedRawFiles, processKey];
   const lastRawFileTime =
     !canonicalFile.mergeState.lastRawFileTime ||
     rawFileTime > canonicalFile.mergeState.lastRawFileTime

@@ -80,6 +80,14 @@ describe("adaptLinkedinItem", () => {
     assert.equal(job.location.workplaceType, "hybrid");
   });
 
+  it("maps LinkedIn On-site workplaceType to on_site", () => {
+    const job = adaptLinkedinItem(
+      { ...minimalItem, workplaceTypes: ["On-site"] },
+      RAW_CONTEXT,
+    );
+    assert.equal(job.location.workplaceType, "on_site");
+  });
+
   it("maps empty workplaceTypes to unknown, not on_site", () => {
     const job = adaptLinkedinItem(
       { ...minimalItem, workplaceTypes: [], workRemoteAllowed: false },
@@ -112,5 +120,14 @@ describe("adaptLinkedinItem", () => {
     );
     assert.equal(job.description.text, "Some description");
     assert.equal(job.description.html, "<p>text</p>");
+  });
+
+  it("uses formattedDescription as html when descriptionHtml is absent", () => {
+    const job = adaptLinkedinItem(
+      { ...minimalItem, descriptionHtml: undefined, formattedDescription: "<strong>Heading</strong><br><br>Body" },
+      RAW_CONTEXT,
+    );
+
+    assert.equal(job.description.html, "<strong>Heading</strong><br><br>Body");
   });
 });

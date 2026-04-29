@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { mergeCanonicalForDate } from "../scripts/merge-canonical.mjs";
 import { adaptLinkedinItem } from "../scripts/lib/adapt-linkedin.mjs";
 import { extractedLinkedinJobToRawItem, scrapeLinkedinJob } from "../scripts/lib/scrape-linkedin-job.mjs";
+import { upsertManualLinkedinRawItem, writeManualLinkedinAudit } from "../scripts/lib/manual-linkedin-store.mjs";
 import { selectJobsFile } from "../scripts/select-jobs.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -13,7 +14,6 @@ const publicDir = path.join(__dirname, "public");
 const host = "127.0.0.1";
 const port = Number(process.env.PORT ?? 4173);
 const dataDir = path.join(rootDir, "data");
-const rawDir = path.join(dataDir, "raw");
 const canonicalDir = path.join(dataDir, "canonical");
 const selectedDir = path.join(dataDir, "selected");
 const annotationsDir = path.join(dataDir, "annotations");
@@ -78,11 +78,6 @@ function readJson(filePath, fallback = null) {
 function writeJson(filePath, value) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
-}
-
-function timestampForFile(value = new Date()) {
-  const iso = value.toISOString();
-  return `${iso.slice(0, 10)}-${iso.slice(11, 19).replaceAll(":", "")}`;
 }
 
 function readStore(filePath, fallback) {
@@ -167,6 +162,47 @@ function latestCanonicalFile() {
   return latestName ? path.join(canonicalDir, latestName) : null;
 }
 
+export function listBatchMetadata(options = {}) {
+  const baseRoot = options.rootDir ?? rootDir;
+  const canonicalBase = options.canonicalDir ?? path.join(baseRoot, "data", "canonical");
+  const selectedBase = options.selectedDir ?? path.join(baseRoot, "data", "selected");
+  const annotationsBase = options.annotationsDir ?? path.join(baseRoot, "data", "annotations");
+  const acceptedPath = options.acceptedJobsPath ?? path.join(baseRoot, "data", "accepted-jobs.json");
+  const accepted = readJson(acceptedPath, { items: [] });
+  const acceptedKeys = new Set((accepted.items ?? []).map((item) => item.jobKey));
+  const files = fs.existsSync(canonicalBase) ? fs.readdirSync(canonicalBase) : [];
+  return files
+    .filter((name) => /^\d{4}-\d{2}-\d{2}\.json$/.test(name))
+    .sort()
+    .slice(-7)
+    .map((name) => {
+      const date = path.basename(name, ".json");
+      const canonicalPath = path.join(canonicalBase, name);
+      const selectedPath = path.join(selectedBase, name);
+      const canonical = readJson(canonicalPath, { items: [] });
+      const selected = readJson(selectedPath, { items: [] });
+      const annotations = readJson(path.join(annotationsBase, name), { items: [] });
+      const annotationMap = annotationsById(annotations);
+      const selectedIds = new Set((selected.items ?? []).map(safeJobId));
+      const canonicalItems = canonical.items ?? [];
+      const selectedCount = (selected.items ?? [])
+        .filter((item) => annotationMap[safeJobId(item)]?.decision !== "reject")
+        .filter((item) => !acceptedKeys.has(jobKey(null, item)))
+        .length;
+      const rejectedCount = canonicalItems
+        .filter((item) => !selectedIds.has(safeJobId(item)) || annotationMap[safeJobId(item)]?.decision === "reject")
+        .filter((item) => !acceptedKeys.has(jobKey(null, item)))
+        .length;
+      return {
+        date,
+        canonicalFile: path.relative(baseRoot, canonicalPath).replaceAll(path.sep, "/"),
+        selectedFile: path.relative(baseRoot, selectedPath).replaceAll(path.sep, "/"),
+        totalCount: selectedCount + rejectedCount,
+        selectedCount,
+      };
+    });
+}
+
 function resolveDataFile(filePath, fallbackDir) {
   if (!filePath) return null;
   const resolved = path.resolve(rootDir, filePath);
@@ -248,16 +284,28 @@ function findJobForAnnotation(payload) {
 }
 
 function acceptedJobFromItem(source, item, context) {
+  const location = item.location?.raw ?? item.location ?? null;
+  const workplaceType = normalizedWorkplaceType(
+    item.location?.workplaceType ?? item.workplaceType,
+    location,
+  );
   return {
     jobKey: jobKey(source, item),
     source,
     sourceJobId: item.identity?.sourceJobId ?? safeJobId(item),
     title: item.title?.raw ?? item.title ?? null,
     companyName: item.company?.name ?? item.companyName ?? null,
-    location: item.location?.raw ?? item.location ?? null,
-    workplaceType: item.location?.workplaceType ?? item.workplaceType ?? "unknown",
+    location,
+    workplaceType,
     link: item.application?.jobUrl ?? item.links?.detail ?? item.link ?? item.url ?? null,
     applyUrl: item.application?.applyUrl ?? item.links?.apply ?? item.applyUrl ?? null,
+    description: item.description
+      ? {
+          text: item.description.text ?? "",
+          html: item.description.html ?? undefined,
+        }
+      : undefined,
+    timing: item.timing?.postedAt ? { postedAt: item.timing.postedAt } : undefined,
     firstSeenAt: context.now,
     acceptedAt: context.now,
     canonicalFile: context.canonicalFile,
@@ -273,6 +321,55 @@ function createEvent(type, note = "", date = new Date().toISOString().slice(0, 1
     note,
     ...extra,
   };
+}
+
+export function enrichAcceptedJobFromCanonical(job, canonical) {
+  const match = (canonical?.items ?? []).find((item) => jobKey(item.identity?.source ?? job.source, item) === job.jobKey);
+  if (!match) return {
+    ...job,
+    workplaceType: normalizedWorkplaceType(job.workplaceType, job.location),
+  };
+  const workplaceType = normalizedWorkplaceType(
+    job.workplaceType !== "unknown" ? job.workplaceType : match.location?.workplaceType,
+    job.location ?? match.location?.raw,
+  );
+  const link = job.link ?? match.application?.jobUrl ?? match.links?.detail ?? match.link ?? match.url ?? null;
+  const applyUrl = job.applyUrl ?? match.application?.applyUrl ?? match.links?.apply ?? match.applyUrl ?? null;
+  const timing = job.timing?.postedAt
+    ? job.timing
+    : match.timing?.postedAt
+      ? { ...(job.timing ?? {}), postedAt: match.timing.postedAt }
+      : job.timing;
+  if (job.description?.text || job.description?.html) return { ...job, workplaceType, link, applyUrl, timing };
+  if (!match.description) return { ...job, workplaceType, link, applyUrl, timing };
+  return {
+    ...job,
+    workplaceType,
+    link,
+    applyUrl,
+    timing,
+    description: {
+      text: match.description.text ?? "",
+      html: match.description.html ?? undefined,
+    },
+  };
+}
+
+function normalizedWorkplaceType(value, locationText = "") {
+  const normalized = String(value ?? "").trim().toLowerCase().replace(/[-\s]+/g, "_");
+  if (["remote", "hybrid", "on_site"].includes(normalized)) return normalized;
+  const location = String(locationText ?? "").toLowerCase();
+  if (location.includes("on-site") || location.includes("on site") || location.includes("onsite")) return "on_site";
+  if (location.includes("hybrid")) return "hybrid";
+  if (location.includes("remote")) return "remote";
+  return "unknown";
+}
+
+function hydrateAcceptedJob(job) {
+  if (!job.canonicalFile || ((job.description?.text || job.description?.html) && job.timing?.postedAt)) return job;
+  const canonicalPath = resolveDataFile(job.canonicalFile, canonicalDir);
+  const canonical = readJson(canonicalPath, null);
+  return enrichAcceptedJobFromCanonical(job, canonical);
 }
 
 export function applicationEventStage(type, currentStatus) {
@@ -296,6 +393,7 @@ export function upsertManualAcceptedApplication(stores, item, context) {
   };
 
   const acceptedIndex = accepted.items.findIndex((entry) => entry.jobKey === acceptedJob.jobKey);
+  const createdAccepted = acceptedIndex < 0;
   if (acceptedIndex >= 0) {
     accepted.items[acceptedIndex] = {
       ...accepted.items[acceptedIndex],
@@ -308,6 +406,7 @@ export function upsertManualAcceptedApplication(stores, item, context) {
   }
 
   const appIndex = applications.items.findIndex((entry) => entry.jobKey === acceptedJob.jobKey);
+  const createdApplication = appIndex < 0;
   const acceptedEvent = createEvent("accepted", "Accepted from manual LinkedIn import", context.now.slice(0, 10));
   if (appIndex >= 0) {
     const existing = applications.items[appIndex];
@@ -324,7 +423,61 @@ export function upsertManualAcceptedApplication(stores, item, context) {
     });
   }
 
-  return { accepted, applications };
+  const duplicateReasons = [];
+  if (!createdAccepted) duplicateReasons.push("accepted job");
+  if (!createdApplication) duplicateReasons.push("application");
+  if (context.manualDuplicate) duplicateReasons.push("manual daily file");
+  if (context.canonicalDuplicate) duplicateReasons.push("canonical merge");
+  const deduped = duplicateReasons.length > 0;
+  const existingDashboardRecord = !createdAccepted || !createdApplication;
+
+  return {
+    accepted,
+    applications,
+    result: {
+      jobKey: acceptedJob.jobKey,
+      createdAccepted,
+      createdApplication,
+      deduped,
+      duplicateReason: duplicateReasons.join(", "),
+      message: deduped && existingDashboardRecord
+        ? `Already existed (${duplicateReasons.join(", ")}), deduplicated and updated existing application.`
+        : deduped
+          ? `Matched existing ${duplicateReasons.join(", ")}, added LinkedIn job to Accepted without duplicating merge data.`
+          : "Added LinkedIn job to Accepted.",
+    },
+  };
+}
+
+function canonicalDedupeKeys(item) {
+  return new Set([
+    item?.identity?.jobId,
+    item?.identity?.dedupeKey,
+    ...(item?.identity?.dedupeKeys ?? []),
+  ].filter(Boolean));
+}
+
+function findCanonicalDuplicate(item) {
+  const keys = canonicalDedupeKeys(item);
+  if (!keys.size || !fs.existsSync(canonicalDir)) return null;
+
+  const files = fs.readdirSync(canonicalDir)
+    .filter((name) => /^\d{4}-\d{2}-\d{2}\.json$/.test(name))
+    .sort()
+    .reverse();
+  for (const name of files) {
+    const canonical = readJson(path.join(canonicalDir, name), { items: [] });
+    const match = (canonical.items ?? []).find((candidate) => {
+      for (const key of canonicalDedupeKeys(candidate)) {
+        if (keys.has(key)) return true;
+      }
+      return false;
+    });
+    if (match) {
+      return { canonicalFile: `data/canonical/${name}`, jobKey: jobKey(match.identity?.source ?? "linkedin", match) };
+    }
+  }
+  return null;
 }
 
 function upsertAcceptedApplication(payload, context) {
@@ -390,35 +543,36 @@ async function importLinkedinJobUrl(payload) {
   const now = new Date().toISOString();
   const extracted = await scrapeLinkedinJob(url);
   const rawItem = extractedLinkedinJobToRawItem(extracted, now);
-  const rawName = `linkedin-manual-${timestampForFile(new Date(now))}.json`;
-  const rawRelative = `data/raw/${rawName}`;
-  const rawFilePath = path.join(rawDir, rawName);
-  writeJson(rawFilePath, {
-    source: "linkedin",
-    taskName: "manual-linkedin-job-import",
-    runStatus: "MANUAL",
-    savedAt: now,
-    count: 1,
-    items: [rawItem],
-  });
+  const auditFile = writeManualLinkedinAudit(rootDir, rawItem, now);
+  const manualStore = upsertManualLinkedinRawItem(rootDir, rawItem, now);
 
   const job = adaptLinkedinItem(rawItem, {
-    rawFile: rawRelative,
+    rawFile: manualStore.manualFile,
     collectedAt: now,
     runId: "manual",
     datasetId: "manual",
   });
+  const canonicalDuplicate = findCanonicalDuplicate(job);
   const next = upsertManualAcceptedApplication({
     accepted: loadAcceptedJobs(),
     applications: loadApplications(),
   }, job, {
     now,
-    canonicalFile: "",
-    rawFile: rawRelative,
+    canonicalFile: canonicalDuplicate?.canonicalFile ?? "",
+    rawFile: manualStore.manualFile,
+    manualDuplicate: manualStore.manualDeduped,
+    canonicalDuplicate: Boolean(canonicalDuplicate),
   });
   saveAcceptedJobs(next.accepted);
   saveApplications(next.applications);
-  return { jobKey: job.identity.jobId, rawFile: rawRelative };
+  return {
+    ...next.result,
+    rawFile: manualStore.manualFile,
+    auditFile,
+    manualAdded: manualStore.manualAdded,
+    manualDeduped: manualStore.manualDeduped,
+    canonicalFile: canonicalDuplicate?.canonicalFile ?? "",
+  };
 }
 
 function loadReviewState(options) {
@@ -587,7 +741,7 @@ function loadDashboardState() {
   const applications = loadApplications();
   const appMap = new Map((applications.items ?? []).map((item) => [item.jobKey, item]));
   const items = (accepted.items ?? []).map((job) => ({
-    job,
+    job: hydrateAcceptedJob(job),
     application: appMap.get(job.jobKey) ?? defaultApplication(job.jobKey),
   }));
   const counts = Object.fromEntries(Object.keys(statuses).map((status) => [status, 0]));
@@ -755,6 +909,11 @@ function serveStatic(req, res, pathname) {
 }
 
 async function handleApi(req, res, url) {
+  if (req.method === "GET" && url.pathname === "/api/batches") {
+    sendJson(res, 200, { batches: listBatchMetadata() });
+    return;
+  }
+
   if (req.method === "GET" && url.pathname === "/api/state") {
     const canonicalFile = url.searchParams.get("canonicalFile");
     const selectedFile = url.searchParams.get("selectedFile");

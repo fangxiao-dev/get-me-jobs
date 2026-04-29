@@ -95,9 +95,52 @@ test("manual import upserts accepted job without duplicating the application", (
   assert.equal(second.applications.items.length, 1);
   assert.equal(second.accepted.items[0].applyUrl, null);
   assert.equal(second.applications.items[0].events.filter((event) => event.type === "accepted").length, 1);
+  assert.equal(first.result.deduped, false);
+  assert.equal(first.result.createdAccepted, true);
+  assert.equal(first.result.createdApplication, true);
+  assert.equal(first.result.message, "Added LinkedIn job to Accepted.");
+  assert.equal(second.result.deduped, true);
+  assert.equal(second.result.createdAccepted, false);
+  assert.equal(second.result.createdApplication, false);
+  assert.match(second.result.message, /deduplicated/i);
 });
 
-test("server declares the raw data directory used by manual imports", () => {
+test("manual import reports canonical merge duplicates while creating dashboard records", () => {
+  const now = "2026-04-26T10:00:00.000Z";
+  const raw = extractedLinkedinJobToRawItem({
+    inputUrl: TRACKING_URL,
+    canonicalUrl: "https://de.linkedin.com/jobs/view/masterarbeit-test-at-porsche-ag-4343336011",
+    title: "Masterarbeit Test",
+    companyName: "Porsche AG",
+    location: "Mönsheim, Baden-Württemberg, Germany",
+    descriptionText: "Aufgaben",
+    criteria: [],
+  }, now);
+  const job = adaptLinkedinItem(raw, {
+    rawFile: "data/raw/linkedin-manual-2026-04-26-100000.json",
+    collectedAt: now,
+  });
+
+  const next = upsertManualAcceptedApplication({
+    accepted: { version: 1, items: [] },
+    applications: { version: 1, items: [] },
+  }, job, {
+    now,
+    canonicalFile: "data/canonical/2026-04-26.json",
+    rawFile: "data/raw/linkedin-manual-2026-04-26-100000.json",
+    manualDuplicate: true,
+    canonicalDuplicate: true,
+  });
+
+  assert.equal(next.result.createdAccepted, true);
+  assert.equal(next.result.createdApplication, true);
+  assert.equal(next.result.deduped, true);
+  assert.equal(next.result.duplicateReason, "manual daily file, canonical merge");
+  assert.match(next.result.message, /manual daily file, canonical merge/i);
+});
+
+test("server writes manual imports through the manual linkedin store", () => {
   const source = readFileSync("app/server.mjs", "utf8");
-  assert.match(source, /const rawDir = path\.join\(dataDir, "raw"\);/);
+  assert.match(source, /upsertManualLinkedinRawItem/);
+  assert.match(source, /writeManualLinkedinAudit/);
 });

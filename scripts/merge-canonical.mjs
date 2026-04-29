@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { parseRawFilename } from "./lib/parse-raw-filename.mjs";
 import { adaptLinkedinItem } from "./lib/adapt-linkedin.mjs";
 import { emptyCanonicalFile, mergeIntoCanonical } from "./lib/canonical-merge.mjs";
+import { manualLinkedinMergeInputs } from "./lib/manual-linkedin-store.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
@@ -21,12 +22,23 @@ function writeJson(filePath, value) {
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
 }
 
-function allRawFiles(rawBase = rawDir) {
-  return fs.existsSync(rawBase)
+function allRawFiles(root = rootDir, rawBase = rawDir) {
+  const rawFiles = fs.existsSync(rawBase)
     ? fs.readdirSync(rawBase)
-        .map((name) => ({ name, parsed: parseRawFilename(name) }))
-        .filter(({ parsed }) => parsed !== null)
+        .map((name) => {
+          const parsed = parseRawFilename(name);
+          if (!parsed) return null;
+          const filePath = path.join(rawBase, name);
+          return {
+            name,
+            parsed,
+            filePath,
+            relative: path.relative(root, filePath).replaceAll(path.sep, "/"),
+          };
+        })
+        .filter(Boolean)
     : [];
+  return [...rawFiles, ...manualLinkedinMergeInputs(root)];
 }
 
 function latestDate(files) {
@@ -37,7 +49,7 @@ export function mergeCanonicalForDate(dateArg, options = {}) {
   const root = options.rootDir ?? rootDir;
   const rawBase = options.rawDir ?? path.join(root, "data", "raw");
   const canonicalBase = options.canonicalDir ?? path.join(root, "data", "canonical");
-  const allFiles = allRawFiles(rawBase);
+  const allFiles = allRawFiles(root, rawBase);
 
   if (!allFiles.length) {
     throw new Error("No parseable raw files found in data/raw/");
@@ -59,18 +71,17 @@ export function mergeCanonicalForDate(dateArg, options = {}) {
 
   const summary = [];
 
-  for (const { name, parsed } of filesForDate) {
+  for (const entry of filesForDate) {
+    const { name, parsed, filePath: rawFilePath, relative: rawRelative, processKey } = entry;
     const { source, time } = parsed;
-    const rawFilePath = path.join(rawBase, name);
-    const rawRelative = path.relative(root, rawFilePath).replaceAll(path.sep, "/");
     const lastRawFileTime = canonical.mergeState.lastRawFileTime;
 
-    if (lastRawFileTime && time < lastRawFileTime) {
+    if (!processKey && lastRawFileTime && time < lastRawFileTime) {
       summary.push({ file: name, skipped: true, reason: "not newer than canonical watermark" });
       continue;
     }
 
-    if (canonical.mergeState.processedRawFiles.includes(rawRelative)) {
+    if (canonical.mergeState.processedRawFiles.includes(processKey ?? rawRelative)) {
       summary.push({ file: name, skipped: true, reason: "already processed" });
       continue;
     }
@@ -83,7 +94,7 @@ export function mergeCanonicalForDate(dateArg, options = {}) {
 
     const raw = readJson(rawFilePath);
     const rawItems = raw.items ?? [];
-    const collectedAt = raw.savedAt ?? new Date().toISOString();
+    const collectedAt = raw.updatedAt ?? raw.savedAt ?? new Date().toISOString();
 
     const newJobs = rawItems.map((item) =>
       adapt(item, {
@@ -98,6 +109,7 @@ export function mergeCanonicalForDate(dateArg, options = {}) {
     canonical = mergeIntoCanonical(canonical, newJobs, {
       source,
       rawFile: rawRelative,
+      processKey,
       rawFileTime: time,
       importedAt,
       rawCount: rawItems.length,

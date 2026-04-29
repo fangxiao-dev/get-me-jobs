@@ -11,6 +11,10 @@ describe("parseRawFilename", () => {
     });
   });
 
+  it("leaves legacy one-job manual files out of raw merge input", () => {
+    assert.equal(parseRawFilename("linkedin-manual-2026-04-26-155048.json"), null);
+  });
+
   it("parses a valid stepstone filename", () => {
     assert.deepEqual(parseRawFilename("stepstone-2026-04-25-121045.json"), {
       source: "stepstone",

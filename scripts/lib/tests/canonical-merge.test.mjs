@@ -94,6 +94,26 @@ describe("mergeIntoCanonical", () => {
     assert.equal(second.sources.length, 1);
   });
 
+  it("can reprocess a mutable manual aggregate when its process key changes", () => {
+    const canonical = emptyCanonicalFile("2026-04-25");
+    const manualMeta = {
+      ...SOURCE_META,
+      rawFile: "data/manual/linkedin-2026-04-25.json",
+      processKey: "data/manual/linkedin-2026-04-25.json#2026-04-25T11:00:00.000Z",
+    };
+    const first = mergeIntoCanonical(canonical, [makeJob("111")], manualMeta);
+    const second = mergeIntoCanonical(first, [makeJob("111"), makeJob("222")], {
+      ...manualMeta,
+      processKey: "data/manual/linkedin-2026-04-25.json#2026-04-25T12:00:00.000Z",
+      rawFileTime: "120000",
+    });
+
+    assert.equal(second.items.length, 2);
+    assert.equal(second.sources.length, 2);
+    assert.ok(second.mergeState.processedRawFiles.includes(manualMeta.processKey));
+    assert.ok(second.mergeState.processedRawFiles.includes("data/manual/linkedin-2026-04-25.json#2026-04-25T12:00:00.000Z"));
+  });
+
   it("deduplicates by normalized URL key even when source ids differ", () => {
     const canonical = emptyCanonicalFile("2026-04-25");
     const first = mergeIntoCanonical(canonical, [makeJob("111")], SOURCE_META);

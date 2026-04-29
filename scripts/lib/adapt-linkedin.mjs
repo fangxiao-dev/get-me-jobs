@@ -30,7 +30,9 @@ function parseLocation(raw, country) {
 }
 
 function mapWorkplaceType(item) {
-  const types = (item.workplaceTypes ?? []).map((t) => String(t).toUpperCase());
+  const types = (item.workplaceTypes ?? []).map((t) =>
+    String(t).trim().toUpperCase().replace(/[-\s]+/g, "_"),
+  );
   if (types.includes("REMOTE")) return "remote";
   if (types.includes("HYBRID")) return "hybrid";
   if (types.includes("ON_SITE")) return "on_site";
@@ -80,7 +82,7 @@ export function adaptLinkedinItem(item, { rawFile, collectedAt, runId, datasetId
     },
     description: {
       text: item.descriptionText ?? "",
-      html: item.descriptionHtml ?? undefined,
+      html: item.descriptionHtml ?? item.formattedDescription ?? undefined,
     },
     application: {
       jobUrl: item.link ?? undefined,

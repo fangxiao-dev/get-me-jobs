@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "review:today": "node scripts/run-apify-review.mjs",
     "test": "node --test scripts/lib/tests/*.test.mjs",
     "start": "node app/server.mjs"
   },

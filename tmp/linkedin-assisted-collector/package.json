@@ -1,0 +1,13 @@
+{
+  "name": "local-linkedin-assisted-collector",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "start": "node src/main.mjs",
+    "preview": "node src/main.mjs --preview-only"
+  },
+  "dependencies": {
+    "playwright": "1.59.1"
+  }
+}

@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
+import { chromium } from "playwright";
 import { adaptLinkedinItem } from "../adapt-linkedin.mjs";
 import {
   extractedLinkedinJobToRawItem,
+  extractLinkedinJobFromPage,
   extractLinkedinJobId,
   normalizeLinkedinJobUrl,
 } from "../scrape-linkedin-job.mjs";
@@ -58,6 +60,34 @@ test("maps Playwright extraction into an adapter-compatible raw item with blank 
   });
   assert.equal(job.identity.jobId, "linkedin:4343336011");
   assert.equal(job.application.applyUrl, undefined);
+});
+
+test("extracts company from public LinkedIn topcard flavor text when no company link exists", async () => {
+  const browser = await chromium.launch({ headless: true });
+  const page = await browser.newPage();
+  try {
+    await page.setContent(`<!doctype html>
+      <html>
+        <head>
+          <link rel="canonical" href="https://de.linkedin.com/jobs/view/zoho-specialist-at-ukmc-eg-ulrich-kammerer-akademie-4353619637">
+        </head>
+        <body>
+          <h1>ZOHO Specialist</h1>
+          <div class="top-card-layout__second-subline">
+            <span class="topcard__flavor">UKMC eG - Ulrich Kammerer Akademie</span>
+            <span class="topcard__flavor">Ettlingen, Baden-Württemberg, Germany</span>
+          </div>
+          <div class="description__text">Manage ZOHO systems.</div>
+        </body>
+      </html>`);
+
+    const extracted = await extractLinkedinJobFromPage(page, "https://www.linkedin.com/jobs/view/4353619637/");
+
+    assert.equal(extracted.companyName, "UKMC eG - Ulrich Kammerer Akademie");
+    assert.equal(extracted.location, "Ettlingen, Baden-Württemberg, Germany");
+  } finally {
+    await browser.close();
+  }
 });
 
 test("manual import upserts accepted job without duplicating the application", () => {

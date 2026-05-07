@@ -70,6 +70,36 @@ export function extractedLinkedinJobToRawItem(extracted, collectedAt = new Date(
   };
 }
 
+export async function extractLinkedinJobFromPage(page, inputUrl) {
+  return page.evaluate((url) => {
+    const text = (selector) => document.querySelector(selector)?.textContent?.trim().replace(/\s+/g, " ") || "";
+    const attr = (selector, name) => document.querySelector(selector)?.getAttribute(name) || "";
+    const html = (selector) => document.querySelector(selector)?.innerHTML?.trim() || "";
+    const topcardFlavors = [...document.querySelectorAll(".top-card-layout__second-subline .topcard__flavor, .topcard__flavor")]
+      .map((element) => element.textContent?.trim().replace(/\s+/g, " ") || "")
+      .filter(Boolean);
+    const linkedCompanyName = text(".topcard__org-name-link, .topcard__flavor--black-link, .job-details-jobs-unified-top-card__company-name");
+    const bulletLocation = text(".topcard__flavor--bullet, .job-details-jobs-unified-top-card__primary-description-container");
+    return {
+      inputUrl: url,
+      canonicalUrl: attr('link[rel="canonical"]', "href") || window.location.href,
+      title: text("h1"),
+      companyName: linkedCompanyName || topcardFlavors[0] || "",
+      companyLinkedinUrl: attr(".topcard__org-name-link", "href"),
+      companyLogo: attr(".artdeco-entity-image, .topcard__logo img", "src"),
+      location: bulletLocation || topcardFlavors[1] || "",
+      descriptionText: text(".description__text, .jobs-description, #job-details"),
+      descriptionHtml: html(".description__text, .jobs-description, #job-details"),
+      criteria: [...document.querySelectorAll(".description__job-criteria-item")].map((element) => ({
+        label: element.querySelector(".description__job-criteria-subheader")?.textContent?.trim().replace(/\s+/g, " ") || "",
+        value: element.querySelector(".description__job-criteria-text")?.textContent?.trim().replace(/\s+/g, " ") || "",
+      })),
+      applicantsText: text(".num-applicants__caption"),
+      postedAt: "",
+    };
+  }, inputUrl);
+}
+
 export async function scrapeLinkedinJob(url, options = {}) {
   const { chromium } = await import("playwright");
   const browser = await chromium.launch({ headless: options.headless ?? true });
@@ -78,28 +108,7 @@ export async function scrapeLinkedinJob(url, options = {}) {
       userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36",
     });
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: options.timeoutMs ?? 30000 });
-    return await page.evaluate((inputUrl) => {
-      const text = (selector) => document.querySelector(selector)?.textContent?.trim().replace(/\s+/g, " ") || "";
-      const attr = (selector, name) => document.querySelector(selector)?.getAttribute(name) || "";
-      const html = (selector) => document.querySelector(selector)?.innerHTML?.trim() || "";
-      return {
-        inputUrl,
-        canonicalUrl: attr('link[rel="canonical"]', "href") || window.location.href,
-        title: text("h1"),
-        companyName: text(".topcard__org-name-link, .topcard__flavor--black-link, .job-details-jobs-unified-top-card__company-name"),
-        companyLinkedinUrl: attr(".topcard__org-name-link", "href"),
-        companyLogo: attr(".artdeco-entity-image, .topcard__logo img", "src"),
-        location: text(".topcard__flavor--bullet, .job-details-jobs-unified-top-card__primary-description-container"),
-        descriptionText: text(".description__text, .jobs-description, #job-details"),
-        descriptionHtml: html(".description__text, .jobs-description, #job-details"),
-        criteria: [...document.querySelectorAll(".description__job-criteria-item")].map((element) => ({
-          label: element.querySelector(".description__job-criteria-subheader")?.textContent?.trim().replace(/\s+/g, " ") || "",
-          value: element.querySelector(".description__job-criteria-text")?.textContent?.trim().replace(/\s+/g, " ") || "",
-        })),
-        applicantsText: text(".num-applicants__caption"),
-        postedAt: "",
-      };
-    }, url);
+    return await extractLinkedinJobFromPage(page, url);
   } finally {
     await browser.close();
   }

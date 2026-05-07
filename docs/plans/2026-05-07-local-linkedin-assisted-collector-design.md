@@ -313,7 +313,7 @@ Initial PoC:
 
 After validation:
 
-- Write raw successful items to `data/manual/linkedin-YYYY-MM-DD.json` or a new local raw source file under `data/raw/`.
+- Write raw successful items to `data/raw/linkedin-YYYY-MM-DD-HHMMSS.json`.
 - Preserve run metadata:
   - source: `linkedin`
   - taskName: `local-linkedin-assisted-collector`
@@ -328,14 +328,15 @@ Preferred integration:
 
 ```text
 local assisted raw items
--> Dashboard manual LinkedIn import data flow
--> data/manual/linkedin-YYYY-MM-DD.json
+-> data/raw/linkedin-YYYY-MM-DD-HHMMSS.json
 -> existing LinkedIn adapter
--> Accepted/Application tracking
--> Review UI / Dashboard
+-> canonical merge
+-> selected jobs
+-> Review UI selected/rejected decision flow
+-> user manually accepts from Review/Dashboard
 ```
 
-The Dashboard already has a single-URL manual import path. The local assisted collector should reuse that path's raw item conversion and manual-store semantics rather than inventing a parallel Dashboard write format.
+The Dashboard `Add LinkedIn JD` manual import path should not be used for batch collector output because it upserts jobs directly into Accepted/Application tracking. The local assisted collector should reuse the Dashboard public detail scraper, but persisted batch output should enter the normal raw-source review pipeline first.
 
 ## Implementation Architecture
 
@@ -381,7 +382,7 @@ Manual headed PoC:
 
 ## Open Decisions
 
-- Whether final persisted output should use `data/manual/linkedin-YYYY-MM-DD.json` or a new `data/raw/linkedin-local-YYYY-MM-DD-HHMMSS.json` source.
+- Whether final persisted output should use `data/raw/linkedin-YYYY-MM-DD-HHMMSS.json` directly or remain in ignored `tmp/linkedin-assisted-collector/output/` until manually copied.
 - Whether the first implementation should live in a temporary external directory or in a repo-local ignored sandbox.
 - Whether the UI should be CLI-only or expose a small local browser control page for confirmation.
 
@@ -389,4 +390,4 @@ Recommendation:
 
 - Start outside the repo or under an ignored `tmp-` directory.
 - Keep the first version CLI-only.
-- Persist to `data/raw/linkedin-local-YYYY-MM-DD-HHMMSS.json` only after dry-run validation, so the canonical merge path remains clean and auditable.
+- Persist to `data/raw/linkedin-YYYY-MM-DD-HHMMSS.json` only after dry-run validation, so existing `parseRawFilename()` and the canonical merge path can pick it up without special cases.

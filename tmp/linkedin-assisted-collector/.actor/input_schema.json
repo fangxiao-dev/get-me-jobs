@@ -1,0 +1,47 @@
+{
+  "title": "Local LinkedIn Assisted Collector Input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "searchPageUrl": {
+      "title": "LinkedIn search page URL",
+      "type": "string",
+      "description": "One user-provided LinkedIn jobs search page URL."
+    },
+    "cookiesPath": {
+      "title": "Cookie JSON path",
+      "type": "string",
+      "description": "Absolute path to a Cookie-Editor style LinkedIn cookies JSON file stored outside this repository."
+    },
+    "userAgent": {
+      "title": "Browser User-Agent",
+      "type": "string",
+      "description": "The exact User-Agent from the browser session used to export cookies."
+    },
+    "maxJobs": {
+      "title": "Maximum jobs",
+      "type": "integer",
+      "default": 25,
+      "minimum": 1,
+      "maximum": 25
+    },
+    "batchSize": {
+      "title": "Batch size",
+      "type": "integer",
+      "default": 5,
+      "minimum": 1,
+      "maximum": 5
+    },
+    "dryRun": {
+      "title": "Dry run",
+      "type": "boolean",
+      "default": true
+    },
+    "headed": {
+      "title": "Show browser",
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": ["searchPageUrl", "cookiesPath", "userAgent"]
+}

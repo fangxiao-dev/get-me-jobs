@@ -1,0 +1,12 @@
+{
+  "actorSpecification": 1,
+  "name": "local-linkedin-assisted-collector",
+  "title": "Local LinkedIn Assisted Collector",
+  "description": "Local, user-confirmed LinkedIn job page assisted collector. Runs on the user's machine only.",
+  "version": "0.1",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "storages": {
+    "dataset": "./dataset_schema.json"
+  }
+}

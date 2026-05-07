@@ -1,4 +1,5 @@
 .env
+config/local/linkedin-assisted.input.json
 node_modules/
 *.log
 # Local review/application state

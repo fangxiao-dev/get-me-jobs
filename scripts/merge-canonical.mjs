@@ -58,7 +58,7 @@ export function mergeCanonicalForDate(dateArg, options = {}) {
   const targetDate = dateArg ?? latestDate(allFiles);
   const filesForDate = allFiles
     .filter(({ parsed }) => parsed.date === targetDate)
-    .sort((a, b) => a.parsed.time.localeCompare(b.parsed.time));
+    .sort((a, b) => a.parsed.time.localeCompare(b.parsed.time) || (a.parsed.sequence ?? 1) - (b.parsed.sequence ?? 1));
 
   if (!filesForDate.length) {
     throw new Error(`No raw files found for date: ${targetDate}`);

@@ -1,4 +1,3 @@
-import fs from 'node:fs';
 import path from 'node:path';
 import readline from 'node:readline/promises';
 import { fileURLToPath } from 'node:url';
@@ -7,18 +6,16 @@ import { runBatches } from './batch-runner.mjs';
 import { createBrowserSession } from './browser.mjs';
 import { detectStopCondition } from './stop-conditions.mjs';
 import { validateInput } from './input.mjs';
-import { buildRunSummary, writeLocalRawOutput } from './output.mjs';
+import { buildRunSummary, writeLocalRawOutput, writeRawSourceOutput } from './output.mjs';
 import { collectJobUrlsWithResultListScroll } from './result-list-scroll.mjs';
 import { processPublicLinkedinJob } from './public-detail.mjs';
+import { readCollectorInputFile } from './input-file.mjs';
 
 const collectorDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-function readInputFile() {
-  const inputPath = path.join(collectorDir, 'storage', 'key_value_stores', 'default', 'INPUT.json');
-  if (!fs.existsSync(inputPath)) {
-    throw new Error(`Missing input file: ${inputPath}. Copy INPUT.example.json to INPUT.json and edit it.`);
-  }
-  return JSON.parse(fs.readFileSync(inputPath, 'utf8'));
+function optionValue(name) {
+  const index = process.argv.indexOf(name);
+  return index >= 0 ? process.argv[index + 1] : undefined;
 }
 
 async function askForConfirmation(urls) {
@@ -42,8 +39,9 @@ async function processOneJob(_page, input, job) {
 
 async function main() {
   const previewOnly = process.argv.includes('--preview-only');
-  const rawInput = readInputFile();
-  const input = validateInput({ ...rawInput, rootDir: path.resolve(collectorDir, '..', '..') });
+  const rootDir = path.resolve(collectorDir, '..', '..');
+  const rawInput = readCollectorInputFile({ rootDir, inputPath: optionValue('--input') });
+  const input = validateInput({ ...rawInput, rootDir });
   const session = await createBrowserSession(input);
   let wroteData = false;
   let result = {
@@ -91,7 +89,17 @@ async function main() {
       processJob: (job) => processOneJob(session.page, input, job)
     });
 
-    if (!input.dryRun && result.items.length > 0) {
+    if (input.writeRawSource && result.items.length > 0) {
+      const file = writeRawSourceOutput({
+        rootDir,
+        searchPageUrl: input.searchPageUrl,
+        maxJobs: input.maxJobs,
+        batchSize: input.batchSize,
+        items: result.items
+      });
+      wroteData = true;
+      console.log(`Wrote raw LinkedIn source output: ${file}`);
+    } else if (!input.dryRun && result.items.length > 0) {
       const file = writeLocalRawOutput({
         outputDir: path.join(collectorDir, 'output'),
         searchPageUrl: input.searchPageUrl,

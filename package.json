@@ -4,6 +4,8 @@
   "type": "module",
   "scripts": {
     "review:today": "node scripts/run-apify-review.mjs",
+    "review:finalize": "node scripts/finalize-review-batch.mjs",
+    "collect:linkedin:local": "node scripts/local-linkedin-assisted-collector/src/main.mjs",
     "test": "node --test scripts/lib/tests/*.test.mjs",
     "start": "node app/server.mjs"
   },

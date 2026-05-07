@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { extractedLinkedinJobToRawItem } from '../../../scripts/lib/scrape-linkedin-job.mjs';
+import { extractedLinkedinJobToRawItem } from '../../lib/scrape-linkedin-job.mjs';
 import { hasMinimumRawFields, processPublicLinkedinJob } from '../src/public-detail.mjs';
 
 test('Dashboard public LinkedIn extraction maps to collector minimum raw fields', () => {

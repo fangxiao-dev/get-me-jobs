@@ -1,7 +1,7 @@
 import {
   extractedLinkedinJobToRawItem,
   scrapeLinkedinJob
-} from '../../../scripts/lib/scrape-linkedin-job.mjs';
+} from '../../lib/scrape-linkedin-job.mjs';
 
 export function hasMinimumRawFields(item) {
   return Boolean(item.id && item.title && item.companyName && item.location && item.descriptionText && item.link && item.inputUrl);

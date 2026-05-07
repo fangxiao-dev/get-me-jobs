@@ -5,6 +5,7 @@ const DEFAULTS = {
   batchSize: 5,
   dryRun: true,
   headed: true,
+  writeRawSource: false,
   jobDelaySeconds: { min: 8, max: 25 },
   batchCooldownMinutes: { min: 2, max: 6 },
   resultScroll: {
@@ -101,12 +102,15 @@ export function validateInput(rawInput) {
     throw new Error('cookiesPath must be outside the repository');
   }
 
+  const dryRun = input.dryRun !== false;
+
   return {
     ...input,
     maxJobs: clampInteger(input.maxJobs, DEFAULTS.maxJobs, 1, 25),
     batchSize: clampInteger(input.batchSize, DEFAULTS.batchSize, 1, 5),
-    dryRun: input.dryRun !== false,
+    dryRun,
     headed: input.headed !== false,
+    writeRawSource: dryRun ? false : input.writeRawSource === true,
     jobDelaySeconds: normalizeRange(input.jobDelaySeconds, DEFAULTS.jobDelaySeconds, {
       minAllowed: 1,
       maxAllowed: 120

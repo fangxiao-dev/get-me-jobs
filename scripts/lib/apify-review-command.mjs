@@ -11,9 +11,10 @@ export function parseDotenv(text) {
   return env;
 }
 
-export function resolveTaskEntries(env, taskList) {
+export function resolveTaskEntries(env, taskList, options = {}) {
+  const taskEnvPrefix = options.taskEnvPrefix ?? "TASKID_";
   const entries = Object.keys(env)
-    .filter((key) => key.startsWith("TASKID_"))
+    .filter((key) => key.startsWith(taskEnvPrefix))
     .sort()
     .map((key) => ({ key, value: env[key] }));
   const resolved = [];
@@ -21,7 +22,7 @@ export function resolveTaskEntries(env, taskList) {
   for (const entry of entries) {
     const direct = taskList.find((task) => task.id === entry.value);
     const byActor = taskList.find((task) => task.actId === entry.value);
-    const tokens = entry.key.slice("TASKID_".length).toLowerCase().split("_").filter(Boolean);
+    const tokens = entry.key.slice(taskEnvPrefix.length).toLowerCase().split("_").filter(Boolean);
     const byName = taskList.find((task) => {
       const name = String(task.name ?? "").toLowerCase();
       return tokens.every((token) => name.includes(token));

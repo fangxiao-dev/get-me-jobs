@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
-import { mergeCanonicalForDate } from "./merge-canonical.mjs";
-import { selectJobsFile } from "./select-jobs.mjs";
+import { loadJobSourcesManifest } from "./lib/job-sources-manifest.mjs";
+import { finalizeReviewBatch } from "./lib/review-finalize.mjs";
 import {
   localDateParts,
   parseDotenv,
@@ -10,8 +10,6 @@ import {
 } from "./lib/apify-review-command.mjs";
 
 const rootDir = process.cwd();
-const envPath = path.join(rootDir, ".env");
-const rawDir = path.join(rootDir, "data", "raw");
 const terminalStatuses = new Set(["SUCCEEDED", "FAILED", "TIMED-OUT", "ABORTED"]);
 
 function usage() {
@@ -86,7 +84,8 @@ async function datasetItems(datasetId, token) {
   return items;
 }
 
-function writeRawFile(task, run, taskInputValue, items, index) {
+function writeRawFile(root, task, run, taskInputValue, items, index) {
+  const rawDir = path.join(root, "data", "raw");
   fs.mkdirSync(rawDir, { recursive: true });
   const dateParts = localDateParts();
   const rawPath = path.join(rawDir, rawFilenameForRun(dateParts, index));
@@ -109,7 +108,7 @@ function writeRawFile(task, run, taskInputValue, items, index) {
   return rawPath;
 }
 
-async function runTask(task, token, index) {
+async function runTask(root, task, token, index) {
   console.log(`Starting ${task.key}: ${task.taskName}`);
   const input = await taskInput(task.taskId, token);
   const started = await startTask(task.taskId, token);
@@ -120,8 +119,8 @@ async function runTask(task, token, index) {
     throw new Error(`Run ${runId} ended with ${run.status}${run.statusMessage ? `: ${run.statusMessage}` : ""}`);
   }
   const items = await datasetItems(run.defaultDatasetId, token);
-  const rawPath = writeRawFile(task, run, input, items, index);
-  console.log(`Saved ${items.length} items to ${path.relative(rootDir, rawPath)}`);
+  const rawPath = writeRawFile(root, task, run, input, items, index);
+  console.log(`Saved ${items.length} items to ${path.relative(root, rawPath)}`);
   return {
     taskKey: task.key,
     taskName: task.taskName,
@@ -132,13 +131,23 @@ async function runTask(task, token, index) {
   };
 }
 
-export async function runApifyReview() {
+export async function runApifyReview(options = {}) {
+  const root = options.rootDir ?? rootDir;
+  const manifest = options.manifest ?? loadJobSourcesManifest({ rootDir: root, manifestPath: options.manifestPath });
+  const channel = manifest.channels.apify_linkedin;
+  if (!channel.enabled) {
+    throw new Error("Apify LinkedIn channel is disabled by config/job-sources.manifest.json");
+  }
+
+  const envPath = path.join(root, channel.envFile);
   if (!fs.existsSync(envPath)) throw new Error(".env not found");
   const env = parseDotenv(fs.readFileSync(envPath, "utf8"));
   const token = env.APIFY_TOKEN || env.APIFY;
   if (!token) throw new Error("APIFY_TOKEN/APIFY is missing in .env");
 
-  const tasks = resolveTaskEntries(env, await listTasks(token));
+  const tasks = resolveTaskEntries(env, await listTasks(token), {
+    taskEnvPrefix: channel.taskEnvPrefix,
+  });
   const unresolved = tasks.filter((task) => task.unresolved);
   const runnable = tasks.filter((task) => !task.unresolved);
   if (!runnable.length) throw new Error("No runnable TASKID_* Apify tasks found");
@@ -153,7 +162,7 @@ export async function runApifyReview() {
   const failures = [];
   for (const task of runnable) {
     try {
-      successes.push(await runTask(task, token, successes.length));
+      successes.push(await runTask(root, task, token, successes.length));
     } catch (error) {
       failures.push({ taskKey: task.key, taskName: task.taskName, error: error.message ?? String(error) });
       console.warn(`Task ${task.key} failed: ${error.message ?? error}`);
@@ -166,19 +175,17 @@ export async function runApifyReview() {
   }
 
   const today = localDateParts().date;
-  const merge = mergeCanonicalForDate(today, { rootDir });
-  const canonicalFile = `data/canonical/${today}.json`;
-  const selectedFile = `data/selected/${today}.json`;
-  const selection = selectJobsFile(canonicalFile, selectedFile, "config/preferences.linkedin.json", { cwd: rootDir });
+  const finalized = finalizeReviewBatch(today, { rootDir: root, manifest, logger: console });
   return {
     ok: true,
     date: today,
     successes,
     failures,
-    canonicalFile,
-    selectedFile,
-    canonicalItems: merge.canonicalItems,
-    selectedCount: selection.selectedCount,
+    canonicalFile: finalized.canonicalFile,
+    selectedFile: finalized.selectedFile,
+    canonicalItems: finalized.canonicalItems,
+    selectedCount: finalized.selectedCount,
+    enrichment: finalized.enrichment,
   };
 }
 

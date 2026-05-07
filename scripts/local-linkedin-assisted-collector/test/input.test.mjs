@@ -13,6 +13,7 @@ test('validateInput applies safe defaults', () => {
   assert.equal(input.batchSize, 5);
   assert.equal(input.dryRun, true);
   assert.equal(input.headed, true);
+  assert.equal(input.writeRawSource, false);
   assert.deepEqual(input.jobDelaySeconds, { min: 8, max: 25 });
   assert.deepEqual(input.batchCooldownMinutes, { min: 2, max: 6 });
   assert.deepEqual(input.resultScroll, {
@@ -33,6 +34,26 @@ test('validateInput rejects non-LinkedIn search URLs', () => {
     }),
     /searchPageUrl must be a LinkedIn jobs URL/
   );
+});
+
+test('validateInput only allows raw source writes when dryRun is false', () => {
+  const dryRunInput = validateInput({
+    searchPageUrl: 'https://www.linkedin.com/jobs/search/?keywords=ai',
+    cookiesPath: 'C:/Users/Xiao/secure/linkedin-cookies.json',
+    userAgent: 'Mozilla/5.0 Chrome/124 Safari/537.36',
+    dryRun: true,
+    writeRawSource: true
+  });
+  const writeInput = validateInput({
+    searchPageUrl: 'https://www.linkedin.com/jobs/search/?keywords=ai',
+    cookiesPath: 'C:/Users/Xiao/secure/linkedin-cookies.json',
+    userAgent: 'Mozilla/5.0 Chrome/124 Safari/537.36',
+    dryRun: false,
+    writeRawSource: true
+  });
+
+  assert.equal(dryRunInput.writeRawSource, false);
+  assert.equal(writeInput.writeRawSource, true);
 });
 
 test('validateInput rejects LinkedIn lookalike hosts', () => {

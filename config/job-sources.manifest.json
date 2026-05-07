@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "channels": {
+    "apify_linkedin": {
+      "enabled": true,
+      "envFile": ".env",
+      "taskEnvPrefix": "TASKID_"
+    },
+    "localLinkedin": {
+      "enabled": true,
+      "inputFile": "config/local/linkedin-assisted.input.json"
+    }
+  },
+  "review": {
+    "preferencesFile": "config/preferences.linkedin.json",
+    "enrichSelected": true
+  }
+}

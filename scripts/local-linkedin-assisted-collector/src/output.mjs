@@ -40,3 +40,22 @@ export function writeLocalRawOutput({ outputDir, searchPageUrl, maxJobs, batchSi
   }, null, 2)}\n`, 'utf8');
   return file;
 }
+
+export function writeRawSourceOutput({ rootDir, searchPageUrl, maxJobs, batchSize, items, now = new Date() }) {
+  const outputDir = path.join(rootDir, 'data', 'raw');
+  fs.mkdirSync(outputDir, { recursive: true });
+  const savedAt = now.toISOString();
+  const file = path.join(outputDir, `linkedin-${timestampForFile(now)}.json`);
+  fs.writeFileSync(file, `${JSON.stringify({
+    source: 'linkedin',
+    taskName: 'local-linkedin-assisted-collector',
+    runStatus: 'LOCAL_ASSISTED',
+    savedAt,
+    searchPageUrl,
+    maxJobs,
+    batchSize,
+    count: items.length,
+    items
+  }, null, 2)}\n`, 'utf8');
+  return file;
+}

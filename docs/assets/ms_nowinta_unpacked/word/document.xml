@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?><w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex" xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex" xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/21/chartex" xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9/chartex" xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10/chartex" xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11/chartex" xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12/chartex" xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13/chartex" xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14/chartex" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink" xmlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:oel="http://schemas.microsoft.com/office/2019/extlst" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex" xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid" xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml" xmlns:w16du="http://schemas.microsoft.com/office/word/2023/wordml/word16du" xmlns:w16sdtdh="http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash" xmlns:w16sdtfl="http://schemas.microsoft.com/office/word/2024/wordml/sdtformatlock" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 w15 w16se w16cid w16 w16cex w16sdtdh w16sdtfl w16du wp14">
+  <w:body>
+    <w:p w14:paraId="0E8AE6D4" w14:textId="77777777" w:rsidR="00842B6F" w:rsidRPr="00D67E5E" w:rsidRDefault="009217C2">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Segoe UI" w:hAnsi="Segoe UI" w:cs="Segoe UI"/>
+          <w:b/>
+          <w:bCs/>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+          <w:lang w:val="de-DE"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Segoe UI" w:hAnsi="Segoe UI" w:cs="Segoe UI"/>
+          <w:b/>
+          <w:bCs/>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+          <w:lang w:val="de-DE"/>
+        </w:rPr>
+        <w:t>Motivationsschreiben</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="0A4E6BA3" w14:textId="77777777" w:rsidR="00AC198D" w:rsidRPr="00AC198D" w:rsidRDefault="00AC198D" w:rsidP="00AC198D">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Segoe UI" w:hAnsi="Segoe UI" w:cs="Segoe UI"/>
+          <w:sz w:val="21"/>
+          <w:szCs w:val="21"/>
+          <w:lang w:val="de-DE"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Segoe UI" w:hAnsi="Segoe UI" w:cs="Segoe UI"/>
+          <w:sz w:val="21"/>
+          <w:szCs w:val="21"/>
+          <w:lang w:val="de-DE"/>
+        </w:rPr>
+        <w:t>Sehr geehrte Damen und Herren,</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7D841378" w14:textId="1CE428BF" w:rsidR="00AC198D" w:rsidRPr="00AC198D" w:rsidRDefault="00213BA3" w:rsidP="00AC198D">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Segoe UI" w:hAnsi="Segoe UI" w:cs="Segoe UI"/>
+          <w:sz w:val="21"/>
+          <w:szCs w:val="21"/>
+          <w:lang w:val="de-DE"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Segoe UI" w:hAnsi="Segoe UI" w:cs="Segoe UI"/>
+          <w:sz w:val="21"/>
+          <w:szCs w:val="21"/>
+          <w:lang w:val="de-DE"/>
+        </w:rPr>
+        <w:t>im Masterstudium Digital Business Engineering beschäftige ich mich schwerpunktmäßig damit, wie sich LLMs und agentenbasierte Systeme sinnvoll in bestehende Softwareentwicklungsprozesse integrieren lassen. Die ausgeschriebene Stelle bei Porsche spricht mich genau deshalb an: Codegenerierung, automatisierte Anforderungsanalyse und Testfallableitung im stark normierten Kontext der Ladefunktionssoftware sind für mich kein abstraktes Forschungsthema, sondern eine konkrete Ingenieursaufgabe.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="5300FB1E" w14:textId="6318AFE7" w:rsidR="00FD01EF" w:rsidRDefault="00FD01EF" w:rsidP="00AC198D">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Segoe UI" w:hAnsi="Segoe UI" w:cs="Segoe UI"/>
+          <w:sz w:val="21"/>
+          <w:szCs w:val="21"/>
+          <w:lang w:val="de-DE"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Segoe UI" w:hAnsi="Segoe UI" w:cs="Segoe UI"/>
+          <w:sz w:val="21"/>
+          <w:szCs w:val="21"/>
+          <w:lang w:val="de-DE"/>
+        </w:rPr>
+        <w:t>Mit LLM-basierten Workflows habe ich eine Webanwendung zur OCR-gestützten Rechnungsverarbeitung entwickelt, bei der ich REST-API und Docker-Deployment selbst umgesetzt habe. Im laufenden Jahresprojekt entwerfe ich eine TinyMLOps-Serverplattform für Edge-AI-Systeme mit Fokus auf Lifecycle</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Segoe UI" w:eastAsia="SimSun" w:hAnsi="Segoe UI" w:cs="Segoe UI" w:hint="eastAsia"/>
+          <w:sz w:val="21"/>
+          <w:szCs w:val="21"/>
+          <w:lang w:val="de-DE" w:eastAsia="zh-CN"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Segoe UI" w:hAnsi="Segoe UI" w:cs="Segoe UI"/>
+          <w:sz w:val="21"/>
+          <w:szCs w:val="21"/>
+          <w:lang w:val="de-DE"/>
+        </w:rPr>
+        <w:t>Design, Traceability und Rollback-Workflows. Das sind Themen, die mir zeigen, dass Prototypenentwicklung und saubere Dokumentation nicht getrennt voneinander gedacht werden können.</w:t>
+      </w:r>
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="48EA2F22" w14:textId="42F1D83A" w:rsidR="00AC198D" w:rsidRPr="00AC198D" w:rsidRDefault="00AC198D" w:rsidP="00AC198D">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Segoe UI" w:hAnsi="Segoe UI" w:cs="Segoe UI"/>
+          <w:sz w:val="21"/>
+          <w:szCs w:val="21"/>
+          <w:lang w:val="de-DE"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Segoe UI" w:hAnsi="Segoe UI" w:cs="Segoe UI"/>
+          <w:sz w:val="21"/>
+          <w:szCs w:val="21"/>
+          <w:lang w:val="de-DE"/>
+        </w:rPr>
+        <w:t>Drei Jahre bei Huawei in der Automotive Solution BU haben mir ein nüchternes Bild davon gegeben, wie Softwareentwicklung im industriellen Maßstab wirklich läuft. Ich habe dort CI/CD-Pipelines für Smoke- und Regressionstests aufgebaut, ein Python-basiertes Framework für Performance-Tests entwickelt und einen C++-basierten Multi-Sensor-Fusion-Algorithmus in eine HIL-Simulationsumgebung integriert. Das gibt mir ein gutes Verständnis für die Entwicklungsartefakte, auf denen KI-gestützte Werkzeuge in dieser Stelle aufsetzen sollen. Bei Alipay habe ich anschließend ein CI-integriertes Abdeckungstool für über 100 Repositories gebaut und die Unit-Test-Abdeckung in mehr als 60 Repositories auf PR-Ebene auf über 90 Prozent gehoben. Das war ein Fall, in dem strukturierte Prozesse und Automatisierung direkt messbare Qualität erzeugt haben.</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="5B1EF754" w14:textId="77777777" w:rsidR="00AC198D" w:rsidRPr="00AC198D" w:rsidRDefault="00AC198D" w:rsidP="00AC198D">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Segoe UI" w:hAnsi="Segoe UI" w:cs="Segoe UI"/>
+          <w:sz w:val="21"/>
+          <w:szCs w:val="21"/>
+          <w:lang w:val="de-DE"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Segoe UI" w:hAnsi="Segoe UI" w:cs="Segoe UI"/>
+          <w:sz w:val="21"/>
+          <w:szCs w:val="21"/>
+          <w:lang w:val="de-DE"/>
+        </w:rPr>
+        <w:t>Was mich an Porsche überzeugt, ist, dass KI hier nicht isoliert betrachtet wird, sondern im direkten Bezug zu laufenden Entwicklungsprozessen steht. Dass die Ergebnisse möglicherweise in eine Publikation münden, gibt der Arbeit einen Anspruch, der über den reinen Prototypen hinausgeht, und das ist genau die Art von Stelle, die ich suche.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="37A2F37B" w14:textId="77777777" w:rsidR="00FD01EF" w:rsidRDefault="00FD01EF" w:rsidP="00636026">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Segoe UI" w:hAnsi="Segoe UI" w:cs="Segoe UI"/>
+          <w:sz w:val="21"/>
+          <w:szCs w:val="21"/>
+          <w:lang w:val="de-DE"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Segoe UI" w:hAnsi="Segoe UI" w:cs="Segoe UI"/>
+          <w:sz w:val="21"/>
+          <w:szCs w:val="21"/>
+          <w:lang w:val="de-DE"/>
+        </w:rPr>
+        <w:t>Ich freue mich auf die Möglichkeit, meine bisherigen Erfahrungen einzubringen und in einem technisch anspruchsvollen Umfeld weiterzulernen.</w:t>
+      </w:r>
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="0D53FFF5" w14:textId="721F58EA" w:rsidR="00842B6F" w:rsidRPr="00D67E5E" w:rsidRDefault="009217C2" w:rsidP="00636026">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Segoe UI" w:hAnsi="Segoe UI" w:cs="Segoe UI"/>
+          <w:sz w:val="21"/>
+          <w:szCs w:val="21"/>
+          <w:lang w:val="de-DE"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Segoe UI" w:hAnsi="Segoe UI" w:cs="Segoe UI"/>
+          <w:sz w:val="21"/>
+          <w:szCs w:val="21"/>
+          <w:lang w:val="de-DE"/>
+        </w:rPr>
+        <w:t>Mit freundlichen Grüßen,</w:t>
+      <w:br/><w:t>Fang Xiao</w:t><w:br/><w:t>Böblingen, Deutschland</w:t><w:br/><w:t>fangxiaodex@outlook.com | +49 162 8464308</w:t></w:r>
+      
+      
+      
+    </w:p>
+    <w:sectPr w:rsidR="00842B6F" w:rsidRPr="00D67E5E" w:rsidSect="00227746">
+      <w:pgSz w:w="12240" w:h="15840"/>
+      <w:pgMar w:top="1588" w:right="1247" w:bottom="1440" w:left="1247" w:header="720" w:footer="720" w:gutter="0"/>
+      <w:cols w:space="720"/>
+      <w:docGrid w:linePitch="360"/>
+    </w:sectPr>
+  </w:body>
+</w:document>

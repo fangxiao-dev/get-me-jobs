@@ -11,13 +11,13 @@ data/manual/
 data/raw/
 data/selected/
 .claude/
+docs/exchange/
 
 # Local OS/editor noise
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
-
 # Future local runtime output
 tmp/
 dist/

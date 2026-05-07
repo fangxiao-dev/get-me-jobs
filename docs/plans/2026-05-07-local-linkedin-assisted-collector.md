@@ -4,7 +4,7 @@
 
 **Goal:** Build an isolated local Actor-style PoC that opens one user-provided LinkedIn jobs search page, uses controlled scrolling only inside the left-side results list to preview up to 25 job URLs, and after one confirmation processes at most 25 jobs in 5-job batches with stop-on-anomaly behavior.
 
-**Architecture:** The first implementation lives entirely under `tmp/linkedin-assisted-collector/`, which is already ignored by the repository `.gitignore`. It uses a small local Node/Playwright CLI with Apify Actor-compatible folder structure, fixture-driven tests, cookie normalization, URL preview, strict batch limits, and dry-run output by default. Promotion into tracked project scripts or `data/raw/` is a separate explicit approval step after local validation.
+**Architecture:** The first implementation lives entirely under `tmp/linkedin-assisted-collector/`, which is already ignored by the repository `.gitignore`. It uses a small local Node/Playwright CLI with Apify Actor-compatible folder structure, fixture-driven tests, cookie normalization, URL preview, strict batch limits, and dry-run output by default. Search-page URL discovery uses the authenticated headed browser, but job detail extraction should reuse the Dashboard's existing public LinkedIn JD scraper where possible. Promotion into tracked project scripts or Dashboard write paths is a separate explicit approval step after local validation.
 
 **Tech Stack:** Node.js ESM, Playwright, Node built-in test runner, Apify Actor folder conventions, local filesystem JSON output.
 
@@ -31,6 +31,7 @@ Non-negotiable constraints from the design:
 - No whole-page scrolling for URL discovery.
 - No right-side detail panel scrolling for URL discovery.
 - One URL preview confirmation before detail extraction.
+- Job detail extraction should prefer the existing public Dashboard scraper in `scripts/lib/scrape-linkedin-job.mjs`, not the authenticated search-page browser.
 - Batch size hard-capped at 5.
 - Total jobs hard-capped at 25.
 - Stop immediately on login, CAPTCHA, checkpoint, verification, access restriction, repeated extraction failure, repeated navigation failure, or user abort.
@@ -1749,6 +1750,321 @@ Expected:
 
 - All fixture and unit tests pass.
 
+## Task 9A: Reuse Dashboard Public LinkedIn Detail Scraper
+
+**Files:**
+
+- Modify: `tmp/linkedin-assisted-collector/src/main.mjs`
+- Create: `tmp/linkedin-assisted-collector/test/public-detail-scraper.test.mjs`
+- Read-only dependency: `scripts/lib/scrape-linkedin-job.mjs`
+
+This task replaces the PoC's authenticated-detail-page extraction path with the same public detail scraper used by Dashboard `Add LinkedIn JD`. The authenticated browser remains responsible only for search-page URL discovery.
+
+- [ ] **Step 1: Write the failing public detail bridge test**
+
+Create `tmp/linkedin-assisted-collector/test/public-detail-scraper.test.mjs`:
+
+```js
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import { extractedLinkedinJobToRawItem } from '../../../scripts/lib/scrape-linkedin-job.mjs';
+
+test('Dashboard public LinkedIn extraction maps to collector minimum raw fields', () => {
+  const raw = extractedLinkedinJobToRawItem({
+    inputUrl: 'https://www.linkedin.com/jobs/view/4393978962/',
+    canonicalUrl: 'https://de.linkedin.com/jobs/view/praktikum-machine-learning-at-trumpf-4393978962',
+    title: 'Praktikum Machine Learning',
+    companyName: 'TRUMPF',
+    companyLinkedinUrl: 'https://de.linkedin.com/company/trumpf',
+    location: 'Ditzingen, Baden-Württemberg, Germany',
+    descriptionText: 'Build computer vision prototypes.',
+    descriptionHtml: '<p>Build computer vision prototypes.</p>',
+    criteria: [
+      { label: 'Employment type', value: 'Internship' },
+      { label: 'Industries', value: 'Machinery Manufacturing' }
+    ],
+    applicantsText: 'Be among the first 25 applicants'
+  }, '2026-05-07T12:00:00.000Z');
+
+  assert.equal(raw.id, '4393978962');
+  assert.equal(raw.title, 'Praktikum Machine Learning');
+  assert.equal(raw.companyName, 'TRUMPF');
+  assert.equal(raw.location, 'Ditzingen, Baden-Württemberg, Germany');
+  assert.equal(raw.descriptionText, 'Build computer vision prototypes.');
+  assert.equal(raw.link, 'https://de.linkedin.com/jobs/view/praktikum-machine-learning-at-trumpf-4393978962');
+  assert.equal(raw.applyUrl, '');
+  assert.equal(raw.applyMethod, 'ManualImport');
+  assert.equal(raw.inputUrl, 'https://www.linkedin.com/jobs/view/4393978962/');
+});
+```
+
+- [ ] **Step 2: Run the failing bridge test**
+
+Run:
+
+```powershell
+Push-Location tmp/linkedin-assisted-collector
+node --test test/public-detail-scraper.test.mjs
+Pop-Location
+```
+
+Expected:
+
+- The test should pass if the relative import is correct.
+- If it fails with `ERR_MODULE_NOT_FOUND`, adjust only the relative import path from `tmp/linkedin-assisted-collector/test/` to `scripts/lib/scrape-linkedin-job.mjs`.
+
+- [ ] **Step 3: Replace authenticated detail extraction with public scraper**
+
+In `tmp/linkedin-assisted-collector/src/main.mjs`, remove the `extractJobDetail`, `hasMinimumJobFields`, `extractLinkedInJobId`, and `isLinkedInJobDetailUrl` imports from the detail-processing path. Add:
+
+```js
+import {
+  extractedLinkedinJobToRawItem,
+  scrapeLinkedinJob
+} from '../../../scripts/lib/scrape-linkedin-job.mjs';
+```
+
+Replace `processOneJob(page, input, job)` with:
+
+```js
+function hasMinimumRawFields(item) {
+  return Boolean(item.id && item.title && item.companyName && item.location && item.descriptionText && item.link && item.inputUrl);
+}
+
+async function processOneJob(_page, input, job) {
+  try {
+    const extracted = await scrapeLinkedinJob(job.normalizedUrl, {
+      headless: true,
+      timeoutMs: 45000
+    });
+    const item = extractedLinkedinJobToRawItem(extracted, new Date().toISOString());
+    if (!hasMinimumRawFields(item)) {
+      return { ok: false, stopReason: 'minimum_fields_missing', error: job.normalizedUrl };
+    }
+    return {
+      ok: true,
+      item: {
+        ...item,
+        originalUrl: job.originalUrl,
+        searchPageUrl: input.searchPageUrl
+      }
+    };
+  } catch (error) {
+    return { ok: false, stopReason: 'navigation_or_extraction_failed', error: error.message };
+  }
+}
+```
+
+Keep the `_page` parameter in place so the `runBatches({ processJob: (job) => processOneJob(session.page, input, job) })` call can stay mechanically small for this task.
+
+- [ ] **Step 4: Run the focused tests**
+
+Run:
+
+```powershell
+Push-Location tmp/linkedin-assisted-collector
+node --test test/public-detail-scraper.test.mjs test/batch-runner.test.mjs
+Pop-Location
+```
+
+Expected:
+
+- Public detail raw mapping passes.
+- Batch runner still enforces `maxJobs`, `batchSize`, delays, cooldowns, and stop-on-anomaly.
+
+- [ ] **Step 5: Run all no-LinkedIn tests**
+
+Run:
+
+```powershell
+Push-Location tmp/linkedin-assisted-collector
+npm test
+Pop-Location
+```
+
+Expected:
+
+- All no-network and fixture tests pass.
+- The collector no longer uses Cookie-backed pages for detail scraping.
+
+## Task 9B: Optional Batch Import Into Dashboard Manual LinkedIn Flow
+
+**Files:**
+
+- Modify: `tmp/linkedin-assisted-collector/src/main.mjs`
+- Modify: `tmp/linkedin-assisted-collector/src/input.mjs`
+- Create: `tmp/linkedin-assisted-collector/test/dashboard-import-mode.test.mjs`
+- Read-only dependencies:
+  - `scripts/lib/manual-linkedin-store.mjs`
+  - `scripts/lib/adapt-linkedin.mjs`
+  - `app/server.mjs`
+
+This task is only for the approved path where the local collector should write successful public-detail extractions into the same Dashboard manual LinkedIn import flow as `Add LinkedIn JD`. Keep the default `dryRun: true` and do not write project data unless the input explicitly enables it.
+
+- [ ] **Step 1: Add explicit input for Dashboard write mode**
+
+In `tmp/linkedin-assisted-collector/test/input.test.mjs`, add:
+
+```js
+test('validateInput defaults dashboard import writes off', () => {
+  const input = validateInput({
+    searchPageUrl: 'https://www.linkedin.com/jobs/search/?keywords=ai',
+    cookiesPath: 'C:/Users/Xiao/secure/linkedin-cookies.json',
+    userAgent: 'Mozilla/5.0 Chrome/124 Safari/537.36'
+  });
+
+  assert.equal(input.writeDashboardManualImport, false);
+});
+
+test('validateInput only allows dashboard import writes when dryRun is false', () => {
+  const dryRunInput = validateInput({
+    searchPageUrl: 'https://www.linkedin.com/jobs/search/?keywords=ai',
+    cookiesPath: 'C:/Users/Xiao/secure/linkedin-cookies.json',
+    userAgent: 'Mozilla/5.0 Chrome/124 Safari/537.36',
+    dryRun: true,
+    writeDashboardManualImport: true
+  });
+  const writeInput = validateInput({
+    searchPageUrl: 'https://www.linkedin.com/jobs/search/?keywords=ai',
+    cookiesPath: 'C:/Users/Xiao/secure/linkedin-cookies.json',
+    userAgent: 'Mozilla/5.0 Chrome/124 Safari/537.36',
+    dryRun: false,
+    writeDashboardManualImport: true
+  });
+
+  assert.equal(dryRunInput.writeDashboardManualImport, false);
+  assert.equal(writeInput.writeDashboardManualImport, true);
+});
+```
+
+- [ ] **Step 2: Implement input flag**
+
+In `tmp/linkedin-assisted-collector/src/input.mjs`, add `writeDashboardManualImport: false` to `DEFAULTS`, and return:
+
+```js
+const dryRun = input.dryRun !== false;
+
+return {
+  ...input,
+  maxJobs: clampInteger(input.maxJobs, DEFAULTS.maxJobs, 1, 25),
+  batchSize: clampInteger(input.batchSize, DEFAULTS.batchSize, 1, 5),
+  dryRun,
+  headed: input.headed !== false,
+  writeDashboardManualImport: dryRun ? false : input.writeDashboardManualImport === true,
+  // keep existing delay and resultScroll fields
+};
+```
+
+- [ ] **Step 3: Prefer the existing Dashboard HTTP API for write mode**
+
+When `writeDashboardManualImport` is true, call the running local Dashboard API once per successful URL instead of inventing a second writer:
+
+```js
+async function postDashboardManualImport(baseUrl, jobUrl) {
+  const response = await fetch(new URL('/api/applications/import-linkedin-url', baseUrl), {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ url: jobUrl })
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.error || `Dashboard import failed with ${response.status}`);
+  }
+  return response.json();
+}
+```
+
+Add optional input default:
+
+```json
+{
+  "dashboardBaseUrl": "http://127.0.0.1:3000"
+}
+```
+
+The collector still owns batching, delays, cooldowns, and anomaly stops. The Dashboard API owns public detail scraping, raw conversion, manual daily/audit writes, adapter mapping, accepted/application upsert, and dedupe messaging.
+
+- [ ] **Step 4: Keep dry-run extraction separate from Dashboard writes**
+
+In `processOneJob`, branch explicitly:
+
+```js
+if (input.writeDashboardManualImport) {
+  const imported = await postDashboardManualImport(input.dashboardBaseUrl, job.normalizedUrl);
+  return { ok: true, item: { id: job.id, link: job.normalizedUrl, imported } };
+}
+
+const extracted = await scrapeLinkedinJob(job.normalizedUrl, {
+  headless: true,
+  timeoutMs: 45000
+});
+const item = extractedLinkedinJobToRawItem(extracted, new Date().toISOString());
+```
+
+This keeps dry-run validation independent from project writes, while the explicit write mode reuses the full Dashboard import behavior.
+
+- [ ] **Step 5: Verify write mode with a stubbed Dashboard endpoint**
+
+Create `tmp/linkedin-assisted-collector/test/dashboard-import-mode.test.mjs` with a local Node HTTP server that:
+
+- receives `POST /api/applications/import-linkedin-url`
+- records each posted URL
+- returns `{ "ok": true, "imported": { "jobKey": "linkedin:4393978962", "message": "Added LinkedIn job to Accepted." } }`
+
+Test requirements:
+
+- `postDashboardManualImport()` posts the normalized URL.
+- non-2xx responses become `ok: false` job results with `stopReason: 'dashboard_import_failed'`.
+- `dryRun: true` never enables `writeDashboardManualImport`.
+
+- [ ] **Step 6: Manual one-job Dashboard write verification**
+
+Only after dry-run detail extraction succeeds, set:
+
+```json
+{
+  "maxJobs": 1,
+  "dryRun": false,
+  "writeDashboardManualImport": true,
+  "dashboardBaseUrl": "http://127.0.0.1:3000"
+}
+```
+
+Start the Dashboard server in a separate terminal, then run:
+
+```powershell
+Push-Location tmp/linkedin-assisted-collector
+npm start
+Pop-Location
+```
+
+Expected:
+
+- The collector previews URLs and waits for `YES`.
+- It sends exactly one normalized job detail URL to the Dashboard import API.
+- Dashboard writes through `data/manual/linkedin-YYYY-MM-DD.json` and `data/manual/audit/linkedin-manual-*.json`.
+- Accepted/Application tracking is updated using the existing Dashboard dedupe messages.
+- Cookie values are not logged.
+
+- [ ] **Step 7: Manual one-batch Dashboard write verification**
+
+After the one-job write succeeds, set `maxJobs` to `5` and keep `batchSize` at `5`.
+
+Run:
+
+```powershell
+Push-Location tmp/linkedin-assisted-collector
+npm start
+Pop-Location
+```
+
+Expected:
+
+- At most five Dashboard import API calls are made.
+- Delay and stop-on-anomaly behavior remains owned by the collector.
+- Dashboard dedupes already imported jobs.
+- No `data/raw/linkedin-local-*` file is written unless the local output mode is separately enabled.
+
 ## Task 10: Manual Verification Gates
 
 **Files:**
@@ -1810,7 +2126,7 @@ Expected:
 
 - Tool previews URLs.
 - User types `YES`.
-- Tool processes one job detail page.
+- Tool processes one job detail page through the Dashboard public LinkedIn scraper (`scrapeLinkedinJob`) rather than the authenticated search-page browser.
 - Tool prints a run summary.
 - `wroteData` is `false`.
 - `output/` is absent or empty.
@@ -1830,6 +2146,7 @@ Pop-Location
 Expected:
 
 - Tool processes up to one batch of 5 jobs.
+- Detail pages are fetched through public LinkedIn detail pages without Cookie loading.
 - Random 8-25 second delays occur between job detail pages.
 - Any anomaly stops the run.
 - `wroteData` is `false`.
@@ -1849,6 +2166,7 @@ Pop-Location
 Expected:
 
 - Tool processes at most 5 batches and 25 jobs.
+- URL discovery uses the authenticated search-page browser; detail extraction uses public detail pages.
 - Random 2-6 minute cooldowns occur between successful batches.
 - Any anomaly stops the run.
 - `wroteData` is `false`.
@@ -1926,9 +2244,14 @@ Recommendation after successful PoC:
 - Promote only the minimal reusable pieces:
   - cookie normalization
   - URL normalization
-  - output shape validation
-- Keep browser automation and cookies outside normal project automation.
-- Use `data/raw/linkedin-local-YYYY-MM-DD-HHMMSS.json` rather than `data/manual/linkedin-YYYY-MM-DD.json` for auditable run metadata.
+  - result-list URL discovery
+- Keep authenticated browser automation and cookies outside normal project automation.
+- Prefer public detail extraction through `scripts/lib/scrape-linkedin-job.mjs`.
+- Prefer Dashboard manual import semantics for accepted/application writes:
+  - `POST /api/applications/import-linkedin-url` for the initial PoC write path, or
+  - a later extracted shared helper if the HTTP dependency becomes awkward.
+- Use `data/manual/linkedin-YYYY-MM-DD.json` for Dashboard-integrated manual imports.
+- Use `tmp/linkedin-assisted-collector/output/linkedin-local-YYYY-MM-DD-HHMMSS.json` only for explicit local PoC output before Dashboard integration is enabled.
 
 ## Final Verification Checklist
 
@@ -1938,9 +2261,12 @@ Before calling the implementation complete:
 - [ ] `git status --short` shows no unexpected changes outside `tmp/` and the approved docs file.
 - [ ] Preview-only mode prints at most 25 URLs and writes no files.
 - [ ] One-job dry-run processes at most one job and writes no output.
+- [ ] One-job dry-run uses the public Dashboard LinkedIn detail scraper and does not use Cookie-backed detail pages.
 - [ ] One-batch dry-run processes at most five jobs and writes no output.
+- [ ] Optional Dashboard write mode is disabled unless `dryRun` is `false` and `writeDashboardManualImport` is `true`.
 - [ ] Full dry-run stops at 25 jobs or earlier on anomaly.
 - [ ] Persisted PoC output, if enabled, writes only under `tmp/linkedin-assisted-collector/output/`.
+- [ ] Dashboard write mode, if enabled, writes through the existing Dashboard manual LinkedIn import path.
 - [ ] Cookie values never appear in terminal output, logs, summaries, or output JSON.
 - [ ] Login, checkpoint, CAPTCHA, access restriction, and verification pages stop the run immediately.
 - [ ] No root project code or runtime data is modified during PoC implementation.
@@ -1953,6 +2279,8 @@ Spec coverage:
 - Cookie and User-Agent handling are covered by Tasks 2, 3, and 7.
 - Search page URL preview is covered by Tasks 4 and 9.
 - One upfront confirmation is covered by Task 9.
+- Public detail extraction reuse is covered by Task 9A.
+- Dashboard manual import integration is covered by Task 9B.
 - Batch size, max jobs, random job delays, random batch cooldowns, and automatic continuation are covered by Task 6.
 - Stop conditions are covered by Task 5 and exercised in Task 10.
 - Raw output shape and dry-run behavior are covered by Task 8 and Task 11.
@@ -1965,5 +2293,5 @@ Placeholder scan:
 
 Type and naming consistency:
 
-- `validateInput`, `loadCookies`, `extractVisibleJobUrls`, `detectStopCondition`, `extractJobDetail`, `hasMinimumJobFields`, `runBatches`, `createBrowserSession`, `buildRunSummary`, and `writeLocalRawOutput` are defined before use.
+- `validateInput`, `loadCookies`, `extractVisibleJobUrls`, `collectJobUrlsWithResultListScroll`, `scrapeLinkedinJob`, `extractedLinkedinJobToRawItem`, `detectStopCondition`, `runBatches`, `createBrowserSession`, `buildRunSummary`, and `writeLocalRawOutput` are defined before use.
 - Raw item fields match the existing LinkedIn adapter's expected names: `id`, `title`, `companyName`, `location`, `descriptionText`, `descriptionHtml`, `link`, `applyUrl`, and `inputUrl`.

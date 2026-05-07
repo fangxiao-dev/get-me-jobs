@@ -44,6 +44,18 @@ User provides 1 LinkedIn search page URL
 
 If the user wants another page, they start a new run and provide the next search page URL manually.
 
+## Detail Page Extraction Strategy
+
+The authenticated browser session is only required for the search results page and left-side results-list URL discovery. Job detail pages should prefer the existing public LinkedIn JD scraper used by the Dashboard `Add LinkedIn JD` workflow:
+
+- `scripts/lib/scrape-linkedin-job.mjs`
+- `scrapeLinkedinJob(url)`
+- `extractedLinkedinJobToRawItem(extracted, collectedAt)`
+
+This keeps Cookie usage limited to the minimum surface needed for search-page discovery. Detail extraction may open a separate headless public Playwright page per job URL, as long as batch size, delay, cooldown, and stop-on-anomaly rules are still enforced by the local assisted collector.
+
+If a public job detail page fails to expose the minimum fields (`id`, `title`, `companyName`, `location`, `descriptionText`, `link`, `inputUrl`), the job should be treated as a failed extraction. The collector must not fall back to using the authenticated search-page browser for detail scraping unless the user explicitly approves that broader Cookie use.
+
 ## Non-Goals
 
 - Do not run in Apify cloud with LinkedIn login cookies.
@@ -316,11 +328,14 @@ Preferred integration:
 
 ```text
 local assisted raw items
+-> Dashboard manual LinkedIn import data flow
+-> data/manual/linkedin-YYYY-MM-DD.json
 -> existing LinkedIn adapter
--> canonical merge
--> selected jobs
+-> Accepted/Application tracking
 -> Review UI / Dashboard
 ```
+
+The Dashboard already has a single-URL manual import path. The local assisted collector should reuse that path's raw item conversion and manual-store semantics rather than inventing a parallel Dashboard write format.
 
 ## Implementation Architecture
 

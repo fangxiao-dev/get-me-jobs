@@ -45,7 +45,7 @@ npm run preferences:update-rejects -- 2026-05-07 --apply data/preference-proposa
 
 Default mode is proposal-only. It reads local data, analyzes rejected jobs, prints a summary, and writes a proposal artifact. It does not change `config/preferences.linkedin.json`.
 
-Apply mode reads a previously generated proposal artifact, validates that it still matches the current preference file, updates `config/preferences.linkedin.json`, and reruns selection for the same date.
+Apply mode reads a previously generated proposal artifact, validates that it still matches the current preference file content hash, updates `config/preferences.linkedin.json`, and reruns selection for the same date.
 
 ## Inputs
 
@@ -58,7 +58,7 @@ data/annotations/2026-05-07.json
 config/preferences.linkedin.json
 ```
 
-The command should fail with a clear message when canonical or annotations files are missing. If selected output is missing, it may regenerate selection first by running the existing selector logic.
+The command should fail with a clear message when canonical, selected, annotations, or preferences files are missing. Proposal mode must not silently regenerate selected output because that can analyze a different selection state than the one the user reviewed.
 
 ## Outputs
 
@@ -118,7 +118,10 @@ The proposal file should be deterministic JSON:
     "selectedFile": "data/selected/2026-05-07.json",
     "annotationsFile": "data/annotations/2026-05-07.json",
     "preferencesFile": "config/preferences.linkedin.json",
-    "preferencesVersion": 1
+    "preferencesVersion": 1,
+    "preferencesHash": "4f8a...",
+    "selectedHash": "91cc...",
+    "annotationsHash": "c72a..."
   },
   "summary": {
     "canonicalCount": 100,
@@ -130,8 +133,12 @@ The proposal file should be deterministic JSON:
   "proposedRule": {
     "id": "manual_reject_patterns",
     "description": "Terms inferred from manually rejected selected jobs. Apply only after review.",
-    "fields": ["title.raw", "description.text", "company.industry"],
+    "fields": ["title.raw", "description.text", "company.industry", "employment.jobFunction"],
     "terms": ["marketing", "sales", "chemistry synthesis"]
+  },
+  "impact": {
+    "wouldRemoveSelectedJobIds": ["linkedin:123", "linkedin:456"],
+    "acceptedOrMaybeConflictJobIds": []
   },
   "evidence": [
     {
@@ -157,7 +164,7 @@ The apply step should prefer an exclude rule with this stable ID:
 {
   "id": "manual_reject_patterns",
   "description": "Terms inferred from manually rejected selected jobs. Apply only after review.",
-  "fields": ["title.raw", "description.text", "company.industry"],
+  "fields": ["title.raw", "description.text", "company.industry", "employment.jobFunction"],
   "terms": []
 }
 ```
@@ -181,12 +188,10 @@ The first implementation should be conservative and deterministic.
 
 Candidate sources:
 
-- annotation tags
-- annotation notes
-- `title.raw`
-- `description.text`
+- explicit namespaced annotation tags such as `exclude:chemistry synthesis`
+- explicit namespaced annotation notes such as `exclude: chemistry synthesis` or `bad_industry: Marketing Services`
 - `company.industry`
-- optionally `employment.jobFunction`
+- `employment.jobFunction`
 
 Candidate normalization:
 
@@ -198,13 +203,13 @@ Candidate normalization:
 
 Candidate filtering:
 
-- candidate appears in at least two rejected selected jobs, or appears once when it comes from an explicit tag/note
+- candidate appears in at least two rejected selected jobs, or appears once when it comes from an explicit namespaced tag/note
 - candidate does not appear in accepted selected jobs
 - candidate does not appear in maybe selected jobs unless the proposal emits a warning instead of including it by default
 - candidate is not already present in any existing exclude rule
 - candidate is not part of the positive thesis/AI must-rule intent unless it is clearly a negative context from notes/tags
 
-The command should avoid overfitting. For example, a single rejected company name should not become an exclude term unless the user explicitly wrote that company or industry as a negative note/tag.
+The command should avoid overfitting. Do not mine free title or description tokens in V1. Plain tags such as `too_lab` remain evidence labels only; they must not become exclude terms unless expressed through an explicit namespace such as `exclude:lab work`.
 
 ## Matching Semantics
 
@@ -261,8 +266,8 @@ npm run preferences:update-rejects -- 2026-05-07 --apply data/preference-proposa
 Behavior:
 
 - validate proposal schema and date
-- validate the proposal was generated from the same preference version
-- refuse to apply if accepted/maybe conflicts exist
+- validate the proposal was generated from the same preference schema version, preference content hash, selected hash, and annotations hash
+- refuse to apply if accepted/maybe conflicts exist for terms still present in `proposedRule.terms`
 - update `config/preferences.linkedin.json`
 - rerun:
 
@@ -273,6 +278,10 @@ node scripts/select-jobs.mjs data/canonical/2026-05-07.json data/selected/2026-0
 - print before/after selection counts
 
 Apply mode is the explicit confirmation boundary. The command itself is confirmation; no interactive prompt is required for npm/script usage.
+
+Apply mode must force selected output to be rewritten even when selected job IDs are unchanged, so `_selection` details and preference context reflect the new preference file.
+
+If selection regeneration fails after writing preferences, apply mode must restore the previous `config/preferences.linkedin.json` before returning the error.
 
 ## API And UI Scope
 
@@ -314,6 +323,8 @@ Unit tests:
 - placeholder conversion: empty `not_obvious_exclusion_yet` becomes `manual_reject_patterns`
 - append behavior: existing `manual_reject_patterns` keeps old terms and adds unique new terms
 - apply writes formatted JSON and reruns selection through `selectJobsFile`
+- apply refuses stale preference, selected, or annotation hashes
+- apply restores the previous preference file if selection regeneration fails after writing preferences
 
 Manual verification:
 
@@ -336,7 +347,6 @@ npm test
 ## Open Questions
 
 - Should proposal mode support multiple dates, for example `--since 2026-05-01`, once daily evidence is too sparse?
-- Should explicit tags such as `not_ai`, `not_thesis`, `too_sales`, or `bad_industry:<term>` get first-class handling?
+- Should plain evidence tags such as `not_ai`, `not_thesis`, or `too_sales` influence future proposals without becoming terms directly?
 - Should the proposal artifact include a JSON Patch in addition to the normalized `proposedRule`?
 - Should `preferences.version` increment on apply, or remain a schema version while proposal validation uses a content hash?
-

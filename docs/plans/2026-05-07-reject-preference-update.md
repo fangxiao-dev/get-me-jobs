@@ -4,7 +4,7 @@
 
 **Goal:** Implement an explicit `npm run preferences:update-rejects -- <date>` workflow that analyzes manually rejected selected jobs, writes a proposal artifact by default, and only updates `config/preferences.linkedin.json` when invoked with `--apply`.
 
-**Architecture:** Keep matching semantics shared with `scripts/select-jobs.mjs` by extracting selector helpers into `scripts/lib/preferences.mjs`. Put proposal/apply logic in a pure library, `scripts/lib/reject-preference-update.mjs`, and keep filesystem/CLI behavior in `scripts/update-reject-preferences.mjs`. Tests use temporary directories and Node's built-in test runner.
+**Architecture:** Keep matching semantics shared with `scripts/select-jobs.mjs` by extracting selector helpers into `scripts/lib/preferences.mjs`. Put proposal/apply logic in a pure library, `scripts/lib/reject-preference-update.mjs`, and keep filesystem/CLI behavior in `scripts/update-reject-preferences.mjs`. Proposal artifacts include a preference content hash and impact job IDs so apply mode can reject stale proposals and humans can review concrete effects before applying.
 
 **Tech Stack:** Node.js ESM, Node built-in `node:test`, JSON file stores, existing `scripts/select-jobs.mjs` selector.
 
@@ -61,29 +61,26 @@ Implement a conservative deterministic extractor. The goal is useful safe propos
 
 Candidate sources:
 
-- annotation `tags`
-- annotation `note`
-- `company.industry`
-- `employment.jobFunction`
-- repeated title tokens from `title.raw`
-- repeated description tokens from `description.text`
+- explicit namespaced annotation tags such as `exclude:chemistry synthesis`
+- explicit namespaced annotation notes such as `exclude: chemistry synthesis` or `bad_industry: Marketing Services`
+- structured fields: `company.industry`
+- structured fields: `employment.jobFunction`
 
 Normalization:
 
 - trim
 - lowercase
 - collapse whitespace
-- strip leading `not_`, `not-`, `bad_`, `bad-`, `too_`, `too-`, `exclude:`, `reject:`, `bad_industry:`
+- strip explicit namespace prefixes `exclude:`, `reject:`, and `bad_industry:`
 - discard values shorter than 3 characters unless in `["ai", "ml", "nlp", "llm"]`
 - discard stopwords and generic positive terms listed in the implementation task
 
 Inclusion:
 
-- include explicit note/tag terms when they match at least one rejected selected job and zero accepted/maybe selected jobs
+- include explicit namespaced note/tag terms when they match at least one rejected selected job and zero accepted/maybe selected jobs
 - include `company.industry` and `employment.jobFunction` terms when they appear in at least two rejected selected jobs and zero accepted/maybe selected jobs
-- include title/description single-token terms when they appear in at least three rejected selected jobs and zero accepted/maybe selected jobs
 
-This intentionally avoids one-off company names and one-off description phrases.
+Do not mine free title or description tokens in V1. Plain tags such as `too_lab` remain evidence labels only; they must not become exclude terms unless expressed through an explicit namespace such as `exclude:lab work`.
 
 ## Task 1: Extract Shared Preference Matching Helpers
 
@@ -249,7 +246,17 @@ Add this import near the top:
 import { selectItems, stableId } from "./lib/preferences.mjs";
 ```
 
-Keep `readJson`, `writeJson`, `selectJobsFile`, and CLI entrypoint unchanged.
+Add an explicit `forceWrite` option inside `selectJobsFile` so apply mode can refresh `_selection` details even when selected IDs do not change:
+
+```js
+  const forceWrite = Boolean(options.forceWrite);
+  const selectionUnchanged = !forceWrite
+    && JSON.stringify(selectedIds) === JSON.stringify(previousIds)
+    && previousOutput?.preferencesVersion === preferences.version
+    && previousOutput?.preferencesFile === preferencesFile;
+```
+
+Keep `readJson`, `writeJson`, the output shape, and CLI entrypoint otherwise unchanged.
 
 - [ ] **Step 5: Verify helper and full test suite**
 
@@ -277,8 +284,9 @@ Create `scripts/lib/tests/reject-preference-update.test.mjs` with this first blo
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
-  applyRejectPreferenceProposal,
   generateRejectPreferenceProposal,
+  hashJson,
+  hashPreferences,
 } from "../reject-preference-update.mjs";
 
 function job(id, extra = {}) {
@@ -347,10 +355,15 @@ test("proposal analyzes only rejected selected jobs as primary false positives",
   assert.equal(proposal.summary.rejectedCount, 3);
   assert.equal(proposal.summary.selectedFalsePositiveCount, 2);
   assert.deepEqual(proposal.proposedRule.terms, ["marketing services"]);
+  assert.deepEqual(proposal.impact.wouldRemoveSelectedJobIds, ["linkedin:1", "linkedin:2"]);
+  assert.deepEqual(proposal.impact.acceptedOrMaybeConflictJobIds, []);
+  assert.equal(proposal.inputs.preferencesHash, hashPreferences(basePreferences()));
+  assert.equal(proposal.inputs.selectedHash, hashJson(selected));
+  assert.equal(proposal.inputs.annotationsHash, hashJson(annotations));
   assert.deepEqual(proposal.evidence[0].supportingRejectedJobIds, ["linkedin:1", "linkedin:2"]);
 });
 
-test("proposal includes explicit note/tag terms with one rejected supporting job", () => {
+test("proposal includes explicit namespaced note terms with one rejected supporting job", () => {
   const rejected = job("1", { description: "Chemistry synthesis automation with AI." });
   const canonical = { date: "2026-05-07", items: [rejected] };
   const selected = { items: [rejected] };
@@ -371,6 +384,28 @@ test("proposal includes explicit note/tag terms with one rejected supporting job
 
   assert.deepEqual(proposal.proposedRule.terms, ["chemistry synthesis"]);
 });
+
+test("proposal does not turn plain tags into exclude terms", () => {
+  const rejected = job("1", { description: "Lab automation with AI.", industry: "Research Services" });
+  const canonical = { date: "2026-05-07", items: [rejected] };
+  const selected = { items: [rejected] };
+  const annotations = {
+    items: [
+      { id: "linkedin:1", decision: "reject", note: "", tags: ["too_lab"] },
+    ],
+  };
+
+  const proposal = generateRejectPreferenceProposal({
+    date: "2026-05-07",
+    canonical,
+    selected,
+    annotations,
+    preferences: basePreferences(),
+    now: "2026-05-07T10:00:00.000Z",
+  });
+
+  assert.deepEqual(proposal.proposedRule.terms, []);
+});
 ```
 
 - [ ] **Step 2: Run test and verify it fails**
@@ -388,11 +423,12 @@ Expected: FAIL with module not found for `../reject-preference-update.mjs`.
 Create `scripts/lib/reject-preference-update.mjs` with:
 
 ```js
+import crypto from "node:crypto";
 import { pickFields, stableId, termMatches } from "./preferences.mjs";
 
 export const MANUAL_REJECT_RULE_ID = "manual_reject_patterns";
 export const MANUAL_REJECT_RULE_DESCRIPTION = "Terms inferred from manually rejected selected jobs. Apply only after review.";
-export const MANUAL_REJECT_RULE_FIELDS = ["title.raw", "description.text", "company.industry"];
+export const MANUAL_REJECT_RULE_FIELDS = ["title.raw", "description.text", "company.industry", "employment.jobFunction"];
 
 const SHORT_ALLOWED_TERMS = new Set(["ai", "ml", "nlp", "llm"]);
 const STOPWORDS = new Set([
@@ -408,7 +444,6 @@ function normalizeCandidate(value) {
     .toLocaleLowerCase()
     .replace(/^bad[_-]industry:/, "")
     .replace(/^(exclude|reject):/, "")
-    .replace(/^(not|bad|too)[_-]/, "")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -423,28 +458,25 @@ function isUsefulCandidate(value) {
 
 function annotationExplicitTerms(annotation) {
   const values = [];
-  for (const tag of annotation.tags ?? []) values.push(tag);
+  for (const tag of annotation.tags ?? []) {
+    if (/^(exclude|reject|bad_industry):/i.test(String(tag))) values.push(tag);
+  }
   const note = String(annotation.note ?? "");
   for (const match of note.matchAll(/(?:exclude|reject|bad_industry):\s*([^,;.]+)/gi)) {
-    values.push(match[1]);
-  }
-  for (const match of note.matchAll(/"([^"]+)"/g)) {
     values.push(match[1]);
   }
   return values.map(normalizeCandidate).filter(isUsefulCandidate);
 }
 
-function tokenizeText(value) {
-  return String(value ?? "")
-    .toLocaleLowerCase()
-    .replace(/<[^>]*>/g, " ")
-    .split(/[^a-z0-9+#.-]+/i)
-    .map(normalizeCandidate)
-    .filter(isUsefulCandidate);
+export function hashJson(value) {
+  return crypto
+    .createHash("sha256")
+    .update(JSON.stringify(value))
+    .digest("hex");
 }
 
-function unique(values) {
-  return [...new Set(values.filter(Boolean))];
+export function hashPreferences(preferences) {
+  return hashJson(preferences);
 }
 ```
 
@@ -472,12 +504,6 @@ function candidateEntriesForRejectedJob(job, annotation) {
     if (isUsefulCandidate(term)) entries.push({ term, source: field });
   }
 
-  for (const field of ["title.raw", "description.text"]) {
-    for (const term of unique(tokenizeText(pickFields(job, [field])))) {
-      entries.push({ term, source: field });
-    }
-  }
-
   return entries;
 }
 
@@ -487,8 +513,7 @@ function candidateMatchesJobs(term, jobs, fields = MANUAL_REJECT_RULE_FIELDS) {
 
 function candidateMinimumSupport(sources) {
   if (sources.has("explicit")) return 1;
-  if (sources.has("company.industry") || sources.has("employment.jobFunction")) return 2;
-  return 3;
+  return 2;
 }
 
 export function generateRejectPreferenceProposal({
@@ -527,6 +552,8 @@ export function generateRejectPreferenceProposal({
 
   const evidence = [];
   const warnings = [];
+  const wouldRemoveSelectedJobIds = new Set();
+  const acceptedOrMaybeConflictJobIds = new Set();
 
   for (const candidate of candidateMap.values()) {
     const supportingRejectedJobs = rejectedSelected
@@ -537,6 +564,7 @@ export function generateRejectPreferenceProposal({
 
     if (supportingRejectedJobs.length < minimumSupport) continue;
     if (acceptedOrMaybeMatches.length > 0) {
+      for (const job of acceptedOrMaybeMatches) acceptedOrMaybeConflictJobIds.add(String(stableId(job)));
       warnings.push({
         type: "accepted_or_maybe_conflict",
         term: candidate.term,
@@ -544,6 +572,8 @@ export function generateRejectPreferenceProposal({
       });
       continue;
     }
+
+    for (const job of selectedMatches) wouldRemoveSelectedJobIds.add(String(stableId(job)));
 
     evidence.push({
       term: candidate.term,
@@ -568,6 +598,9 @@ export function generateRejectPreferenceProposal({
       annotationsFile: `data/annotations/${date}.json`,
       preferencesFile: "config/preferences.linkedin.json",
       preferencesVersion: preferences.version,
+      preferencesHash: hashPreferences(preferences),
+      selectedHash: hashJson(selected),
+      annotationsHash: hashJson(annotations),
     },
     summary: {
       canonicalCount: canonical.items?.length ?? 0,
@@ -575,6 +608,10 @@ export function generateRejectPreferenceProposal({
       annotationCount: annotationItems.length,
       rejectedCount: rejectedAnnotations.length,
       selectedFalsePositiveCount: rejectedSelected.length,
+    },
+    impact: {
+      wouldRemoveSelectedJobIds: [...wouldRemoveSelectedJobIds].sort(),
+      acceptedOrMaybeConflictJobIds: [...acceptedOrMaybeConflictJobIds].sort(),
     },
     proposedRule: {
       id: MANUAL_REJECT_RULE_ID,
@@ -607,31 +644,43 @@ Expected: PASS for proposal-generation tests.
 
 - [ ] **Step 1: Add failing apply tests**
 
-Append to `scripts/lib/tests/reject-preference-update.test.mjs`:
+First update the top import in `scripts/lib/tests/reject-preference-update.test.mjs` to include `applyRejectPreferenceProposal`:
+
+```js
+import {
+  applyRejectPreferenceProposal,
+  generateRejectPreferenceProposal,
+  hashJson,
+  hashPreferences,
+} from "../reject-preference-update.mjs";
+```
+
+Then append these tests to `scripts/lib/tests/reject-preference-update.test.mjs`:
 
 ```js
 test("apply converts empty placeholder rule to manual reject rule", () => {
+  const preferences = basePreferences();
   const proposal = {
     schemaVersion: 1,
     type: "reject_preference_update",
     date: "2026-05-07",
-    inputs: { preferencesVersion: 1 },
+    inputs: { preferencesVersion: 1, preferencesHash: hashPreferences(preferences) },
     proposedRule: {
       id: "manual_reject_patterns",
       description: "Terms inferred from manually rejected selected jobs. Apply only after review.",
-      fields: ["title.raw", "description.text", "company.industry"],
+      fields: ["title.raw", "description.text", "company.industry", "employment.jobFunction"],
       terms: ["marketing services"],
     },
     warnings: [],
   };
 
-  const next = applyRejectPreferenceProposal(basePreferences(), proposal);
+  const next = applyRejectPreferenceProposal(preferences, proposal);
 
   assert.deepEqual(next.rules.exclude, [
     {
       id: "manual_reject_patterns",
       description: "Terms inferred from manually rejected selected jobs. Apply only after review.",
-      fields: ["title.raw", "description.text", "company.industry"],
+      fields: ["title.raw", "description.text", "company.industry", "employment.jobFunction"],
       terms: ["marketing services"],
     },
   ]);
@@ -646,7 +695,7 @@ test("apply appends unique terms to an existing manual reject rule", () => {
         {
           id: "manual_reject_patterns",
           description: "Terms inferred from manually rejected selected jobs. Apply only after review.",
-          fields: ["title.raw", "description.text", "company.industry"],
+          fields: ["title.raw", "description.text", "company.industry", "employment.jobFunction"],
           terms: ["sales"],
         },
       ],
@@ -656,11 +705,11 @@ test("apply appends unique terms to an existing manual reject rule", () => {
     schemaVersion: 1,
     type: "reject_preference_update",
     date: "2026-05-07",
-    inputs: { preferencesVersion: 1 },
+    inputs: { preferencesVersion: 1, preferencesHash: hashPreferences(preferences) },
     proposedRule: {
       id: "manual_reject_patterns",
       description: "Terms inferred from manually rejected selected jobs. Apply only after review.",
-      fields: ["title.raw", "description.text", "company.industry"],
+      fields: ["title.raw", "description.text", "company.industry", "employment.jobFunction"],
       terms: ["marketing services", "sales"],
     },
     warnings: [],
@@ -672,43 +721,65 @@ test("apply appends unique terms to an existing manual reject rule", () => {
 });
 
 test("apply refuses proposals with accepted or maybe conflicts", () => {
+  const preferences = basePreferences();
   const proposal = {
     schemaVersion: 1,
     type: "reject_preference_update",
     date: "2026-05-07",
-    inputs: { preferencesVersion: 1 },
+    inputs: { preferencesVersion: 1, preferencesHash: hashPreferences(preferences) },
     proposedRule: {
       id: "manual_reject_patterns",
-      fields: ["title.raw", "description.text", "company.industry"],
+      fields: ["title.raw", "description.text", "company.industry", "employment.jobFunction"],
       terms: ["marketing services"],
     },
     warnings: [{ type: "accepted_or_maybe_conflict", term: "marketing services", jobIds: ["linkedin:9"] }],
   };
 
   assert.throws(
-    () => applyRejectPreferenceProposal(basePreferences(), proposal),
+    () => applyRejectPreferenceProposal(preferences, proposal),
     /accepted\/maybe conflicts/,
   );
 });
 
-test("apply refuses stale preference versions", () => {
+test("apply refuses stale preference hashes", () => {
+  const preferences = basePreferences();
   const proposal = {
     schemaVersion: 1,
     type: "reject_preference_update",
     date: "2026-05-07",
-    inputs: { preferencesVersion: 2 },
+    inputs: { preferencesVersion: 1, preferencesHash: "stale" },
     proposedRule: {
       id: "manual_reject_patterns",
-      fields: ["title.raw", "description.text", "company.industry"],
+      fields: ["title.raw", "description.text", "company.industry", "employment.jobFunction"],
       terms: ["marketing services"],
     },
     warnings: [],
   };
 
   assert.throws(
-    () => applyRejectPreferenceProposal(basePreferences(), proposal),
-    /preference version/,
+    () => applyRejectPreferenceProposal(preferences, proposal),
+    /preference hash/,
   );
+});
+
+test("apply ignores conflict warnings for terms that are not proposed", () => {
+  const preferences = basePreferences();
+  const proposal = {
+    schemaVersion: 1,
+    type: "reject_preference_update",
+    date: "2026-05-07",
+    inputs: { preferencesVersion: 1, preferencesHash: hashPreferences(preferences) },
+    proposedRule: {
+      id: "manual_reject_patterns",
+      fields: ["title.raw", "description.text", "company.industry", "employment.jobFunction"],
+      terms: ["marketing services"],
+    },
+    warnings: [{ type: "accepted_or_maybe_conflict", term: "software development", jobIds: ["linkedin:9"] }],
+  };
+
+  const next = applyRejectPreferenceProposal(preferences, proposal);
+
+  assert.deepEqual(next.rules.exclude[0].terms, ["marketing services"]);
 });
 ```
 
@@ -739,11 +810,18 @@ function assertValidProposal(preferences, proposal) {
   if (proposal.schemaVersion !== 1) throw new Error("Unsupported reject preference proposal schemaVersion.");
   if (proposal.type !== "reject_preference_update") throw new Error("Unsupported reject preference proposal type.");
   if (proposal.proposedRule?.id !== MANUAL_REJECT_RULE_ID) throw new Error("Proposal does not target manual reject patterns.");
-  if ((proposal.warnings ?? []).some((warning) => warning.type === "accepted_or_maybe_conflict")) {
+  const proposedTerms = new Set((proposal.proposedRule?.terms ?? []).map(normalizeCandidate));
+  const hasProposedConflict = (proposal.warnings ?? []).some((warning) => {
+    return warning.type === "accepted_or_maybe_conflict" && proposedTerms.has(normalizeCandidate(warning.term));
+  });
+  if (hasProposedConflict) {
     throw new Error("Cannot apply proposal with accepted/maybe conflicts.");
   }
   if (proposal.inputs?.preferencesVersion !== preferences.version) {
-    throw new Error("Cannot apply proposal generated from a different preference version.");
+    throw new Error("Cannot apply proposal generated from a different preference schema version.");
+  }
+  if (proposal.inputs?.preferencesHash !== hashPreferences(preferences)) {
+    throw new Error("Cannot apply proposal generated from a different preference hash.");
   }
 }
 
@@ -809,19 +887,36 @@ Expected: both PASS.
 
 - [ ] **Step 1: Add filesystem workflow tests**
 
-Append to `scripts/lib/tests/reject-preference-update.test.mjs`:
+Update the top of `scripts/lib/tests/reject-preference-update.test.mjs`; ESM imports must stay at the file top.
 
 ```js
+import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { test } from "node:test";
 import { runRejectPreferenceUpdate } from "../../update-reject-preferences.mjs";
+import {
+  applyRejectPreferenceProposal,
+  generateRejectPreferenceProposal,
+  hashJson,
+  hashPreferences,
+} from "../reject-preference-update.mjs";
+```
+
+Add this helper below `basePreferences(...)`:
+
+```js
 
 function writeJson(filePath, value) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
 }
+```
+
+Append these tests to the bottom of the file:
+
+```js
 
 test("CLI runner writes proposal without mutating preferences", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "reject-pref-proposal-"));
@@ -847,6 +942,10 @@ test("CLI runner writes proposal without mutating preferences", () => {
 
   assert.equal(result.mode, "proposal");
   assert.equal(result.proposal.proposedRule.terms[0], "marketing services");
+  assert.equal(result.proposal.inputs.preferencesHash, hashPreferences(preferences));
+  assert.equal(result.proposal.inputs.selectedHash, hashJson(JSON.parse(fs.readFileSync(path.join(root, "data", "selected", `${date}.json`), "utf8"))));
+  assert.equal(result.proposal.inputs.annotationsHash, hashJson(JSON.parse(fs.readFileSync(path.join(root, "data", "annotations", `${date}.json`), "utf8"))));
+  assert.deepEqual(result.proposal.impact.wouldRemoveSelectedJobIds, ["linkedin:1", "linkedin:2"]);
   assert.equal(fs.existsSync(path.join(root, "data", "preference-proposals", `rejects-${date}.json`)), true);
   assert.deepEqual(
     JSON.parse(fs.readFileSync(path.join(root, "config", "preferences.linkedin.json"), "utf8")),
@@ -864,18 +963,24 @@ test("CLI runner applies a proposal and regenerates selected output", () => {
   writeJson(path.join(root, "data", "canonical", `${date}.json`), { schemaVersion: 1, date, items: [rejected1, rejected2, accepted] });
   writeJson(path.join(root, "data", "selected", `${date}.json`), { date, items: [rejected1, rejected2, accepted] });
   writeJson(path.join(root, "data", "annotations", `${date}.json`), { date, items: [] });
-  writeJson(path.join(root, "config", "preferences.linkedin.json"), basePreferences());
+  const preferences = basePreferences();
+  writeJson(path.join(root, "config", "preferences.linkedin.json"), preferences);
 
   const proposalPath = path.join(root, "data", "preference-proposals", `rejects-${date}.json`);
   writeJson(proposalPath, {
     schemaVersion: 1,
     type: "reject_preference_update",
     date,
-    inputs: { preferencesVersion: 1 },
+    inputs: {
+      preferencesVersion: 1,
+      preferencesHash: hashPreferences(preferences),
+      selectedHash: hashJson(JSON.parse(fs.readFileSync(path.join(root, "data", "selected", `${date}.json`), "utf8"))),
+      annotationsHash: hashJson(JSON.parse(fs.readFileSync(path.join(root, "data", "annotations", `${date}.json`), "utf8"))),
+    },
     proposedRule: {
       id: "manual_reject_patterns",
       description: "Terms inferred from manually rejected selected jobs. Apply only after review.",
-      fields: ["title.raw", "description.text", "company.industry"],
+      fields: ["title.raw", "description.text", "company.industry", "employment.jobFunction"],
       terms: ["marketing services"],
     },
     warnings: [],
@@ -888,6 +993,143 @@ test("CLI runner applies a proposal and regenerates selected output", () => {
   assert.equal(result.mode, "apply");
   assert.deepEqual(nextPreferences.rules.exclude[0].terms, ["marketing services"]);
   assert.deepEqual(nextSelected.items.map((item) => item.identity.jobId), ["linkedin:3"]);
+});
+
+test("CLI runner force rewrites selected output when selected ids are unchanged", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "reject-pref-force-write-"));
+  const date = "2026-05-07";
+  const selectedJob = job("1", { industry: "Software Development", description: "AI compiler research." });
+  const preferences = basePreferences();
+
+  writeJson(path.join(root, "data", "canonical", `${date}.json`), { schemaVersion: 1, date, items: [selectedJob] });
+  writeJson(path.join(root, "data", "selected", `${date}.json`), {
+    schemaVersion: 1,
+    date,
+    savedAt: "2026-05-07T00:00:00.000Z",
+    preferencesFile: "config/preferences.linkedin.json",
+    preferencesVersion: 1,
+    items: [selectedJob],
+  });
+  writeJson(path.join(root, "data", "annotations", `${date}.json`), { date, items: [] });
+  writeJson(path.join(root, "config", "preferences.linkedin.json"), preferences);
+
+  const proposalPath = path.join(root, "data", "preference-proposals", `rejects-${date}.json`);
+  writeJson(proposalPath, {
+    schemaVersion: 1,
+    type: "reject_preference_update",
+    date,
+    inputs: {
+      preferencesVersion: 1,
+      preferencesHash: hashPreferences(preferences),
+      selectedHash: hashJson(JSON.parse(fs.readFileSync(path.join(root, "data", "selected", `${date}.json`), "utf8"))),
+      annotationsHash: hashJson(JSON.parse(fs.readFileSync(path.join(root, "data", "annotations", `${date}.json`), "utf8"))),
+    },
+    proposedRule: {
+      id: "manual_reject_patterns",
+      description: "Terms inferred from manually rejected selected jobs. Apply only after review.",
+      fields: ["title.raw", "description.text", "company.industry", "employment.jobFunction"],
+      terms: ["marine biology"],
+    },
+    warnings: [],
+  });
+
+  runRejectPreferenceUpdate({ cwd: root, argv: [date, "--apply", proposalPath] });
+
+  const nextSelected = JSON.parse(fs.readFileSync(path.join(root, "data", "selected", `${date}.json`), "utf8"));
+  assert.deepEqual(nextSelected.items.map((item) => item.identity.jobId), ["linkedin:1"]);
+  assert.notEqual(nextSelected.savedAt, "2026-05-07T00:00:00.000Z");
+});
+
+test("CLI runner fails in proposal mode when selected output is missing", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "reject-pref-missing-selected-"));
+  const date = "2026-05-07";
+  writeJson(path.join(root, "data", "canonical", `${date}.json`), { schemaVersion: 1, date, items: [] });
+  writeJson(path.join(root, "data", "annotations", `${date}.json`), { date, items: [] });
+  writeJson(path.join(root, "config", "preferences.linkedin.json"), basePreferences());
+
+  assert.throws(
+    () => runRejectPreferenceUpdate({ cwd: root, argv: [date] }),
+    /selected file not found/,
+  );
+});
+
+test("CLI runner refuses stale selected or annotation inputs during apply", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "reject-pref-stale-inputs-"));
+  const date = "2026-05-07";
+  const selectedJob = job("1", { industry: "Software Development", description: "AI compiler research." });
+  const preferences = basePreferences();
+
+  writeJson(path.join(root, "data", "canonical", `${date}.json`), { schemaVersion: 1, date, items: [selectedJob] });
+  writeJson(path.join(root, "data", "selected", `${date}.json`), { date, items: [selectedJob] });
+  writeJson(path.join(root, "data", "annotations", `${date}.json`), { date, items: [] });
+  writeJson(path.join(root, "config", "preferences.linkedin.json"), preferences);
+
+  const proposalPath = path.join(root, "data", "preference-proposals", `rejects-${date}.json`);
+  writeJson(proposalPath, {
+    schemaVersion: 1,
+    type: "reject_preference_update",
+    date,
+    inputs: {
+      preferencesVersion: 1,
+      preferencesHash: hashPreferences(preferences),
+      selectedHash: "stale",
+      annotationsHash: hashJson(JSON.parse(fs.readFileSync(path.join(root, "data", "annotations", `${date}.json`), "utf8"))),
+    },
+    proposedRule: {
+      id: "manual_reject_patterns",
+      fields: ["title.raw", "description.text", "company.industry", "employment.jobFunction"],
+      terms: ["marketing services"],
+    },
+    warnings: [],
+  });
+
+  assert.throws(
+    () => runRejectPreferenceUpdate({ cwd: root, argv: [date, "--apply", proposalPath] }),
+    /selected hash/,
+  );
+});
+
+test("CLI runner restores preferences when selection regeneration fails", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "reject-pref-rollback-"));
+  const date = "2026-05-07";
+  const selectedJob = job("1", { industry: "Software Development", description: "AI compiler research." });
+  const preferences = basePreferences();
+  const selected = { date, items: [selectedJob] };
+  const annotations = { date, items: [] };
+
+  fs.mkdirSync(path.join(root, "data", "canonical"), { recursive: true });
+  fs.writeFileSync(path.join(root, "data", "canonical", `${date}.json`), "{ malformed", "utf8");
+  writeJson(path.join(root, "data", "selected", `${date}.json`), selected);
+  writeJson(path.join(root, "data", "annotations", `${date}.json`), annotations);
+  writeJson(path.join(root, "config", "preferences.linkedin.json"), preferences);
+
+  const proposalPath = path.join(root, "data", "preference-proposals", `rejects-${date}.json`);
+  writeJson(proposalPath, {
+    schemaVersion: 1,
+    type: "reject_preference_update",
+    date,
+    inputs: {
+      preferencesVersion: 1,
+      preferencesHash: hashPreferences(preferences),
+      selectedHash: hashJson(selected),
+      annotationsHash: hashJson(annotations),
+    },
+    proposedRule: {
+      id: "manual_reject_patterns",
+      fields: ["title.raw", "description.text", "company.industry", "employment.jobFunction"],
+      terms: ["marketing services"],
+    },
+    warnings: [],
+  });
+
+  assert.throws(
+    () => runRejectPreferenceUpdate({ cwd: root, argv: [date, "--apply", proposalPath] }),
+    /JSON/,
+  );
+  assert.deepEqual(
+    JSON.parse(fs.readFileSync(path.join(root, "config", "preferences.linkedin.json"), "utf8")),
+    preferences,
+  );
 });
 ```
 
@@ -913,6 +1155,7 @@ import { selectJobsFile } from "./select-jobs.mjs";
 import {
   applyRejectPreferenceProposal,
   generateRejectPreferenceProposal,
+  hashJson,
 } from "./lib/reject-preference-update.mjs";
 
 function readJson(filePath) {
@@ -952,10 +1195,7 @@ export function runRejectPreferenceUpdate({ cwd = process.cwd(), argv = process.
   requireFile(canonicalPath, "canonical");
   requireFile(annotationsPath, "annotations");
   requireFile(preferencesPath, "preferences");
-
-  if (!fs.existsSync(selectedPath)) {
-    selectJobsFile(canonicalPath, selectedPath, preferencesPath, { cwd });
-  }
+  requireFile(selectedPath, "selected");
 
   if (args.mode === "proposal") {
     const proposal = generateRejectPreferenceProposal({
@@ -974,13 +1214,26 @@ export function runRejectPreferenceUpdate({ cwd = process.cwd(), argv = process.
   const proposalPath = path.resolve(cwd, args.proposalPath);
   requireFile(proposalPath, "proposal");
   const beforeSelected = readJson(selectedPath);
+  const annotations = readJson(annotationsPath);
   const preferences = readJson(preferencesPath);
   const proposal = readJson(proposalPath);
   if (proposal.date !== args.date) throw new Error("Proposal date does not match command date.");
+  if (proposal.inputs?.selectedHash !== hashJson(beforeSelected)) {
+    throw new Error("Cannot apply proposal generated from a different selected hash.");
+  }
+  if (proposal.inputs?.annotationsHash !== hashJson(annotations)) {
+    throw new Error("Cannot apply proposal generated from a different annotations hash.");
+  }
 
   const nextPreferences = applyRejectPreferenceProposal(preferences, proposal);
-  writeJson(preferencesPath, nextPreferences);
-  const selection = selectJobsFile(canonicalPath, selectedPath, preferencesPath, { cwd });
+  let selection;
+  try {
+    writeJson(preferencesPath, nextPreferences);
+    selection = selectJobsFile(canonicalPath, selectedPath, preferencesPath, { cwd, forceWrite: true });
+  } catch (error) {
+    writeJson(preferencesPath, preferences);
+    throw error;
+  }
   const afterSelected = readJson(selectedPath);
 
   return {
@@ -997,6 +1250,7 @@ function printResult(result) {
     console.log(`Reject preference proposal written: ${path.relative(process.cwd(), result.proposalPath).replaceAll(path.sep, "/")}`);
     console.log(`Selected false positives analyzed: ${result.proposal.summary.selectedFalsePositiveCount}`);
     console.log(`Recommended exclude terms: ${result.proposal.proposedRule.terms.length}`);
+    console.log(`Would remove selected jobs: ${result.proposal.impact.wouldRemoveSelectedJobIds.length}`);
     console.log(`Accepted/maybe conflicts: ${(result.proposal.warnings ?? []).filter((warning) => warning.type === "accepted_or_maybe_conflict").length}`);
     console.log("Apply with:");
     console.log(`npm run preferences:update-rejects -- ${result.proposal.date} --apply ${path.relative(process.cwd(), result.proposalPath).replaceAll(path.sep, "/")}`);
@@ -1133,6 +1387,7 @@ Expected:
 Reject preference proposal written: data/preference-proposals/rejects-2026-05-07.json
 Selected false positives analyzed: <number>
 Recommended exclude terms: <number>
+Would remove selected jobs: <number>
 Accepted/maybe conflicts: <number>
 Apply with:
 npm run preferences:update-rejects -- 2026-05-07 --apply data/preference-proposals/rejects-2026-05-07.json
@@ -1151,6 +1406,11 @@ Expected:
 - `schemaVersion` is `1`
 - `type` is `reject_preference_update`
 - `summary.selectedFalsePositiveCount` is present
+- `inputs.preferencesHash` is present
+- `inputs.selectedHash` is present
+- `inputs.annotationsHash` is present
+- `impact.wouldRemoveSelectedJobIds` is present
+- `impact.acceptedOrMaybeConflictJobIds` is present
 - `proposedRule.id` is `manual_reject_patterns`
 - `evidence` explains proposed terms
 
@@ -1227,13 +1487,17 @@ Expected tracked implementation/doc files are modified or new. Runtime data unde
 
 - The CLI should throw regular `Error` objects from pure functions and convert them to `console.error(...)` only in the executable entrypoint.
 - Tests must use temp directories and must not write the real `config/preferences.linkedin.json`.
+- Treat `preferences.version` as a schema version in V1. Use `inputs.preferencesHash` to prevent stale proposal apply after same-version content edits.
+- Use `inputs.selectedHash` and `inputs.annotationsHash` to prevent applying a proposal after the reviewed selected output or annotations changed.
+- Proposal mode must fail if `data/selected/<date>.json` is missing. Add a future explicit flag if regeneration in proposal mode becomes useful.
+- Apply mode must call `selectJobsFile(..., { forceWrite: true })` so regenerated selected output reflects the new preferences even when selected IDs are unchanged.
+- Apply mode must restore the previous `config/preferences.linkedin.json` if selected-output regeneration throws after writing the new preferences.
 - Keep JSON output formatted with two-space indentation and a trailing newline, matching existing project style.
 - Keep the first version CLI-only. Do not add server endpoints or frontend buttons.
 - Do not use `rg` for implementation search in this Windows workspace unless it has been confirmed working; prefer `git grep` and PowerShell `Select-String` per project instruction.
 
 ## Self-Review Checklist
 
-- Spec coverage: proposal-only default, explicit apply, selected false positives, conflict blocking, placeholder conversion, README, npm script, and `.gitignore` are all covered.
+- Spec coverage: proposal-only default, explicit apply, selected false positives, preference/selected/annotations hash validation, impact IDs, conflict blocking, rollback, placeholder conversion, README, npm script, and `.gitignore` are all covered.
 - Placeholder scan: no task says to add unspecified error handling or unspecified tests; every behavior has concrete test or code guidance.
-- Type consistency: `manual_reject_patterns`, `reject_preference_update`, `proposedRule`, `warnings`, and date-scoped paths are consistent across tests, library, CLI, and README.
-
+- Type consistency: `manual_reject_patterns`, `reject_preference_update`, `proposedRule`, `impact`, `warnings`, `preferencesHash`, `selectedHash`, `annotationsHash`, and date-scoped paths are consistent across tests, library, CLI, and README.

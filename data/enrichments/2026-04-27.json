@@ -1,0 +1,32 @@
+{
+  "linkedin:4401966313": {
+    "aufgaben": "research and prototype AI-agent software development approaches",
+    "techReqs": "software engineering basics, AI/LLM and agent-based systems, Python/Java or LLM frameworks",
+    "enrichedAt": "2026-05-02T17:27:30.515Z"
+  },
+  "linkedin:4393985727": {
+    "aufgaben": "defect classification and automated bug report generation with AI",
+    "techReqs": "machine learning with Random Forest or SVM, Python or C# programming, Azure ML or GPU-based model optimization",
+    "enrichedAt": "2026-05-02T17:27:40.612Z"
+  },
+  "linkedin:4371991629": {
+    "aufgaben": "developing a validation tool for vehicle build-state documentation completeness",
+    "techReqs": "programming language proficiency, JavaScript/NodeJS/Python knowledge, vehicle electronics and diagnostics",
+    "enrichedAt": "2026-05-02T17:27:48.393Z"
+  },
+  "linkedin:4407411021": {
+    "aufgaben": "AI-based biosignal processing and software prototyping",
+    "techReqs": "Python programming, machine learning frameworks, time-series biosignal analysis",
+    "enrichedAt": "2026-05-02T17:27:54.355Z"
+  },
+  "linkedin:4393983773": {
+    "aufgaben": "AI-driven sensor data fusion for laser applications",
+    "techReqs": "Python programming, machine learning model development, sensor data fusion and integration",
+    "enrichedAt": "2026-05-02T17:28:00.181Z"
+  },
+  "linkedin:4399753019": {
+    "aufgaben": "building AI tools and digital innovation workflows",
+    "techReqs": "LLMs and prompt engineering, RAG with Azure OpenAI, Python or automation tools",
+    "enrichedAt": "2026-05-02T17:28:06.562Z"
+  }
+}

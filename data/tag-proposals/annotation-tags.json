@@ -1,0 +1,808 @@
+{
+  "schemaVersion": 1,
+  "type": "annotation_tag_normalization_proposal",
+  "createdAt": "2026-05-07T16:33:13.339Z",
+  "tagPolicy": {
+    "rejectTags": [
+      "not_thesis",
+      "stale_post",
+      "language_barrier",
+      "no_programming",
+      "industrial_hardware",
+      "embedded_hardware",
+      "domain_mismatch",
+      "traditional_ml_cv",
+      "low_interest"
+    ],
+    "positiveTags": [
+      "good_topic"
+    ],
+    "removedTags": [
+      "too_far",
+      "good_company",
+      "not_ai"
+    ]
+  },
+  "summary": {
+    "files": 5,
+    "totalAnnotations": 124,
+    "changedAnnotations": 52,
+    "tagCounts": {
+      "not_thesis": 10,
+      "domain_mismatch": 11,
+      "low_interest": 6,
+      "industrial_hardware": 5,
+      "no_programming": 4,
+      "language_barrier": 4,
+      "good_topic": 5,
+      "traditional_ml_cv": 4,
+      "embedded_hardware": 3,
+      "stale_post": 17
+    }
+  },
+  "entries": [
+    {
+      "file": "2026-04-25.json",
+      "id": "linkedin:4399267230",
+      "decision": "reject",
+      "note": "Wertstromanalyse 不感兴趣",
+      "oldTags": [],
+      "suggestedTags": [
+        "domain_mismatch",
+        "low_interest"
+      ],
+      "addedTags": [
+        "domain_mismatch",
+        "low_interest"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-25.json",
+      "id": "linkedin:4406388755",
+      "decision": "reject",
+      "note": "not thesis",
+      "oldTags": [],
+      "suggestedTags": [
+        "not_thesis"
+      ],
+      "addedTags": [
+        "not_thesis"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-25.json",
+      "id": "linkedin:4397689250",
+      "decision": "reject",
+      "note": "偏 Hardwarenahe 和 Visual C++, C# ，没有我的强项",
+      "oldTags": [
+        "not_ai"
+      ],
+      "suggestedTags": [
+        "industrial_hardware"
+      ],
+      "addedTags": [
+        "industrial_hardware"
+      ],
+      "removedTags": [
+        "not_ai"
+      ]
+    },
+    {
+      "file": "2026-04-25.json",
+      "id": "linkedin:4326765416",
+      "decision": "reject",
+      "note": "偏工业，没有什么AI或者软件开发的",
+      "oldTags": [
+        "not_ai"
+      ],
+      "suggestedTags": [
+        "no_programming",
+        "industrial_hardware"
+      ],
+      "addedTags": [
+        "no_programming",
+        "industrial_hardware"
+      ],
+      "removedTags": [
+        "not_ai"
+      ]
+    },
+    {
+      "file": "2026-04-25.json",
+      "id": "linkedin:4326609053",
+      "decision": "reject",
+      "note": "偏工业，没有什么AI或者软件开发的",
+      "oldTags": [
+        "not_ai"
+      ],
+      "suggestedTags": [
+        "no_programming",
+        "industrial_hardware"
+      ],
+      "addedTags": [
+        "no_programming",
+        "industrial_hardware"
+      ],
+      "removedTags": [
+        "not_ai"
+      ]
+    },
+    {
+      "file": "2026-04-25.json",
+      "id": "linkedin:4381010325",
+      "decision": "reject",
+      "note": "尤其强调 Deutschkenntnisse (min. C1) 应该无法满足",
+      "oldTags": [],
+      "suggestedTags": [
+        "language_barrier"
+      ],
+      "addedTags": [
+        "language_barrier"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-25.json",
+      "id": "linkedin:4224508959",
+      "decision": "reject",
+      "note": "无编程的consulting，且强调语言 Deutschkenntnisse (mindestens C1-Niveau），不太行",
+      "oldTags": [],
+      "suggestedTags": [
+        "language_barrier",
+        "no_programming"
+      ],
+      "addedTags": [
+        "language_barrier",
+        "no_programming"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-25.json",
+      "id": "linkedin:4383920003",
+      "decision": "reject",
+      "note": "物理学的，太理论了",
+      "oldTags": [],
+      "suggestedTags": [
+        "domain_mismatch"
+      ],
+      "addedTags": [
+        "domain_mismatch"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-25.json",
+      "id": "linkedin:4397925470",
+      "decision": "reject",
+      "note": "传统的 Bildverarbeitung / Computer Vision，没意思",
+      "oldTags": [],
+      "suggestedTags": [
+        "traditional_ml_cv",
+        "low_interest"
+      ],
+      "addedTags": [
+        "traditional_ml_cv",
+        "low_interest"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-25.json",
+      "id": "linkedin:4332213502",
+      "decision": "reject",
+      "note": "很重的工业倾向性，我没有Bioökonomie的背景",
+      "oldTags": [],
+      "suggestedTags": [
+        "industrial_hardware",
+        "domain_mismatch"
+      ],
+      "addedTags": [
+        "industrial_hardware",
+        "domain_mismatch"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-25.json",
+      "id": "linkedin:4224516087",
+      "decision": "reject",
+      "note": "Deutschkenntnisse mindestens C1-Niveau",
+      "oldTags": [],
+      "suggestedTags": [
+        "language_barrier"
+      ],
+      "addedTags": [
+        "language_barrier"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-25.json",
+      "id": "linkedin:4404216772",
+      "decision": "reject",
+      "note": "",
+      "oldTags": [
+        "not_ai"
+      ],
+      "suggestedTags": [],
+      "addedTags": [],
+      "removedTags": [
+        "not_ai"
+      ]
+    },
+    {
+      "file": "2026-04-25.json",
+      "id": "linkedin:4375151608",
+      "decision": "reject",
+      "note": "不复合背景要求“ Du bist bereit, dich in Themen wie Energy Harvesting, RFID ”",
+      "oldTags": [],
+      "suggestedTags": [
+        "embedded_hardware"
+      ],
+      "addedTags": [
+        "embedded_hardware"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-25.json",
+      "id": "4405013355",
+      "decision": "reject",
+      "note": "Pflichtpraktikum ",
+      "oldTags": [],
+      "suggestedTags": [
+        "not_thesis"
+      ],
+      "addedTags": [
+        "not_thesis"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-25.json",
+      "id": "4343929920",
+      "decision": "reject",
+      "note": "posted日期太久远了",
+      "oldTags": [],
+      "suggestedTags": [
+        "stale_post"
+      ],
+      "addedTags": [
+        "stale_post"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-25.json",
+      "id": "4391885448",
+      "decision": "reject",
+      "note": "not thesis",
+      "oldTags": [],
+      "suggestedTags": [
+        "not_thesis"
+      ],
+      "addedTags": [
+        "not_thesis"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-25.json",
+      "id": "4401952386",
+      "decision": "reject",
+      "note": "not thesis",
+      "oldTags": [],
+      "suggestedTags": [
+        "not_thesis"
+      ],
+      "addedTags": [
+        "not_thesis"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-25.json",
+      "id": "4373144145",
+      "decision": "reject",
+      "note": "not thesis",
+      "oldTags": [],
+      "suggestedTags": [
+        "not_thesis"
+      ],
+      "addedTags": [
+        "not_thesis"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-27.json",
+      "id": "linkedin:4374371860",
+      "decision": "reject",
+      "note": "实际日期太久远",
+      "oldTags": [],
+      "suggestedTags": [
+        "stale_post"
+      ],
+      "addedTags": [
+        "stale_post"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-27.json",
+      "id": "linkedin:4326609053",
+      "decision": "reject",
+      "note": "实际日期太久远",
+      "oldTags": [],
+      "suggestedTags": [
+        "stale_post"
+      ],
+      "addedTags": [
+        "stale_post"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-27.json",
+      "id": "linkedin:4326890312",
+      "decision": "reject",
+      "note": "实际日期太久远",
+      "oldTags": [],
+      "suggestedTags": [
+        "stale_post"
+      ],
+      "addedTags": [
+        "stale_post"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-27.json",
+      "id": "linkedin:4326862158",
+      "decision": "reject",
+      "note": "实际日期太久远",
+      "oldTags": [],
+      "suggestedTags": [
+        "stale_post"
+      ],
+      "addedTags": [
+        "stale_post"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-27.json",
+      "id": "linkedin:4332213502",
+      "decision": "reject",
+      "note": "实际日期太久远",
+      "oldTags": [],
+      "suggestedTags": [
+        "stale_post"
+      ],
+      "addedTags": [
+        "stale_post"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-27.json",
+      "id": "linkedin:4390126200",
+      "decision": "reject",
+      "note": "Experiments Power Engines 不感兴趣",
+      "oldTags": [],
+      "suggestedTags": [
+        "domain_mismatch",
+        "low_interest"
+      ],
+      "addedTags": [
+        "domain_mismatch",
+        "low_interest"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-27.json",
+      "id": "linkedin:4390130010",
+      "decision": "reject",
+      "note": "Power Engines 不感兴趣",
+      "oldTags": [],
+      "suggestedTags": [
+        "domain_mismatch",
+        "low_interest"
+      ],
+      "addedTags": [
+        "domain_mismatch",
+        "low_interest"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-27.json",
+      "id": "linkedin:4370971511",
+      "decision": "reject",
+      "note": "强要求Embedded ",
+      "oldTags": [],
+      "suggestedTags": [
+        "embedded_hardware"
+      ],
+      "addedTags": [
+        "embedded_hardware"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-27.json",
+      "id": "linkedin:4328828823",
+      "decision": "reject",
+      "note": "实际日期太久远",
+      "oldTags": [],
+      "suggestedTags": [
+        "stale_post"
+      ],
+      "addedTags": [
+        "stale_post"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-27.json",
+      "id": "linkedin:4347677982",
+      "decision": "reject",
+      "note": "实际日期太久远",
+      "oldTags": [],
+      "suggestedTags": [
+        "stale_post"
+      ],
+      "addedTags": [
+        "stale_post"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-27.json",
+      "id": "linkedin:4381005582",
+      "decision": "reject",
+      "note": "Deutsch (min. C1) ",
+      "oldTags": [],
+      "suggestedTags": [
+        "language_barrier"
+      ],
+      "addedTags": [
+        "language_barrier"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-27.json",
+      "id": "linkedin:4401966313",
+      "decision": "accept",
+      "note": "",
+      "oldTags": [
+        "good_topic",
+        "good_company"
+      ],
+      "suggestedTags": [
+        "good_topic"
+      ],
+      "addedTags": [],
+      "removedTags": [
+        "good_company"
+      ]
+    },
+    {
+      "file": "2026-04-27.json",
+      "id": "linkedin:4330097220",
+      "decision": "reject",
+      "note": "强Robotik...",
+      "oldTags": [],
+      "suggestedTags": [
+        "domain_mismatch"
+      ],
+      "addedTags": [
+        "domain_mismatch"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-27.json",
+      "id": "linkedin:4358733152",
+      "decision": "reject",
+      "note": "太远，实际日期久远，且work mode 不明",
+      "oldTags": [],
+      "suggestedTags": [
+        "stale_post"
+      ],
+      "addedTags": [
+        "stale_post"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-27.json",
+      "id": "linkedin:4328961899",
+      "decision": "reject",
+      "note": "实际日期太久远",
+      "oldTags": [],
+      "suggestedTags": [
+        "stale_post"
+      ],
+      "addedTags": [
+        "stale_post"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-27.json",
+      "id": "linkedin:4326842983",
+      "decision": "reject",
+      "note": "实际日期太久远",
+      "oldTags": [],
+      "suggestedTags": [
+        "stale_post"
+      ],
+      "addedTags": [
+        "stale_post"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-27.json",
+      "id": "linkedin:4366056161",
+      "decision": "reject",
+      "note": "Chemistry 行业",
+      "oldTags": [],
+      "suggestedTags": [
+        "domain_mismatch"
+      ],
+      "addedTags": [
+        "domain_mismatch"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-27.json",
+      "id": "linkedin:4326678405",
+      "decision": "reject",
+      "note": "实际日期太久远",
+      "oldTags": [],
+      "suggestedTags": [
+        "stale_post"
+      ],
+      "addedTags": [
+        "stale_post"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-27.json",
+      "id": "linkedin:4385253259",
+      "decision": "reject",
+      "note": "EMG 是啥我不懂",
+      "oldTags": [],
+      "suggestedTags": [
+        "domain_mismatch"
+      ],
+      "addedTags": [
+        "domain_mismatch"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-27.json",
+      "id": "linkedin:3841778757",
+      "decision": "reject",
+      "note": "年代久远",
+      "oldTags": [],
+      "suggestedTags": [
+        "stale_post"
+      ],
+      "addedTags": [
+        "stale_post"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-27.json",
+      "id": "linkedin:4328944677",
+      "decision": "reject",
+      "note": "实际日期太久远",
+      "oldTags": [],
+      "suggestedTags": [
+        "stale_post"
+      ],
+      "addedTags": [
+        "stale_post"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-27.json",
+      "id": "linkedin:4404216772",
+      "decision": "reject",
+      "note": "thema不感兴趣",
+      "oldTags": [],
+      "suggestedTags": [
+        "low_interest"
+      ],
+      "addedTags": [
+        "low_interest"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-27.json",
+      "id": "linkedin:3967662272",
+      "decision": "reject",
+      "note": "实际日期太久远",
+      "oldTags": [],
+      "suggestedTags": [
+        "stale_post"
+      ],
+      "addedTags": [
+        "stale_post"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-27.json",
+      "id": "linkedin:4393057126",
+      "decision": "reject",
+      "note": "Embedded ",
+      "oldTags": [],
+      "suggestedTags": [
+        "embedded_hardware"
+      ],
+      "addedTags": [
+        "embedded_hardware"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-27.json",
+      "id": "linkedin:4405623753",
+      "decision": "reject",
+      "note": "传统ML",
+      "oldTags": [],
+      "suggestedTags": [
+        "traditional_ml_cv"
+      ],
+      "addedTags": [
+        "traditional_ml_cv"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-29.json",
+      "id": "linkedin:4399004765",
+      "decision": "reject",
+      "note": "实际post的时间已经比较久了",
+      "oldTags": [],
+      "suggestedTags": [
+        "stale_post"
+      ],
+      "addedTags": [
+        "stale_post"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-29.json",
+      "id": "linkedin:4399002794",
+      "decision": "reject",
+      "note": "传统ML",
+      "oldTags": [],
+      "suggestedTags": [
+        "traditional_ml_cv"
+      ],
+      "addedTags": [
+        "traditional_ml_cv"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-29.json",
+      "id": "linkedin:4398277069",
+      "decision": "reject",
+      "note": "纯cv+传统ML的",
+      "oldTags": [],
+      "suggestedTags": [
+        "traditional_ml_cv"
+      ],
+      "addedTags": [
+        "traditional_ml_cv"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-29.json",
+      "id": "linkedin:4402947233",
+      "decision": "reject",
+      "note": "Pharmatechnik 主题不符",
+      "oldTags": [],
+      "suggestedTags": [
+        "domain_mismatch",
+        "low_interest"
+      ],
+      "addedTags": [
+        "domain_mismatch",
+        "low_interest"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-29.json",
+      "id": "linkedin:4335544546",
+      "decision": "reject",
+      "note": "实际日期太久远",
+      "oldTags": [],
+      "suggestedTags": [
+        "stale_post"
+      ],
+      "addedTags": [
+        "stale_post"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-29.json",
+      "id": "linkedin:4393506501",
+      "decision": "reject",
+      "note": "纯 robotik",
+      "oldTags": [],
+      "suggestedTags": [
+        "domain_mismatch"
+      ],
+      "addedTags": [
+        "domain_mismatch"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-04-29.json",
+      "id": "linkedin:4399267230",
+      "decision": "reject",
+      "note": "Process Design且不是技术类",
+      "oldTags": [],
+      "suggestedTags": [
+        "no_programming",
+        "domain_mismatch"
+      ],
+      "addedTags": [
+        "no_programming",
+        "domain_mismatch"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-05-07.json",
+      "id": "linkedin:4397689250",
+      "decision": "reject",
+      "note": "Visual C++/C#/Java development",
+      "oldTags": [],
+      "suggestedTags": [
+        "industrial_hardware"
+      ],
+      "addedTags": [
+        "industrial_hardware"
+      ],
+      "removedTags": []
+    },
+    {
+      "file": "2026-05-07.json",
+      "id": "4410569551",
+      "decision": "reject",
+      "note": "not thesis",
+      "oldTags": [],
+      "suggestedTags": [
+        "not_thesis"
+      ],
+      "addedTags": [
+        "not_thesis"
+      ],
+      "removedTags": []
+    }
+  ]
+}

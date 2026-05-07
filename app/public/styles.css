@@ -157,8 +157,18 @@ h2 {
 
 .job-filters {
   display: grid;
-  grid-template-columns: repeat(4, minmax(140px, 1fr));
+  grid-template-columns: repeat(5, minmax(120px, 1fr));
   gap: 10px;
+}
+
+.posted-days-filter select {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+  padding: 7px 8px;
+  cursor: pointer;
+  font-size: inherit;
+  width: 100%;
 }
 
 .multi-filter {
@@ -297,6 +307,15 @@ h2 {
 
 .selection {
   color: var(--muted);
+}
+
+.enrichment {
+  margin-top: 8px;
+}
+
+.enrichment-line {
+  color: var(--muted);
+  margin: 2px 0;
 }
 
 .description-body {

@@ -6,7 +6,8 @@ async function loadDashboardUiFunctions() {
   const source = readFileSync("app/public/app.js", "utf8");
   const startupIndex = source.indexOf("window.addEventListener");
   const testSource = `${source.slice(0, startupIndex)}
-globalThis.__dashboardUi = {
+  globalThis.__dashboardUi = {
+  enrichmentDisplayText,
   postManualLinkedinImport,
   shouldReloadReviewAfterDecision,
   stageNoteGroups,
@@ -33,7 +34,7 @@ globalThis.__dashboardUi = {
       fetchCalls.push({ url, options });
       return { ok: true, json: async () => ({ ok: true }) };
     },
-  };
+};
   const vm = await import("node:vm");
   vm.runInNewContext(testSource, context);
   context.globalThis.__dashboardUi.fetchCalls = fetchCalls;
@@ -77,6 +78,15 @@ test("manual LinkedIn import posts URL to the dashboard import API", async () =>
   assert.equal(fetchCalls[0].options.headers["content-type"], "application/json");
   assert.deepEqual(JSON.parse(fetchCalls[0].options.body), {
     url: "https://www.linkedin.com/jobs/view/4343336011/?trk=test",
+  });
+});
+
+test("failed enrichment displays AI failure text", async () => {
+  const { enrichmentDisplayText } = await loadDashboardUiFunctions();
+
+  assert.deepEqual(JSON.parse(JSON.stringify(enrichmentDisplayText({ failed: true, reason: "codex_error" }))), {
+    aufgaben: "AI 分析失败",
+    techReqs: "AI 分析失败",
   });
 });
 

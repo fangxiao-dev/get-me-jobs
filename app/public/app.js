@@ -9,6 +9,7 @@ const state = {
   reviewStates: [],
   reviewCompanies: [],
   reviewWorkplaceTypes: [],
+  reviewPostedMaxDays: null,
   dashboardStatus: "all",
   dashboardSearch: "",
   dashboardCities: [],
@@ -521,9 +522,34 @@ function renderBatchSelector() {
   return wrap;
 }
 
+function renderPostedDaysFilter() {
+  const wrap = createEl("div", "posted-days-filter");
+  const select = document.createElement("select");
+  for (const { value, label } of [
+    { value: "", label: "Any time" },
+    { value: "1", label: "Last 1 day" },
+    { value: "3", label: "Last 3 days" },
+    { value: "7", label: "Last 1 week" },
+    { value: "14", label: "Last 2 weeks" },
+    { value: "30", label: "Last 1 month" },
+  ]) {
+    const opt = document.createElement("option");
+    opt.value = value;
+    opt.textContent = label;
+    opt.selected = String(state.reviewPostedMaxDays ?? "") === value;
+    select.append(opt);
+  }
+  select.addEventListener("change", () => {
+    state.reviewPostedMaxDays = select.value ? Number(select.value) : null;
+    renderReview();
+  });
+  wrap.append(select);
+  return wrap;
+}
+
 function renderReviewToolbar(baseItems, visibleCount) {
   const toolbar = createEl("section", "review-toolbar");
-  toolbar.append(renderJobFilters({
+  const filtersEl = renderJobFilters({
     items: baseItems,
     cityValues: state.reviewCities,
     stateValues: state.reviewStates,
@@ -538,7 +564,9 @@ function renderReviewToolbar(baseItems, visibleCount) {
       reconcileReviewFilters(kind);
       renderReview();
     },
-  }));
+  });
+  filtersEl.append(renderPostedDaysFilter());
+  toolbar.append(filtersEl);
   toolbar.append(createEl("p", "filter-count", `${visibleCount} visible`));
   return toolbar;
 }
@@ -620,6 +648,16 @@ function postedDateOption(job) {
     : Number.isNaN(Date.parse(value))
       ? value
       : new Date(value).toISOString().slice(0, 10);
+}
+
+function daysSincePosted(job) {
+  const date = postedDateOption(job);
+  if (!date) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const posted = new Date(date);
+  posted.setHours(0, 0, 0, 0);
+  return Math.floor((today - posted) / 86400000);
 }
 
 function jobMetaParts(job) {
@@ -727,7 +765,12 @@ function baseReviewItems() {
 function filteredReviewItems() {
   return baseReviewItems().filter((job) => {
     const parts = locationParts(job.location?.raw ?? job.location);
-    return jobFilterMatches(job, parts, state.reviewCities, state.reviewStates, state.reviewCompanies, state.reviewWorkplaceTypes);
+    if (!jobFilterMatches(job, parts, state.reviewCities, state.reviewStates, state.reviewCompanies, state.reviewWorkplaceTypes)) return false;
+    if (state.reviewPostedMaxDays != null) {
+      const days = daysSincePosted(job);
+      if (days == null || days > state.reviewPostedMaxDays) return false;
+    }
+    return true;
   });
 }
 
@@ -947,6 +990,7 @@ function renderJobCard(job) {
 
   const selection = renderSelection(job);
   if (selection) article.append(selection);
+  article.append(renderEnrichment(id, state.data?.enrichments));
 
   const description = createEl("details", "description");
   const summary = createEl("summary", null, "Description");
@@ -981,6 +1025,8 @@ function renderApplicationCard({ job, application }) {
     links.append(renderLink(link.label, link.href, { disabled: link.disabled }));
   }
   article.append(links);
+
+  article.append(renderEnrichment(job.jobKey, state.dashboard?.enrichments));
 
   const description = createEl("details", "description");
   description.append(createEl("summary", null, "Description"), renderDescriptionBody(job));
@@ -1236,6 +1282,26 @@ function renderSelection(job) {
   const wrap = createEl("div", "selection");
   wrap.append(createEl("strong", null, "Matched: "));
   wrap.append(document.createTextNode(must.map((rule) => `${rule.id}: ${(rule.matchedTerms ?? []).join(", ")}`).join(" | ")));
+  return wrap;
+}
+
+function enrichmentDisplayText(e) {
+  if (e?.failed) return { aufgaben: "AI 分析失败", techReqs: "AI 分析失败" };
+  return {
+    aufgaben: e?.aufgaben ?? "未接入AI",
+    techReqs: e?.techReqs ?? "未接入AI",
+  };
+}
+
+function renderEnrichment(id, enrichmentMap) {
+  const e = enrichmentMap?.[id];
+  const { aufgaben, techReqs } = enrichmentDisplayText(e);
+  const wrap = createEl("div", "enrichment");
+  const line1 = createEl("p", "enrichment-line");
+  line1.append(createEl("strong", null, "Tasks: "), document.createTextNode(aufgaben));
+  const line2 = createEl("p", "enrichment-line");
+  line2.append(createEl("strong", null, "Tech: "), document.createTextNode(techReqs));
+  wrap.append(line1, line2);
   return wrap;
 }
 

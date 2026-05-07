@@ -17,6 +17,7 @@ const dataDir = path.join(rootDir, "data");
 const canonicalDir = path.join(dataDir, "canonical");
 const selectedDir = path.join(dataDir, "selected");
 const annotationsDir = path.join(dataDir, "annotations");
+const enrichmentsDir = path.join(dataDir, "enrichments");
 const acceptedJobsPath = path.join(rootDir, "data", "accepted-jobs.json");
 const applicationsPath = path.join(rootDir, "data", "applications.json");
 
@@ -218,6 +219,10 @@ function relativeDataPath(filePath) {
 
 function annotationPath(date) {
   return path.join(annotationsDir, `${date}.json`);
+}
+
+function enrichmentPath(date) {
+  return path.join(enrichmentsDir, `${date}.json`);
 }
 
 function readAnnotationFile(filePath, date) {
@@ -585,6 +590,7 @@ function loadReviewState(options) {
     : path.join(selectedDir, `${batchIdFromFile(canonicalPath)}.json`);
   const effectiveBatchId = batchId ?? batchIdFromFile(canonicalPath);
   const annPath = annotationPath(effectiveBatchId);
+  const enrichments = readJson(enrichmentPath(effectiveBatchId), {});
   const accepted = loadAcceptedJobs();
   const acceptedKeys = new Set((accepted.items ?? []).map((item) => item.jobKey));
 
@@ -640,6 +646,7 @@ function loadReviewState(options) {
       rejected: rejectedItems,
     },
     annotations: annotationMap,
+    enrichments,
   };
 }
 
@@ -740,6 +747,18 @@ function loadDashboardState() {
   const accepted = loadAcceptedJobs();
   const applications = loadApplications();
   const appMap = new Map((applications.items ?? []).map((item) => [item.jobKey, item]));
+
+  // Merge enrichments from all batch dates referenced by accepted jobs
+  const enrichments = {};
+  const seenDates = new Set();
+  for (const job of accepted.items ?? []) {
+    const dateMatch = (job.canonicalFile ?? "").match(/(\d{4}-\d{2}-\d{2})/);
+    if (dateMatch && !seenDates.has(dateMatch[1])) {
+      seenDates.add(dateMatch[1]);
+      Object.assign(enrichments, readJson(enrichmentPath(dateMatch[1]), {}));
+    }
+  }
+
   const items = (accepted.items ?? []).map((job) => ({
     job: hydrateAcceptedJob(job),
     application: appMap.get(job.jobKey) ?? defaultApplication(job.jobKey),
@@ -750,7 +769,7 @@ function loadDashboardState() {
     const status = item.application.currentStatus ?? "accepted";
     counts[status] = (counts[status] ?? 0) + 1;
   }
-  return { statuses, counts, items };
+  return { statuses, counts, items, enrichments };
 }
 
 function appendApplicationEvent(payload) {

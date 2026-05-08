@@ -7,6 +7,9 @@
 | **Job Source** | An external origin that provides job data, such as LinkedIn or StepStone. | Source site, platform |
 | **Raw Job** | A job record exactly as collected or adapted from a **Job Source** before canonical merge. | Scraped job, imported job |
 | **Raw Source File** | A parseable file under `data/raw/` containing one batch of **Raw Jobs** for the normal merge pipeline. | Local output, manual file |
+| **Raw Source Channel** | A configured intake path that produces **Raw Source Files** without directly accepting jobs. | Import mode, source switch |
+| **Source Manifest** | The tracked `config/job-sources.manifest.json` file that controls raw-source channel switches and shared review finalize settings. | Pipeline config, source list |
+| **Apify LinkedIn Channel** | The `apify_linkedin` channel that runs configured Apify LinkedIn tasks and writes raw source files. | Apify channel, cloud collector |
 | **Manual LinkedIn Import** | A single LinkedIn job detail URL imported directly through Dashboard into Accepted/Application tracking. | Add LinkedIn JD, manual raw import |
 | **Local Assisted Collector** | A local, user-confirmed workflow that discovers LinkedIn job URLs from one search page and extracts public job details. | Scraper, crawler, LinkedIn bot |
 | **Search Page** | The user-provided LinkedIn jobs search URL used only for URL discovery. | Results page, query page |
@@ -39,6 +42,7 @@
 ## Relationships
 
 - A **Job Source** produces many **Raw Jobs**.
+- A **Raw Source Channel** produces one or more **Raw Source Files**.
 - A **Raw Source File** contains one or more **Raw Jobs** from exactly one **Job Source**.
 - A **Raw Job** may merge into exactly one **Canonical Job**.
 - A **Canonical Job** may have sightings from multiple **Raw Jobs**.
@@ -47,6 +51,7 @@
 - An **Accepted Job** has zero or one active **Application** tracking record.
 - A **Manual LinkedIn Import** bypasses **Selected Job** review and directly creates or updates **Accepted Job** and **Application** records.
 - A **Local Assisted Collector** should use the **Search Page** and **Result List** only for URL discovery, then use **Job Detail Pages** for public detail extraction.
+- The **Source Manifest** may enable or disable **Raw Source Channels**, but secrets such as LinkedIn Cookie paths stay in ignored local input files.
 
 ## Example Dialogue
 

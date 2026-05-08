@@ -10,7 +10,8 @@ This document records the current technical direction for `job-finder`. It compl
 - Data format: JSON files for raw, selected, annotations, and preferences.
 - Frontend: local browser UI with vanilla HTML/CSS/JS for the first milestone.
 - Backend: lightweight local Node HTTP server.
-- External integration: Apify REST API / Apify Task workflow.
+- External integration: Apify REST API / Apify Task workflow plus local LinkedIn assisted collection.
+- Source orchestration: tracked raw-source manifest in `config/job-sources.manifest.json`.
 - Skills:
   - `apify-task-runner` for Task execution and Dataset retrieval.
   - planned `preference-analyse` for annotation analysis and preference update proposals.
@@ -27,10 +28,16 @@ This document records the current technical direction for `job-finder`. It compl
 Re-run selection from raw data:
 
 ```powershell
-node scripts/select-jobs.mjs data/raw/2026-04-25.json data/selected/2026-04-25.json config/preferences.linkedin.json
+npm run review:finalize -- 2026-05-07
 ```
 
-Planned local UI:
+Run local LinkedIn assisted collection:
+
+```powershell
+npm run collect:linkedin:local
+```
+
+Local UI:
 
 ```powershell
 node app/server.mjs
@@ -40,4 +47,4 @@ node app/server.mjs
 
 - Whether to introduce SQLite after annotations grow.
 - Whether to add a scoring layer in addition to `must` / `exclude`.
-- Whether to add a small package manifest once the local UI server exists.
+- Whether future source channels should get dedicated collectors or only raw-file adapters.

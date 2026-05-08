@@ -4,19 +4,24 @@
 
 - Name: `job-finder`
 - Project type: local data workflow / internal tool
-- Purpose: collect job-description data from Apify, filter it with editable preferences, review accepted jobs, and track applications locally.
+- Purpose: collect job-description data from multiple raw-source channels, filter it with editable preferences, review accepted jobs, and track applications locally.
 - Primary user: the repository owner, reviewing thesis/job opportunities locally.
 - Current phase: bootstrap workflow and review loop.
 
 ## Workflow
 
 ```text
-Apify Task
-  -> data/raw/<date>.json
+Raw source channels
+  -> Apify LinkedIn task channel (apify_linkedin)
+  -> Local LinkedIn assisted collector (localLinkedin)
+  -> data/raw/linkedin-YYYY-MM-DD-HHMMSS.json
+  -> scripts/finalize-review-batch.mjs
+  -> data/canonical/YYYY-MM-DD.json
   -> scripts/select-jobs.mjs + config/preferences.linkedin.json
   -> data/selected/<date>.json
+  -> data/enrichments/<date>.json for selected jobs
   -> local Review UI
-  -> data/annotations/<date>.<source>.json
+  -> data/annotations/<date>.json
   -> data/accepted-jobs.json
   -> data/applications.json
   -> Application Dashboard
@@ -46,8 +51,12 @@ Preference learning and market feedback are separate loops:
 ## Repository Facts
 
 - `.env`: local Apify token and Task IDs. Do not commit.
-- `data/raw/2026-04-25.json`: successful LinkedIn Apify run output.
-- `data/selected/2026-04-25.json`: filtered output from current preferences.
+- `config/job-sources.manifest.json`: tracked channel manifest for raw-source intake and review finalization.
+- `config/local/linkedin-assisted.input.json`: ignored local input for the assisted LinkedIn collector. Do not commit.
+- `data/raw/linkedin-YYYY-MM-DD-HHMMSS.json`: raw-source outputs from Apify LinkedIn tasks and local assisted collection.
+- `data/canonical/YYYY-MM-DD.json`: merged canonical batch from all raw-source files for a date.
+- `data/selected/YYYY-MM-DD.json`: filtered output from current preferences.
+- `data/enrichments/YYYY-MM-DD.json`: AI enrichment for selected jobs.
 - `config/preferences.linkedin.json`: data-driven filter rules.
 - `scripts/select-jobs.mjs`: deterministic filtering script.
 - `docs/plans/2026-04-25-review-ui-preference-analysis-design.md`: approved workflow design.
@@ -61,7 +70,7 @@ Preference learning and market feedback are separate loops:
 
 In scope:
 
-- Apify Task result ingestion.
+- Raw source ingestion from Apify LinkedIn tasks and the local LinkedIn assisted collector.
 - Local raw and selected JSON files.
 - Editable preference rules.
 - Human review annotations.
@@ -73,15 +82,16 @@ Out of scope for now:
 - Hosted production app.
 - Database-backed storage.
 - Automatic preference updates without confirmation.
-- Fully automated crawling schedule.
+- Fully automated LinkedIn crawling or background scheduling.
 
 ## Confirmed Facts
 
 - Apify token is read locally from `.env`.
 - Channel-specific Task IDs use names like `TASKID_LINKEDIN`.
-- The first LinkedIn run succeeded and returned 50 raw items.
-- The current preference rules select 8 items.
-- Selected count is local filtering behavior, not an Apify failure.
+- Raw-source channel switches are tracked in `config/job-sources.manifest.json`; the Apify channel key is `apify_linkedin`.
+- Local LinkedIn assisted collector input is ignored at `config/local/linkedin-assisted.input.json`.
+- Multiple raw files for the same date merge into one canonical review batch.
+- Selected count is local filtering behavior, not a source-channel failure.
 
 ## Open Questions
 

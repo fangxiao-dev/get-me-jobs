@@ -5,18 +5,25 @@ Local workflow for collecting job-description data, filtering thesis/AI-related 
 ## Workflow
 
 ```text
-Apify Task
-  -> data/raw/<source>-YYYY-MM-DD-HHMMSS.json
-  -> scripts/merge-canonical.mjs
-  -> data/canonical/YYYY-MM-DD.json
-  -> scripts/select-jobs.mjs + config/preferences.linkedin.json
-  -> data/selected/<batch>.json
-  -> Review UI
-  -> data/annotations/<batch>.json
-  -> Dashboard
-  -> preference-analyse
+Raw source channels
+  -> Apify LinkedIn task channel (config key: apify_linkedin)
+  -> Local LinkedIn assisted collector (config key: localLinkedin)
+  -> data/raw/linkedin-YYYY-MM-DD-HHMMSS.json
+  -> npm run review:finalize -- YYYY-MM-DD
+     -> scripts/merge-canonical.mjs
+     -> data/canonical/YYYY-MM-DD.json
+     -> scripts/select-jobs.mjs + config/preferences.linkedin.json
+     -> data/selected/YYYY-MM-DD.json
+     -> scripts/enrich-jobs.mjs for selected jobs
+     -> data/enrichments/YYYY-MM-DD.json
+  -> Review UI selected/rejected queues
+  -> data/annotations/YYYY-MM-DD.json
+  -> Dashboard / accepted jobs / applications
+  -> preference analysis proposal
   -> confirmed preference update
 ```
+
+Raw-source channel configuration lives in `config/job-sources.manifest.json`. The manifest is tracked and contains only non-secret channel switches and paths. Local LinkedIn cookies and User-Agent stay in ignored local input at `config/local/linkedin-assisted.input.json`.
 
 Manual LinkedIn JD import:
 
@@ -28,13 +35,50 @@ Dashboard Add LinkedIn JD
   -> scripts/merge-canonical.mjs can merge manual daily input
 ```
 
+## Raw Source Channels
+
+There are two supported job intake channels.
+
+Apify LinkedIn channel:
+
+```text
+npm run review:today
+  -> runs enabled TASKID_* Apify tasks from .env when channels.apify_linkedin.enabled is true
+  -> writes one or more data/raw/linkedin-YYYY-MM-DD-HHMMSS.json files
+  -> calls the shared review finalize flow
+```
+
+Local LinkedIn assisted channel:
+
+```text
+copy config/local/linkedin-assisted.input.example.json
+  -> config/local/linkedin-assisted.input.json
+npm run collect:linkedin:local
+  -> opens one user-provided LinkedIn search page
+  -> previews up to 25 job detail URLs
+  -> waits for explicit YES confirmation
+  -> extracts public job details
+  -> writes data/raw/linkedin-YYYY-MM-DD-HHMMSS.json only when dryRun=false and writeRawSource=true
+```
+
+If both channels are used on the same date, run the finalize command once after both have produced raw files:
+
+```powershell
+npm run review:finalize -- 2026-05-07
+```
+
+`merge-canonical` reads all parseable raw files for that date and merges them into the same canonical review batch.
+
 ## Data Layout
 
-- `data/raw/*.json`: raw Apify dataset exports, named by source and timestamp.
+- `config/job-sources.manifest.json`: tracked raw-source channel manifest with `apify_linkedin`, `localLinkedin`, and review finalize settings.
+- `config/local/linkedin-assisted.input.json`: ignored local LinkedIn collector input containing search URL, Cookie path, and User-Agent.
+- `data/raw/*.json`: raw source files from Apify and local collectors, named by source and timestamp.
 - `data/manual/linkedin-YYYY-MM-DD.json`: daily aggregate for manually imported LinkedIn JDs, deduped by LinkedIn job id.
 - `data/manual/audit/*.json`: one-file-per-manual-import audit records for debugging scraper/adapter behavior.
 - `data/canonical/*.json`: merged canonical jobs across raw and manual sources.
 - `data/selected/*.json`: selected jobs generated from canonical jobs and preferences.
+- `data/enrichments/*.json`: selected-job AI enrichment records shown in Review/Dashboard.
 - `data/annotations/*.json`: local review labels, notes, and tags.
 - `data/accepted-jobs.json`: accepted jobs deduped across batches.
 - `data/applications.json`: application timeline and status tracking.
@@ -44,7 +88,7 @@ Dashboard Add LinkedIn JD
 
 ## Common Commands
 
-Run all configured Apify `TASKID_*` tasks from `.env`, then merge/select today's review batch:
+Run all configured Apify LinkedIn `TASKID_*` tasks from `.env`, then finalize today's review batch:
 
 ```powershell
 npm run review:today
@@ -52,7 +96,19 @@ npm run review:today
 
 Project-local skill: `.agents/skills/get-jobs/SKILL.md` maps requests like "get jobs" or "收集工作" to this command.
 
-Regenerate selected jobs:
+Run the local LinkedIn assisted collector:
+
+```powershell
+npm run collect:linkedin:local
+```
+
+Finalize a date after one or more raw-source channels have written raw files:
+
+```powershell
+npm run review:finalize -- 2026-05-07
+```
+
+Regenerate canonical and selected jobs manually:
 
 ```powershell
 node scripts/merge-canonical.mjs 2026-04-25
@@ -109,6 +165,8 @@ The shared filters support multi-select by:
 - City
 - State
 - Company
+- Workplace type
+- Posted recency
 
 ## Dashboard
 
@@ -154,14 +212,16 @@ Market-fit loop:
 Use the global `preference-analyse` skill. Its scripts expect explicit paths:
 
 ```powershell
-node C:\Users\Xiao\.codex\skills\preference-analyse\scripts\summarize-annotations.mjs data/raw/2026-04-25.json data/selected/2026-04-25.json data/annotations/2026-04-25.linkedin.json config/preferences.linkedin.json
+node C:\Users\Xiao\.codex\skills\preference-analyse\scripts\summarize-annotations.mjs data/canonical/2026-05-07.json data/selected/2026-05-07.json data/annotations/2026-05-07.json config/preferences.linkedin.json
 ```
+
+For current batches, prefer canonical/selected review files generated by `npm run review:finalize -- YYYY-MM-DD`; raw-source files may be split across multiple `data/raw/linkedin-YYYY-MM-DD-HHMMSS.json` inputs for the same day.
 
 Preference file updates should only be applied after explicit confirmation.
 
 ## Notes
 
 - Do not trigger Apify runs unless explicitly requested.
-- Do not mutate files in `data/raw/`.
+- Treat `data/raw/` as append-only raw-source files.
 - Keep filtering rules data-driven in `config/preferences.linkedin.json`.
 - This project currently uses Node.js built-in modules and vanilla HTML/CSS/JS.

@@ -23,6 +23,8 @@ const state = {
   dashboardImportStatus: "",
   mergeRunning: false,
   mergeStatus: "",
+  preferenceUpdateRunning: false,
+  preferenceUpdateStatus: "",
   batches: [],
   data: null,
   dashboard: null,
@@ -36,12 +38,40 @@ const tabs = [
 
 const tagOptions = [
   "good_topic",
-  "not_ai",
   "not_thesis",
-  "too_broad",
-  "good_company",
-  "language_issue",
+  "stale_post",
+  "no_programming",
+  "industrial_hardware",
+  "embedded_hardware",
+  "domain_mismatch",
+  "traditional_ml_cv",
+  "low_interest",
 ];
+
+const positiveTags = new Set(["good_topic"]);
+const rejectTagRules = [
+  ["not_thesis", /not\s*thesis|pflichtpraktikum|不是.*thesis|非.*thesis/i],
+  ["stale_post", /实际日期.*久|日期.*久|posted?.*久|post.*久|年代久远|too\s*old/i],
+  ["no_programming", /无编程|没有.*软件开发|不是技术|非技术|not.*technical|no.*programming/i],
+  ["industrial_hardware", /工业|hardwarenahe|hardware|visual\s*c\+\+|c#|java development/i],
+  ["embedded_hardware", /embedded|rfid|energy harvesting/i],
+  ["domain_mismatch", /chemistry|pharmatechnik|bioökonomie|biooekonomie|物理|emg|power engines|wertstromanalyse|process design|robotik|robotics/i],
+  ["traditional_ml_cv", /传统\s*ml|traditional\s*ml|bildverarbeitung|computer vision|纯\s*cv/i],
+  ["low_interest", /不感兴趣|没意思|主题不符|thema不感兴趣|不符/i],
+];
+
+function orderedTags(tags) {
+  const unique = [...new Set(tags.filter((tag) => tagOptions.includes(tag)))];
+  return unique.sort((a, b) => tagOptions.indexOf(a) - tagOptions.indexOf(b));
+}
+
+function inferredRejectTags(note, existingTags = []) {
+  const tags = existingTags.filter((tag) => positiveTags.has(tag));
+  for (const [tag, pattern] of rejectTagRules) {
+    if (pattern.test(note ?? "")) tags.push(tag);
+  }
+  return orderedTags(tags);
+}
 
 const actionLabels = {
   applied: "Mark Applied",
@@ -240,14 +270,17 @@ async function loadDashboard() {
 
 async function saveAnnotation(id, patch) {
   const existing = effectiveAnnotation(id);
+  const decision = patch.decision ?? existing.decision;
+  const note = patch.note ?? existing.note ?? "";
+  const tags = patch.tags ?? (decision === "reject" ? inferredRejectTags(note, existing.tags ?? []) : existing.tags ?? []);
   const payload = {
     date: state.date,
     canonicalFile: state.data.files.canonical,
     selectedFile: state.data.files.selected,
     id,
-    decision: patch.decision ?? existing.decision,
-    note: patch.note ?? existing.note ?? "",
-    tags: patch.tags ?? existing.tags ?? [],
+    decision,
+    note,
+    tags,
   };
 
   const response = await fetch("/api/annotations", {
@@ -373,6 +406,88 @@ async function postManualLinkedinImport(url) {
   return response.json();
 }
 
+async function requestRejectPreferenceProposal(date, options = {}) {
+  const response = await fetch("/api/preferences/rejects/proposal", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      date,
+      overwrite: Boolean(options.overwrite),
+    }),
+  });
+  const result = await response.json();
+  if (!response.ok) {
+    const error = new Error(result.error ?? "Failed to generate reject preference proposal");
+    error.details = result;
+    throw error;
+  }
+  return result;
+}
+
+async function applyLatestRejectPreferenceProposal() {
+  const response = await fetch("/api/preferences/rejects/apply", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({}),
+  });
+  const result = await response.json();
+  if (!response.ok) {
+    const error = new Error(result.error ?? "Failed to apply reject preference proposal");
+    error.details = result;
+    throw error;
+  }
+  return result;
+}
+
+async function proposeRejectPreferencesForCurrentBatch(overwrite = false) {
+  if (state.preferenceUpdateRunning || !state.date) return;
+  state.preferenceUpdateRunning = true;
+  state.preferenceUpdateStatus = overwrite ? "Overwriting proposal..." : "Generating proposal...";
+  renderReview();
+  try {
+    const result = await requestRejectPreferenceProposal(state.date, { overwrite });
+    state.preferenceUpdateStatus = `Proposal written: ${result.proposalPath}`;
+  } catch (error) {
+    if (error?.details?.needsOverwrite || error?.needsOverwrite) {
+      const confirmed = window.confirm("A reject preference proposal already exists for this batch. Overwrite it?");
+      if (confirmed) {
+        state.preferenceUpdateRunning = false;
+        await proposeRejectPreferencesForCurrentBatch(true);
+        return;
+      }
+    } else if (/already exists/i.test(error.message ?? "")) {
+      const confirmed = window.confirm("A reject preference proposal already exists for this batch. Overwrite it?");
+      if (confirmed) {
+        state.preferenceUpdateRunning = false;
+        await proposeRejectPreferencesForCurrentBatch(true);
+        return;
+      }
+    } else {
+      throw error;
+    }
+  } finally {
+    state.preferenceUpdateRunning = false;
+    renderReview();
+  }
+}
+
+async function applyLatestRejectPreferencesWithConfirmation() {
+  if (state.preferenceUpdateRunning) return;
+  const confirmed = window.confirm("Apply the latest Markdown reject preference proposal and regenerate selected jobs?");
+  if (!confirmed) return;
+  state.preferenceUpdateRunning = true;
+  state.preferenceUpdateStatus = "Applying latest proposal...";
+  renderReview();
+  try {
+    const result = await applyLatestRejectPreferenceProposal();
+    state.preferenceUpdateStatus = `Applied ${result.proposalPath}: ${result.beforeSelectedCount} -> ${result.afterSelectedCount} selected`;
+    await loadState();
+  } finally {
+    state.preferenceUpdateRunning = false;
+    renderReview();
+  }
+}
+
 function manualLinkedinImportStatusText(result) {
   return String(result?.message ?? "").trim() || "Imported";
 }
@@ -469,7 +584,18 @@ function renderReview(focusFilter) {
   mergeButton.disabled = state.mergeRunning;
   mergeButton.addEventListener("click", () => mergeRawForCurrentDate().catch(showError));
   actions.append(mergeButton);
+  const proposalButton = createEl("button", "action-button", state.preferenceUpdateRunning ? "Working..." : "Propose Reject Filters");
+  proposalButton.type = "button";
+  proposalButton.disabled = state.preferenceUpdateRunning;
+  proposalButton.addEventListener("click", () => proposeRejectPreferencesForCurrentBatch(false).catch(showError));
+  actions.append(proposalButton);
+  const applyProposalButton = createEl("button", "action-button", "Apply Latest Proposal");
+  applyProposalButton.type = "button";
+  applyProposalButton.disabled = state.preferenceUpdateRunning;
+  applyProposalButton.addEventListener("click", () => applyLatestRejectPreferencesWithConfirmation().catch(showError));
+  actions.append(applyProposalButton);
   if (state.mergeStatus) actions.append(createEl("span", "merge-status", state.mergeStatus));
+  if (state.preferenceUpdateStatus) actions.append(createEl("span", "merge-status", state.preferenceUpdateStatus));
   app.querySelector(".page-header").insertBefore(actions, app.querySelector(".error-banner"));
 
   const tabList = createEl("nav", "tabs");

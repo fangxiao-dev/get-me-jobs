@@ -7,6 +7,8 @@
     "review:finalize": "node scripts/finalize-review-batch.mjs",
     "collect:linkedin:local": "node scripts/local-linkedin-assisted-collector/src/main.mjs",
     "enrich:accepted": "node scripts/enrich-accepted.mjs",
+    "annotations:propose-tags": "node scripts/propose-annotation-tags.mjs",
+    "preferences:update-rejects": "node scripts/update-reject-preferences.mjs",
     "test": "node --test scripts/lib/tests/*.test.mjs",
     "start": "node app/server.mjs"
   },

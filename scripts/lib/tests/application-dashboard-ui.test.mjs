@@ -9,6 +9,8 @@ async function loadDashboardUiFunctions() {
   globalThis.__dashboardUi = {
   enrichmentDisplayText,
   postManualLinkedinImport,
+  requestRejectPreferenceProposal,
+  applyLatestRejectPreferenceProposal,
   shouldReloadReviewAfterDecision,
   stageNoteGroups,
   visibleStageNoteGroups,
@@ -20,6 +22,8 @@ async function loadDashboardUiFunctions() {
   applicationActionModels,
   saveApplicationStage,
   nextDashboardAction,
+  tagOptions,
+  inferredRejectTags,
 };`;
   const fetchCalls = [];
   const context = {
@@ -40,6 +44,37 @@ async function loadDashboardUiFunctions() {
   context.globalThis.__dashboardUi.fetchCalls = fetchCalls;
   return context.globalThis.__dashboardUi;
 }
+
+test("review tag options use canonical reject tags and good topic only", async () => {
+  const { tagOptions } = await loadDashboardUiFunctions();
+
+  assert.deepEqual(JSON.parse(JSON.stringify(tagOptions)), [
+    "good_topic",
+    "not_thesis",
+    "stale_post",
+    "no_programming",
+    "industrial_hardware",
+    "embedded_hardware",
+    "domain_mismatch",
+    "traditional_ml_cv",
+    "low_interest",
+  ]);
+});
+
+test("reject notes infer canonical tags without preserving legacy tags", async () => {
+  const { inferredRejectTags } = await loadDashboardUiFunctions();
+
+  assert.deepEqual(JSON.parse(JSON.stringify(inferredRejectTags(
+    "太远，实际日期太久远，Deutsch C1，偏工业 Embedded，传统ML",
+    ["not_ai", "good_topic", "good_company"],
+  ))), [
+    "good_topic",
+    "stale_post",
+    "industrial_hardware",
+    "embedded_hardware",
+    "traditional_ml_cv",
+  ]);
+});
 
 test("stage notes are grouped newest-first under each application stage", async () => {
   const { stageNoteGroups } = await loadDashboardUiFunctions();
@@ -101,6 +136,22 @@ test("manual LinkedIn import status uses API dedupe message", async () => {
     "Already existed, deduplicated and updated existing application.",
   );
   assert.equal(manualLinkedinImportStatusText({}), "Imported");
+});
+
+test("review preference actions call reject proposal APIs for the current batch", async () => {
+  const { requestRejectPreferenceProposal, applyLatestRejectPreferenceProposal, fetchCalls } = await loadDashboardUiFunctions();
+
+  await requestRejectPreferenceProposal("2026-05-07", { overwrite: true });
+  await applyLatestRejectPreferenceProposal();
+
+  assert.equal(fetchCalls[0].url, "/api/preferences/rejects/proposal");
+  assert.equal(fetchCalls[0].options.method, "POST");
+  assert.deepEqual(JSON.parse(fetchCalls[0].options.body), {
+    date: "2026-05-07",
+    overwrite: true,
+  });
+  assert.equal(fetchCalls[1].url, "/api/preferences/rejects/apply");
+  assert.equal(fetchCalls[1].options.method, "POST");
 });
 
 test("plain descriptions preserve paragraph breaks for dashboard and review cards", async () => {

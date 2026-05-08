@@ -7,6 +7,7 @@ import { adaptLinkedinItem } from "../scripts/lib/adapt-linkedin.mjs";
 import { extractedLinkedinJobToRawItem, scrapeLinkedinJob } from "../scripts/lib/scrape-linkedin-job.mjs";
 import { upsertManualLinkedinRawItem, writeManualLinkedinAudit } from "../scripts/lib/manual-linkedin-store.mjs";
 import { selectJobsFile } from "../scripts/select-jobs.mjs";
+import { runRejectPreferenceUpdate } from "../scripts/update-reject-preferences.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
@@ -18,6 +19,7 @@ const canonicalDir = path.join(dataDir, "canonical");
 const selectedDir = path.join(dataDir, "selected");
 const annotationsDir = path.join(dataDir, "annotations");
 const enrichmentsDir = path.join(dataDir, "enrichments");
+const preferenceProposalsDir = path.join(rootDir, "docs", "preference-proposals");
 const acceptedJobsPath = path.join(rootDir, "data", "accepted-jobs.json");
 const applicationsPath = path.join(rootDir, "data", "applications.json");
 
@@ -673,6 +675,51 @@ function mergeAndSelect(date) {
   };
 }
 
+function latestRejectPreferenceProposalPath() {
+  const files = fs.existsSync(preferenceProposalsDir) ? fs.readdirSync(preferenceProposalsDir) : [];
+  const latestName = files
+    .filter((name) => /^rejects-\d{4}-\d{2}-\d{2}\.md$/.test(name))
+    .sort()
+    .at(-1);
+  return latestName ? path.join(preferenceProposalsDir, latestName) : null;
+}
+
+function proposalDateFromPath(filePath) {
+  return path.basename(filePath).match(/^rejects-(\d{4}-\d{2}-\d{2})\.md$/)?.[1] ?? null;
+}
+
+function generateRejectPreferenceProposalFromPayload(payload) {
+  const date = String(payload.date ?? "");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    const error = new Error("date must be YYYY-MM-DD");
+    error.statusCode = 400;
+    throw error;
+  }
+  const argv = payload.overwrite ? [date, "--overwrite"] : [date];
+  return runRejectPreferenceUpdate({ cwd: rootDir, argv });
+}
+
+function applyLatestRejectPreferenceProposalFromPayload() {
+  const proposalPath = latestRejectPreferenceProposalPath();
+  if (!proposalPath) {
+    const error = new Error("No reject preference proposals found.");
+    error.statusCode = 404;
+    throw error;
+  }
+  const date = proposalDateFromPath(proposalPath);
+  if (!date) {
+    const error = new Error("Latest reject preference proposal has an invalid filename.");
+    error.statusCode = 500;
+    throw error;
+  }
+  const relativeProposalPath = path.relative(rootDir, proposalPath).replaceAll(path.sep, "/");
+  const result = runRejectPreferenceUpdate({
+    cwd: rootDir,
+    argv: [date, "--apply", relativeProposalPath],
+  });
+  return { ...result, date, proposalPath: relativeProposalPath };
+}
+
 async function readRequestJson(req) {
   const chunks = [];
   for await (const chunk of req) chunks.push(chunk);
@@ -957,6 +1004,37 @@ async function handleApi(req, res, url) {
     const payload = await readRequestJson(req);
     const annotationFile = upsertAnnotation(payload);
     sendJson(res, 200, { ok: true, annotations: annotationsById(annotationFile) });
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/preferences/rejects/proposal") {
+    const payload = await readRequestJson(req);
+    try {
+      const result = generateRejectPreferenceProposalFromPayload(payload);
+      sendJson(res, 200, {
+        ok: true,
+        proposalPath: path.relative(rootDir, result.proposalPath).replaceAll(path.sep, "/"),
+        proposal: result.proposal,
+      });
+    } catch (error) {
+      if (/already exists/.test(error.message ?? "")) {
+        const date = String(payload.date ?? "");
+        sendJson(res, 409, {
+          ok: false,
+          needsOverwrite: true,
+          proposalPath: `docs/preference-proposals/rejects-${date}.md`,
+          error: error.message,
+        });
+        return;
+      }
+      throw error;
+    }
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/preferences/rejects/apply") {
+    const result = applyLatestRejectPreferenceProposalFromPayload();
+    sendJson(res, 200, { ok: true, ...result, state: loadReviewState({ batchId: result.date }) });
     return;
   }
 

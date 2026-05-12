@@ -25,12 +25,12 @@ Raw source channels
 
 Raw-source channel configuration lives in `config/job-sources.manifest.json`. The manifest is tracked and contains only non-secret channel switches and paths. Local LinkedIn cookies and User-Agent stay in ignored local input at `config/local/linkedin-assisted.input.json`.
 
-Manual LinkedIn JD import:
+Manual JD import:
 
 ```text
-Dashboard Add LinkedIn JD
-  -> data/manual/linkedin-YYYY-MM-DD.json
-  -> data/manual/audit/linkedin-manual-YYYY-MM-DD-HHMMSS.json
+Dashboard Add JD
+  -> data/manual/<source>-YYYY-MM-DD.json
+  -> data/manual/audit/<source>-manual-YYYY-MM-DD-HHMMSS.json
   -> accepted/application upsert
   -> scripts/merge-canonical.mjs can merge manual daily input
 ```
@@ -75,6 +75,7 @@ npm run review:finalize -- 2026-05-07
 - `config/local/linkedin-assisted.input.json`: ignored local LinkedIn collector input containing search URL, Cookie path, and User-Agent.
 - `data/raw/*.json`: raw source files from Apify and local collectors, named by source and timestamp.
 - `data/manual/linkedin-YYYY-MM-DD.json`: daily aggregate for manually imported LinkedIn JDs, deduped by LinkedIn job id.
+- `data/manual/stepstone-YYYY-MM-DD.json`: daily aggregate for manually imported Stepstone JDs, deduped by Stepstone job id.
 - `data/manual/audit/*.json`: one-file-per-manual-import audit records for debugging scraper/adapter behavior.
 - `data/canonical/*.json`: merged canonical jobs across raw and manual sources.
 - `data/selected/*.json`: selected jobs generated from canonical jobs and preferences.
@@ -182,11 +183,11 @@ Dashboard `Reject` moves a job out of accepted/application tracking and writes i
 Each dashboard job can also store a manual `Status` link for the employer application overview page, separate from the job description and apply links.
 Stage notes are shown as a collapsed `Stage notes (N)` section on each dashboard card. Expanding it reveals only stage groups with notes; `accepted` provenance events are not counted as stage notes.
 
-The Dashboard also supports manual LinkedIn JD import. Paste a LinkedIn job detail URL into `Add LinkedIn JD`; the app scrapes the public JD page, stores it in the daily manual aggregate, and upserts the job directly into Accepted/Application tracking. Manual imports intentionally leave `applyUrl` empty.
+The Dashboard also supports manual JD import. Paste a LinkedIn or Stepstone job detail URL into `Add JD`; the app scrapes the public JD page, stores it in the daily manual aggregate, and upserts the job directly into Accepted/Application tracking. Manual imports intentionally leave `applyUrl` empty when no separate apply URL can be extracted reliably.
 
 Manual import dedupe is explicit:
 
-- Same job already in `data/manual/linkedin-YYYY-MM-DD.json`: update the daily manual item instead of appending a duplicate.
+- Same job already in `data/manual/<source>-YYYY-MM-DD.json`: update the daily manual item instead of appending a duplicate.
 - Same job already in `data/accepted-jobs.json` or `data/applications.json`: update base job fields and preserve existing status, timeline, status URL, and stage notes.
 - Same job already in canonical merge data: report the canonical duplicate in the Dashboard success message.
 

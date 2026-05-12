@@ -10,6 +10,7 @@
 | **Raw Source Channel** | A configured intake path that produces **Raw Source Files** without directly accepting jobs. | Import mode, source switch |
 | **Source Manifest** | The tracked `config/job-sources.manifest.json` file that controls raw-source channel switches and shared review finalize settings. | Pipeline config, source list |
 | **Apify LinkedIn Channel** | The `apify_linkedin` channel that runs configured Apify LinkedIn tasks and writes raw source files. | Apify channel, cloud collector |
+| **Local LinkedIn Channel** | The `localLinkedin` channel that points to ignored local input for the **Local Assisted Collector**. | Local channel, manual channel |
 | **Manual LinkedIn Import** | A single LinkedIn job detail URL imported directly through Dashboard into Accepted/Application tracking. | Add LinkedIn JD, manual raw import |
 | **Local Assisted Collector** | A local, user-confirmed workflow that discovers LinkedIn job URLs from one search page and extracts public job details. | Scraper, crawler, LinkedIn bot |
 | **Search Page** | The user-provided LinkedIn jobs search URL used only for URL discovery. | Results page, query page |
@@ -27,6 +28,8 @@
 | **Application** | The tracking record for an **Accepted Job** through application stages and events. | Application state, tracking entry |
 | **Review Decision** | The user's manual choice to accept, reject, or otherwise annotate a reviewed job. | Dashboard action, selection result |
 | **Preference Filter** | A rule set used to produce **Selected Jobs** from **Canonical Jobs**. | Selection rule, matching rule |
+| **Review Finalize** | The shared step that merges all same-day **Raw Source Files**, selects jobs, and optionally enriches **Selected Jobs**. | Post-processing, review generation |
+| **Selected Job Enrichment** | AI-derived analysis attached only to **Selected Jobs** for review context. | AI identification, raw enrichment |
 
 ## Collection Modes
 
@@ -46,7 +49,9 @@
 - A **Raw Source File** contains one or more **Raw Jobs** from exactly one **Job Source**.
 - A **Raw Job** may merge into exactly one **Canonical Job**.
 - A **Canonical Job** may have sightings from multiple **Raw Jobs**.
+- **Review Finalize** consumes all same-day **Raw Source Files** and produces one canonical review batch.
 - A **Preference Filter** produces zero or more **Selected Jobs** from **Canonical Jobs**.
+- **Selected Job Enrichment** belongs to **Selected Jobs**, not every **Canonical Job**.
 - A **Selected Job** becomes an **Accepted Job** only after a user **Review Decision**.
 - An **Accepted Job** has zero or one active **Application** tracking record.
 - A **Manual LinkedIn Import** bypasses **Selected Job** review and directly creates or updates **Accepted Job** and **Application** records.
@@ -61,7 +66,7 @@
 >
 > **Dev:** "So non-dry-run should write `data/raw/linkedin-YYYY-MM-DD-HHMMSS.json`?"
 >
-> **Domain expert:** "Exactly. Then canonical merge produces **Canonical Jobs**, selection produces **Selected Jobs**, and the user makes the **Review Decision**."
+> **Domain expert:** "Exactly. Then **Review Finalize** merges raw files, produces **Selected Jobs**, adds **Selected Job Enrichment**, and the user makes the **Review Decision**."
 >
 > **Dev:** "The LinkedIn login cookies are only for the **Search Page** and **Result List**, not the **Job Detail Page**?"
 >
@@ -74,3 +79,5 @@
 - "Dashboard write" is ambiguous; use **Dashboard Manual Write Path** for direct Accepted/Application updates and **Raw Source Write Mode** for Review-first ingestion.
 - "Dry run" and "preview" are distinct; **Preview Mode** only discovers URLs, while **Dry Run** may extract details but writes no project data.
 - "LinkedIn scraper" is too broad; use **Local Assisted Collector** for the controlled local workflow and **public detail scraper** only for extracting one **Job Detail Page**.
+- "Apify" alone is too broad for manifest configuration; use **Apify LinkedIn Channel** and the manifest key `apify_linkedin`.
+- "AI identification" is vague; use **Selected Job Enrichment** for AI-derived review context and keep it selected-only.

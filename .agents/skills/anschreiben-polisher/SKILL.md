@@ -15,6 +15,10 @@ Use only facts that are already present in the CV, an explicitly provided applic
 
 Do not invent project experience, domain expertise, tools, frameworks, industry exposure, certificates, responsibilities, or language levels.
 
+Hard rule: do not introduce any professional term, tool name, platform, framework, method, certificate, domain label, or technical keyword unless it is explicitly present in the CV, the required `profile.md`, or the user's own supplied applicant context. The fact that a term appears in the job description is not enough reason to include it in the letter.
+
+If the job description asks for an unsupported tool or domain, do not mention the unsupported term at all unless the user explicitly asks to address that gap. Instead, connect using supported adjacent experience at a higher level.
+
 Make the role fit concrete. Prefer a few precise links between the applicant's real background and the job tasks over broad claims or technical name-dropping.
 
 Keep the tone professional, direct, and human. Avoid stiff bureaucratic language, exaggerated enthusiasm, and generic phrases that could fit any company.
@@ -38,15 +42,42 @@ Before adapting, polishing, shortening, or quality-checking an application lette
 
 Treat profile facts as available facts, not as mandatory content. Include them only when they help the specific application, and prefer the user's latest CV or explicit instructions if they conflict with the profile.
 
+## Pre-Writing Alignment
+
+Before drafting or rewriting an adapted letter, first align with the user on the positioning. Summarize the role focus you identified from the job description, the applicant facts you plan to emphasize, and the facts or claims you plan to avoid because they are unsupported or strategically undesirable.
+
+Ask the user to confirm this positioning before writing the final German letter. Do not proceed to the full letter until the user confirms or corrects the positioning. This matters because the strongest Anschreiben depends on choosing a clear main line, not simply mentioning every plausible detail from the CV.
+
+If the user asks only for grammar or style correction without role adaptation, still briefly state that you will preserve the original factual scope before editing.
+
 ## Adaptation Workflow
 
 1. Identify the real center of the role: domain, tasks, tools, seniority, and what the employer seems to need.
 2. Extract the applicant facts that are directly relevant to that role.
 3. Decide what must be avoided because it is unsupported by the CV or user-provided context.
-4. Rewrite the letter around the role's tasks instead of reusing a generic AI/software paragraph.
-5. Check German grammar, spelling, punctuation, capitalization, degree naming, and idiomatic phrasing.
-6. Remove leftover references from other applications, including wrong company names, wrong industries, and mismatched tool claims.
-7. Keep the final letter concise, usually 5 to 6 short paragraphs.
+4. Present the positioning to the user and wait for confirmation or correction.
+5. Rewrite the letter around the role's tasks instead of reusing a generic AI/software paragraph.
+6. Check German grammar, spelling, punctuation, capitalization, degree naming, and idiomatic phrasing.
+7. Remove leftover references from other applications, including wrong company names, wrong industries, and mismatched tool claims.
+8. Keep the final letter concise, usually 5 to 6 short paragraphs.
+
+## Job Description Rephrasing
+
+Do not copy the job description's phrasing too closely. A letter sounds stiff when it mirrors the employer's wording, even if the copied terms are technically relevant. Translate the job description into the applicant's own experience language.
+
+Avoid repeating JD phrases mechanically, especially when they are formal task labels such as:
+
+- "strukturierte Analyse"
+- "prototypische Umsetzung"
+- "KI-Use-Case"
+- "Identifikation und Bewertung potenzieller KI-Anwendungsfälle"
+- "Machbarkeit, Skalierbarkeit und geschäftlicher Mehrwert"
+
+Prefer applicant-centered phrasing:
+
+- Instead of "Ich kann Datenquellen strukturiert analysieren und einen KI-Use-Case prototypisch umsetzen", write "Ich bin es gewohnt, technische Daten aus unterschiedlichen Quellen einzuordnen, daraus belastbare Auswertungen abzuleiten und neue Ansätze zunächst pragmatisch als Prototyp zu erproben."
+- Instead of "Ich priorisiere KI-Anwendungsfälle nach Machbarkeit, Skalierbarkeit und geschäftlichem Mehrwert", write "Ich kann technische Möglichkeiten mit praktischen Anforderungen abgleichen und daraus ableiten, welche Ansätze sich für eine erste Umsetzung eignen."
+- Instead of naming the employer's department or field in every paragraph, connect naturally to the task context once, then write from the applicant's perspective.
 
 ## German Style Rules
 
@@ -70,6 +101,34 @@ Avoid or use carefully:
 - repeated constructions with "KI-gestützt", "datengetrieben", or "zukunftsorientiert"
 - excessive buzzwords, slash-combinations, stacked hyphens, and repeated sentence structures
 - forcing the full legal company name into every paragraph
+- repeating the target company's name throughout the letter; use it at most once in the main body, then switch to natural references such as "bei Ihnen", "in Ihrem Team", "die ausgeschriebene Position", or "diese Aufgabe". Repeated company-name mentions make the letter sound like a template.
+
+### Hyphen and Compound-Noun Control
+
+German technical CVs often contain compact compound nouns and hyphenated terms. In an Anschreiben, do not copy these mechanically. Prefer natural clauses, prepositional phrases, or short explanations when a compound sounds dense, translated, or AI-like.
+
+Keep established technical terms when they are normal in context and explicitly supported by the CV or applicant profile, such as "Software-Testingenieur", "CI/CD", "Smoke Tests", "Regressionstests", "Python", "C++", "Java", or "MySQL".
+
+Avoid dense constructions like:
+
+- "KI-Use-Case"
+- "C++-, Java- und Python-Projekte"
+- "MLOps- und Edge-AI-Konzepten"
+- "Performance-Datenerhebung"
+- "Unit-Test-Abdeckung auf PR-Ebene"
+
+Prefer more natural alternatives:
+
+- "KI-Anwendungsfall" or "Anwendungsfall mit KI-Bezug"
+- "Projekte in C++, Java und Python"
+- "Konzepten für MLOps und Edge AI"
+- "Erfassung und Analyse von Leistungsdaten"
+- "Abdeckung von Unit Tests auf Ebene einzelner Pull Requests"
+
+When in doubt, rewrite the sentence around an action:
+
+- Instead of "Entwicklung eines Performance-Datenerhebungs-Frameworks", write "Ich entwickelte mit Python ein Framework, das die Erfassung und Analyse von Leistungsdaten standardisierte."
+- Instead of "Entwicklung eines CI-integrierten Testabdeckungs-Tools", write "Ich entwickelte ein Tool, das in CI-Prozesse eingebunden war und die Testabdeckung auswertete."
 
 Use correct forms:
 
@@ -77,31 +136,35 @@ Use correct forms:
 - Masterstudiengang Digital Business Engineering
 - Masterabschluss in [FIELD]
 - An der Position bei Ihnen interessiert mich ...
-- first full company mention, then natural alternatives such as "bei Ihnen", "in Ihrem Team", "die ausgeschriebene Position", or "diese Aufgabe"
+- one company-name mention is enough in most letters; after the first mention, use natural alternatives such as "bei Ihnen", "in Ihrem Team", "die ausgeschriebene Position", or "diese Aufgabe"
 
 ## Honesty Rules
 
-If the job asks for tools or domains the applicant does not have, phrase them as interest, learning direction, or adjacent experience.
+If the job asks for tools or domains the applicant does not have, do not mention those unsupported names unless the user explicitly asks to address the gap. Use supported adjacent experience at a higher level.
+
+Do not write a dedicated paragraph around weak or missing requirements. Avoid constructions that expose the gap while trying to soften it, such as "Auch wenn mein bisheriger Schwerpunkt nicht auf ..." or "Besonders passend finde ich ...". If a requirement is unsupported, either omit it or connect only through a stronger supported adjacent fact without naming the missing area.
 
 Example:
 
 Unsupported:
-"Ich habe Erfahrung mit Make und n8n."
+"Ich habe Erfahrung mit [UNSUPPORTED TOOL]."
 
 Better:
-"Erfahrung mit Make oder n8n bringe ich bisher nicht als Schwerpunkt mit, sehe diese Tools aber als naheliegende Erweiterung meiner bisherigen Arbeit mit APIs und Automatisierung."
+"Meine bisherige Arbeit mit [SUPPORTED ADJACENT EXPERIENCE] hilft mir, mich schnell in neue Aufgaben einzuarbeiten."
+
+If the user explicitly asks to discuss a missing requirement, mention the gap plainly and briefly. Otherwise omit the unsupported term entirely.
 
 Unsupported:
-"Ich verfüge über Kenntnisse in UDS und Bus-Systemen."
+"Ich verfüge über Kenntnisse in [UNSUPPORTED DOMAIN]."
 
 Better:
-"Themen wie Fahrzeugelektronik, Diagnose und Austauschformate sehe ich als ein spannendes Anwendungsfeld, in das ich mich gerne systematisch einarbeite."
+"Ich kann mich auf Basis meiner bisherigen Erfahrung in [SUPPORTED ADJACENT AREA] systematisch in neue technische Zusammenhänge einarbeiten."
 
 Unsupported:
-"Ich habe Erfahrung mit Markt- und Portfoliodaten."
+"Ich habe Erfahrung mit [UNSUPPORTED DATA DOMAIN]."
 
 Better:
-"Gerne möchte ich lernen, wie KI-Anwendungen im Finanzberatungsumfeld verantwortungsvoll und praktisch nutzbar gestaltet werden können."
+"Gerne möchte ich meine Erfahrung mit [SUPPORTED DATA OR ENGINEERING CONTEXT] in ein neues fachliches Umfeld einbringen."
 
 ## Recommended Letter Structure
 
@@ -116,7 +179,14 @@ Use this structure unless the user asks for something else:
 
 ## Output Format
 
-When adapting a letter, provide:
+When first responding to an adaptation request, provide only:
+
+1. The identified role focus
+2. The applicant facts to emphasize
+3. The facts, terms, or claims to avoid
+4. A direct request for confirmation before drafting
+
+After the user confirms the positioning, provide:
 
 1. A short positioning conclusion
 2. An optional subject line if useful
@@ -153,7 +223,7 @@ Before returning the final version, verify:
 
 - Every claim is supported by the CV, current context, or user-provided details.
 - The role focus is clear within the first two paragraphs.
-- The company name is used naturally and not repeated unnecessarily.
+- The company name appears no more than once in the main body unless there is a specific reason; repeated mentions have been replaced with "bei Ihnen", "in Ihrem Team", "die ausgeschriebene Position", or "diese Aufgabe".
 - There are no leftover references from another application.
 - Missing tools or domain knowledge are phrased honestly.
 - The letter is concise enough for a real application.

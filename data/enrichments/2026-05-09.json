@@ -1,0 +1,102 @@
+{
+  "linkedin:4404591759": {
+    "aufgaben": "developing AI agents and automated IT workflows",
+    "techReqs": "Python programming, agentic coding frameworks, APIs and LLM frameworks",
+    "enrichedAt": "2026-05-09T08:49:18.143Z"
+  },
+  "linkedin:4356407497": {
+    "aufgaben": "supporting generative AI and robotics testing in production systems",
+    "techReqs": "Python/C++ development basics, Git and machine learning fundamentals, Linux and ROS basics",
+    "enrichedAt": "2026-05-09T09:37:59.485Z"
+  },
+  "linkedin:4393980861": {
+    "aufgaben": "developing and validating AI-based robotics components",
+    "techReqs": "Python, Git, robotics and AI programming",
+    "enrichedAt": "2026-05-09T09:47:12.538Z"
+  },
+  "linkedin:4411870768": {
+    "aufgaben": "developing and implementing computer vision solutions",
+    "techReqs": "Python programming, computer vision algorithms, cloud product configuration",
+    "enrichedAt": "2026-05-09T09:53:32.251Z"
+  },
+  "stepstone:13916772": {
+    "aufgaben": "design and implement AI cloud platform for vehicle testing analytics",
+    "techReqs": "API integration, AI algorithm development, cloud-based big data applications",
+    "enrichedAt": "2026-05-09T13:34:44.834Z"
+  },
+  "stepstone:12762991": {
+    "aufgaben": "AI tool evaluation, implementation, and process automation",
+    "techReqs": "AI tools, automation tools, digital process analysis",
+    "enrichedAt": "2026-05-09T13:45:21.190Z"
+  },
+  "stepstone:13923919": {
+    "aufgaben": "develop AI agents and automation for security and IT forensics workflows",
+    "techReqs": "AI agent development, process automation, IT forensics analysis",
+    "enrichedAt": "2026-05-09T13:48:18.560Z"
+  },
+  "linkedin:4399293923": {
+    "aufgaben": "data preparation, ETL automation, and ML model development",
+    "techReqs": "Python with Pandas and NumPy, ETL pipeline development, machine learning model training",
+    "enrichedAt": "2026-05-09T14:22:34.013Z"
+  },
+  "stepstone:13934044": {
+    "aufgaben": "automated test development and CI/CD test system optimization",
+    "techReqs": "Python test automation, Docker and API testing, CI/CD pipeline design",
+    "enrichedAt": "2026-05-09T15:14:58.737Z"
+  },
+  "stepstone:13961141": {
+    "aufgaben": "quality assurance testing and test management for public sector and energy projects",
+    "techReqs": "manual and automated testing, Selenium/Cypress/JUnit test automation, API/performance/security testing",
+    "enrichedAt": "2026-05-09T15:23:39.201Z"
+  },
+  "stepstone:13784619": {
+    "aufgaben": "building validation tools and test automation workflows",
+    "techReqs": "Python scripting, test and log data analysis, embedded automotive validation",
+    "enrichedAt": "2026-05-09T15:38:26.007Z"
+  },
+  "stepstone:13806992": {
+    "aufgaben": "automated testing for network management applications",
+    "techReqs": "Python object-oriented programming, test automation frameworks, CI/CD and Git",
+    "enrichedAt": "2026-05-09T15:55:26.401Z"
+  },
+  "stepstone:13932458": {
+    "aufgaben": "test automation development for web and app services",
+    "techReqs": "Python/Java/JavaScript programming, Selenium/Appium/JUnit/Robot Framework, CI/CD test integration",
+    "enrichedAt": "2026-05-09T15:59:37.103Z"
+  },
+  "stepstone:13841514": {
+    "aufgaben": "test case design, manual and automated release testing",
+    "techReqs": "software testing experience, TestRail/Jira/Confluence, Ranorex and scripting with PowerShell or Python",
+    "enrichedAt": "2026-05-09T16:02:28.252Z"
+  },
+  "stepstone:13177718": {
+    "aufgaben": "automated software testing for banking applications",
+    "techReqs": "test automation tools, Selenium or Cypress, basic Java knowledge",
+    "enrichedAt": "2026-05-09T16:08:02.743Z"
+  },
+  "stepstone:13789925": {
+    "aufgaben": "test automation strategy and framework implementation",
+    "techReqs": "programming in C# Java Python or JavaScript, test automation tools such as Selenium Cucumber or Tosca, CI/CD pipeline integration",
+    "enrichedAt": "2026-05-09T16:12:54.442Z"
+  },
+  "stepstone:13576142": {
+    "aufgaben": "automated database testing and migration validation",
+    "techReqs": "Oracle DB testing, Java or PL/SQL test scripts, utPLSQL or JUnit",
+    "enrichedAt": "2026-05-09T16:13:52.368Z"
+  },
+  "stepstone:13882110": {
+    "aufgaben": "automated testing and quality assurance for Java backend systems",
+    "techReqs": "Java, Spring Boot, test automation",
+    "enrichedAt": "2026-05-09T16:15:05.100Z"
+  },
+  "stepstone:13718975": {
+    "aufgaben": "backend QA test automation and defect reporting",
+    "techReqs": "backend testing, database testing, test automation tools",
+    "enrichedAt": "2026-05-09T16:15:49.464Z"
+  },
+  "stepstone:13163223": {
+    "aufgaben": "automated test case development and QA reporting",
+    "techReqs": "test automation tools, Java/Groovy/Python scripting, ALM tools",
+    "enrichedAt": "2026-05-09T16:16:25.485Z"
+  }
+}

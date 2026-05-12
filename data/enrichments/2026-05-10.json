@@ -1,0 +1,42 @@
+{
+  "stepstone:13798689": {
+    "aufgaben": "developing and optimizing GenAI platform solutions",
+    "techReqs": "Python AI development, LangChain/LlamaIndex/LangGraph, GenAI agents prompts and fine-tuning",
+    "enrichedAt": "2026-05-10T12:57:57.056Z"
+  },
+  "stepstone:14000604": {
+    "aufgaben": "automated quality assurance for web applications",
+    "techReqs": "end-to-end and integration testing, test frameworks and architectures, risk-based edge case analysis",
+    "enrichedAt": "2026-05-10T12:58:11.779Z"
+  },
+  "linkedin:4397058239": {
+    "aufgaben": "software integration and system testing",
+    "techReqs": "C++, Python, distributed systems",
+    "enrichedAt": "2026-05-10T15:07:19.115Z"
+  },
+  "linkedin:4411734615": {
+    "aufgaben": "building AI and data solutions for aerospace engineering",
+    "techReqs": "Python/C#/C++/SQL programming, distributed data systems architecture, machine learning/LLMs/computer vision",
+    "enrichedAt": "2026-05-10T15:25:16.216Z"
+  },
+  "linkedin:4393989511": {
+    "aufgaben": "analyzing production processes and piloting digital AI efficiency concepts",
+    "techReqs": "engineering or production technology studies, digitalization and Industry 4.0 interest, AI applications in production",
+    "enrichedAt": "2026-05-10T15:27:52.664Z"
+  },
+  "linkedin:4409760547": {
+    "aufgaben": "AI-assisted migration from JSF to Angular",
+    "techReqs": "Java, Angular, AI code generation",
+    "enrichedAt": "2026-05-10T15:37:54.644Z"
+  },
+  "linkedin:4406457446": {
+    "aufgaben": "implementing and testing front-end and back-end features",
+    "techReqs": "Java and SQL, Angular or PrimeFaces, build pipelines and operations",
+    "enrichedAt": "2026-05-10T15:39:26.808Z"
+  },
+  "linkedin:4363769999": {
+    "aufgaben": "thesis work on real IT or business projects",
+    "techReqs": "IT consulting or administration, system engineering or managed services, application development",
+    "enrichedAt": "2026-05-10T15:48:07.752Z"
+  }
+}

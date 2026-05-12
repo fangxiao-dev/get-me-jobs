@@ -250,7 +250,10 @@ h2 {
 .link-button,
 .action-button,
 .status-tab,
-.action-form button {
+.action-form button,
+.stage-note-add,
+.stage-note-form button,
+.close-outcome {
   border: 1px solid var(--border);
   border-radius: 6px;
   background: #fff;
@@ -292,6 +295,7 @@ h2 {
 .save-status,
 .application-details-form,
 .application-actions,
+.close-outcome-actions,
 .stage-notes,
 .action-form {
   margin-top: 12px;
@@ -526,9 +530,31 @@ h2 {
   grid-column: 1 / -1;
 }
 
+.close-outcome-actions,
 .form-actions {
   display: flex;
   gap: 8px;
+}
+
+.close-outcome-actions {
+  align-items: center;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+  padding-top: 12px;
+}
+
+.close-outcome-label {
+  color: var(--muted);
+}
+
+.close-outcome.success {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.close-outcome.fail {
+  border-color: var(--danger);
+  color: var(--danger);
 }
 
 .stage-notes {
@@ -536,10 +562,36 @@ h2 {
   padding-top: 8px;
 }
 
-.stage-notes > summary {
+.stage-notes-summary {
+  align-items: center;
   cursor: pointer;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
   color: var(--text);
   font-weight: 700;
+}
+
+.stage-note-add {
+  flex: 0 0 auto;
+  font-weight: 400;
+}
+
+.stage-note-form {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.stage-note-form label {
+  display: grid;
+  gap: 4px;
+  color: var(--muted);
+}
+
+.stage-note-form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .stage-note-groups {

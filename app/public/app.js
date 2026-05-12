@@ -23,8 +23,6 @@ const state = {
   dashboardImportStatus: "",
   mergeRunning: false,
   mergeStatus: "",
-  preferenceUpdateRunning: false,
-  preferenceUpdateStatus: "",
   batches: [],
   data: null,
   dashboard: null,
@@ -34,44 +32,17 @@ const state = {
 const tabs = [
   ["selected", "Selected"],
   ["rejected", "Rejected"],
+  ["deleted", "Deleted"],
 ];
 
 const tagOptions = [
   "good_topic",
+  "not_ai",
   "not_thesis",
-  "stale_post",
-  "no_programming",
-  "industrial_hardware",
-  "embedded_hardware",
-  "domain_mismatch",
-  "traditional_ml_cv",
-  "low_interest",
+  "too_broad",
+  "good_company",
+  "language_issue",
 ];
-
-const positiveTags = new Set(["good_topic"]);
-const rejectTagRules = [
-  ["not_thesis", /not\s*thesis|pflichtpraktikum|不是.*thesis|非.*thesis/i],
-  ["stale_post", /实际日期.*久|日期.*久|posted?.*久|post.*久|年代久远|too\s*old/i],
-  ["no_programming", /无编程|没有.*软件开发|不是技术|非技术|not.*technical|no.*programming/i],
-  ["industrial_hardware", /工业|hardwarenahe|hardware|visual\s*c\+\+|c#|java development/i],
-  ["embedded_hardware", /embedded|rfid|energy harvesting/i],
-  ["domain_mismatch", /chemistry|pharmatechnik|bioökonomie|biooekonomie|物理|emg|power engines|wertstromanalyse|process design|robotik|robotics/i],
-  ["traditional_ml_cv", /传统\s*ml|traditional\s*ml|bildverarbeitung|computer vision|纯\s*cv/i],
-  ["low_interest", /不感兴趣|没意思|主题不符|thema不感兴趣|不符/i],
-];
-
-function orderedTags(tags) {
-  const unique = [...new Set(tags.filter((tag) => tagOptions.includes(tag)))];
-  return unique.sort((a, b) => tagOptions.indexOf(a) - tagOptions.indexOf(b));
-}
-
-function inferredRejectTags(note, existingTags = []) {
-  const tags = existingTags.filter((tag) => positiveTags.has(tag));
-  for (const [tag, pattern] of rejectTagRules) {
-    if (pattern.test(note ?? "")) tags.push(tag);
-  }
-  return orderedTags(tags);
-}
 
 const actionLabels = {
   applied: "Mark Applied",
@@ -89,6 +60,11 @@ const actionStatusMap = {
   interview_completed: "interview_completed",
   employer_agreed: "employer_agreed",
   closed: "closed",
+};
+
+const closeOutcomeEventTypes = {
+  success: "contract_signed",
+  fail: "rejected",
 };
 
 const stageNoteLabels = {
@@ -270,17 +246,14 @@ async function loadDashboard() {
 
 async function saveAnnotation(id, patch) {
   const existing = effectiveAnnotation(id);
-  const decision = patch.decision ?? existing.decision;
-  const note = patch.note ?? existing.note ?? "";
-  const tags = patch.tags ?? (decision === "reject" ? inferredRejectTags(note, existing.tags ?? []) : existing.tags ?? []);
   const payload = {
     date: state.date,
     canonicalFile: state.data.files.canonical,
     selectedFile: state.data.files.selected,
     id,
-    decision,
-    note,
-    tags,
+    decision: patch.decision ?? existing.decision,
+    note: patch.note ?? existing.note ?? "",
+    tags: patch.tags ?? existing.tags ?? [],
   };
 
   const response = await fetch("/api/annotations", {
@@ -348,6 +321,47 @@ async function saveApplicationStage(jobKey, type) {
   if (typeof document.querySelector === "function") await loadDashboard();
 }
 
+async function saveApplicationCloseOutcome(jobKey, outcome) {
+  const type = closeOutcomeEventTypes[outcome];
+  if (!type) throw new Error(`Unknown close outcome: ${outcome}`);
+  const payload = {
+    jobKey,
+    type,
+    date: new Date().toISOString().slice(0, 10),
+    note: "",
+    nextActionAt: null,
+  };
+
+  const response = await fetch("/api/applications/event", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) throw new Error((await response.json()).error ?? "Failed to save close outcome");
+  state.dashboardAction = null;
+  if (typeof document.querySelector === "function") await loadDashboard();
+}
+
+async function saveApplicationNote(jobKey, note) {
+  const payload = {
+    jobKey,
+    type: "note",
+    date: new Date().toISOString().slice(0, 10),
+    note: String(note ?? "").trim(),
+    nextActionAt: null,
+  };
+  if (!payload.note) return;
+
+  const response = await fetch("/api/applications/event", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) throw new Error((await response.json()).error ?? "Failed to save note");
+  state.dashboardAction = null;
+  if (typeof document.querySelector === "function") await loadDashboard();
+}
+
 async function mergeRawForCurrentDate() {
   if (!state.date || state.mergeRunning) return;
   state.mergeRunning = true;
@@ -406,90 +420,18 @@ async function postManualLinkedinImport(url) {
   return response.json();
 }
 
-async function requestRejectPreferenceProposal(date, options = {}) {
-  const response = await fetch("/api/preferences/rejects/proposal", {
+async function postManualJobImport(url) {
+  const response = await fetch("/api/applications/import-job-url", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      date,
-      overwrite: Boolean(options.overwrite),
-    }),
+    body: JSON.stringify({ url: String(url ?? "").trim() }),
   });
-  const result = await response.json();
-  if (!response.ok) {
-    const error = new Error(result.error ?? "Failed to generate reject preference proposal");
-    error.details = result;
-    throw error;
-  }
-  return result;
-}
-
-async function applyLatestRejectPreferenceProposal() {
-  const response = await fetch("/api/preferences/rejects/apply", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({}),
-  });
-  const result = await response.json();
-  if (!response.ok) {
-    const error = new Error(result.error ?? "Failed to apply reject preference proposal");
-    error.details = result;
-    throw error;
-  }
-  return result;
-}
-
-async function proposeRejectPreferencesForCurrentBatch(overwrite = false) {
-  if (state.preferenceUpdateRunning || !state.date) return;
-  state.preferenceUpdateRunning = true;
-  state.preferenceUpdateStatus = overwrite ? "Overwriting proposal..." : "Generating proposal...";
-  renderReview();
-  try {
-    const result = await requestRejectPreferenceProposal(state.date, { overwrite });
-    state.preferenceUpdateStatus = `Proposal written: ${result.proposalPath}`;
-  } catch (error) {
-    if (error?.details?.needsOverwrite || error?.needsOverwrite) {
-      const confirmed = window.confirm("A reject preference proposal already exists for this batch. Overwrite it?");
-      if (confirmed) {
-        state.preferenceUpdateRunning = false;
-        await proposeRejectPreferencesForCurrentBatch(true);
-        return;
-      }
-    } else if (/already exists/i.test(error.message ?? "")) {
-      const confirmed = window.confirm("A reject preference proposal already exists for this batch. Overwrite it?");
-      if (confirmed) {
-        state.preferenceUpdateRunning = false;
-        await proposeRejectPreferencesForCurrentBatch(true);
-        return;
-      }
-    } else {
-      throw error;
-    }
-  } finally {
-    state.preferenceUpdateRunning = false;
-    renderReview();
-  }
-}
-
-async function applyLatestRejectPreferencesWithConfirmation() {
-  if (state.preferenceUpdateRunning) return;
-  const confirmed = window.confirm("Apply the latest Markdown reject preference proposal and regenerate selected jobs?");
-  if (!confirmed) return;
-  state.preferenceUpdateRunning = true;
-  state.preferenceUpdateStatus = "Applying latest proposal...";
-  renderReview();
-  try {
-    const result = await applyLatestRejectPreferenceProposal();
-    state.preferenceUpdateStatus = `Applied ${result.proposalPath}: ${result.beforeSelectedCount} -> ${result.afterSelectedCount} selected`;
-    await loadState();
-  } finally {
-    state.preferenceUpdateRunning = false;
-    renderReview();
-  }
+  if (!response.ok) throw new Error((await response.json()).error ?? "Failed to import job");
+  return response.json();
 }
 
 function manualLinkedinImportStatusText(result) {
-  return String(result?.message ?? "").trim() || "Imported";
+  return String(result?.imported?.message ?? result?.message ?? "").trim() || "Imported";
 }
 
 async function saveManualLinkedinImport(form) {
@@ -501,7 +443,7 @@ async function saveManualLinkedinImport(form) {
   state.dashboardImportStatus = "Importing...";
   renderDashboard();
   try {
-    const result = await postManualLinkedinImport(url);
+    const result = await postManualJobImport(url);
     state.dashboardImportUrl = "";
     state.dashboardImportStatus = manualLinkedinImportStatusText(result);
     await loadDashboard();
@@ -576,7 +518,7 @@ function renderReview(focusFilter) {
   const app = renderShell("Job Review");
   const selector = renderBatchSelector();
   if (selector) app.querySelector(".page-header").insertBefore(selector, app.querySelector("h1"));
-  const summary = createEl("p", "summary", `${state.data.counts.selected} selected · ${state.data.counts.rejected} rejected · ${state.data.counts.annotations} annotated`);
+  const summary = createEl("p", "summary", `${state.data.counts.selected} selected · ${state.data.counts.rejected} rejected · ${state.data.counts.deleted} deleted · ${state.data.counts.annotations} annotated`);
   app.querySelector(".page-header").insertBefore(summary, app.querySelector(".error-banner"));
   const actions = createEl("div", "review-actions");
   const mergeButton = createEl("button", "action-button", state.mergeRunning ? "Merging..." : "Merge Raw");
@@ -584,18 +526,7 @@ function renderReview(focusFilter) {
   mergeButton.disabled = state.mergeRunning;
   mergeButton.addEventListener("click", () => mergeRawForCurrentDate().catch(showError));
   actions.append(mergeButton);
-  const proposalButton = createEl("button", "action-button", state.preferenceUpdateRunning ? "Working..." : "Propose Reject Filters");
-  proposalButton.type = "button";
-  proposalButton.disabled = state.preferenceUpdateRunning;
-  proposalButton.addEventListener("click", () => proposeRejectPreferencesForCurrentBatch(false).catch(showError));
-  actions.append(proposalButton);
-  const applyProposalButton = createEl("button", "action-button", "Apply Latest Proposal");
-  applyProposalButton.type = "button";
-  applyProposalButton.disabled = state.preferenceUpdateRunning;
-  applyProposalButton.addEventListener("click", () => applyLatestRejectPreferencesWithConfirmation().catch(showError));
-  actions.append(applyProposalButton);
   if (state.mergeStatus) actions.append(createEl("span", "merge-status", state.mergeStatus));
-  if (state.preferenceUpdateStatus) actions.append(createEl("span", "merge-status", state.preferenceUpdateStatus));
   app.querySelector(".page-header").insertBefore(actions, app.querySelector(".error-banner"));
 
   const tabList = createEl("nav", "tabs");
@@ -1047,11 +978,11 @@ function renderDashboard(focusFilter) {
 function renderManualLinkedinImportForm() {
   const form = createEl("form", "manual-import-form");
   const label = createEl("label");
-  label.append(createEl("span", null, "Add LinkedIn JD"));
+  label.append(createEl("span", null, "Add JD"));
   const input = document.createElement("input");
   input.name = "url";
   input.type = "url";
-  input.placeholder = "https://www.linkedin.com/jobs/view/...";
+  input.placeholder = "LinkedIn or Stepstone job URL";
   input.value = state.dashboardImportUrl;
   input.disabled = state.dashboardImportRunning;
   input.addEventListener("input", () => {
@@ -1104,7 +1035,9 @@ function renderJobCard(job) {
   titleBlock.append(createEl("h2", null, text(job.title?.raw ?? job.title, "Untitled")));
   titleBlock.append(createEl("p", "meta", jobMetaParts(job).join(" · ")));
   titleRow.append(titleBlock);
-  titleRow.append(renderDecisionControls(id, annotation.decision));
+  if (state.activeTab !== "deleted") {
+    titleRow.append(renderDecisionControls(id, annotation.decision));
+  }
   article.append(titleRow);
 
   const links = createEl("div", "links");
@@ -1116,12 +1049,19 @@ function renderJobCard(job) {
 
   const selection = renderSelection(job);
   if (selection) article.append(selection);
+  const deleted = renderDeletedRules(job);
+  if (deleted) article.append(deleted);
   article.append(renderEnrichment(id, state.data?.enrichments));
 
   const description = createEl("details", "description");
   const summary = createEl("summary", null, "Description");
   description.append(summary, renderDescriptionBody(job));
   article.append(description);
+
+  if (state.activeTab === "deleted") {
+    article.append(createEl("p", "save-status", "Hard-rule deleted"));
+    return article;
+  }
 
   article.append(renderTagControls(id, annotation.tags ?? []));
 
@@ -1160,11 +1100,14 @@ function renderApplicationCard({ job, application }) {
 
   article.append(renderApplicationDetailsForm(job.jobKey, application));
   article.append(renderApplicationActions(job.jobKey, application.currentStatus));
-  if (state.dashboardAction?.jobKey === job.jobKey) {
+  if (state.dashboardAction?.jobKey === job.jobKey && state.dashboardAction.type === "reject") {
     article.append(renderActionForm(job.jobKey, state.dashboardAction.type));
   }
+  if (state.dashboardAction?.jobKey === job.jobKey && state.dashboardAction.type === "closed") {
+    article.append(renderCloseOutcomeActions(job.jobKey));
+  }
 
-  article.append(renderStageNotes(application.events ?? [], application.currentStatus));
+  article.append(renderStageNotes(application.events ?? [], application.currentStatus, job.jobKey));
   return article;
 }
 
@@ -1223,7 +1166,7 @@ function renderApplicationActions(jobKey, currentStatus) {
     button.type = "button";
     button.setAttribute("aria-pressed", active ? "true" : "false");
     button.addEventListener("click", () => {
-      if (actionStatusMap[type]) {
+      if (isImmediateDashboardStageAction(type)) {
         state.dashboardAction = { jobKey, type };
         renderDashboard();
         saveApplicationStage(jobKey, type).catch(showError);
@@ -1237,6 +1180,10 @@ function renderApplicationActions(jobKey, currentStatus) {
   return group;
 }
 
+function isImmediateDashboardStageAction(type) {
+  return Boolean(actionStatusMap[type]) && type !== "closed";
+}
+
 function nextDashboardAction(currentAction, jobKey, type) {
   if (currentAction?.jobKey === jobKey && currentAction?.type === type) return null;
   return { jobKey, type };
@@ -1244,14 +1191,16 @@ function nextDashboardAction(currentAction, jobKey, type) {
 
 function applicationActionModels(jobKey, currentStatus, selectedAction = state.dashboardAction) {
   const selectedType = selectedAction?.jobKey === jobKey ? selectedAction.type : null;
-  return Object.entries(actionLabels).map(([type, label]) => {
-    const mappedStatus = actionStatusMap[type];
-    return {
-      type,
-      label,
-      active: selectedType ? selectedType === type : Boolean(mappedStatus && mappedStatus === currentStatus),
-    };
-  });
+  return Object.entries(actionLabels)
+    .filter(([type]) => type !== "note")
+    .map(([type, label]) => {
+      const mappedStatus = actionStatusMap[type];
+      return {
+        type,
+        label,
+        active: selectedType ? selectedType === type : Boolean(mappedStatus && mappedStatus === currentStatus),
+      };
+    });
 }
 
 function renderActionForm(jobKey, type) {
@@ -1283,6 +1232,29 @@ function renderActionForm(jobKey, type) {
     saveApplicationEvent(jobKey, form).catch(showError);
   });
   return form;
+}
+
+function renderCloseOutcomeActions(jobKey) {
+  const wrap = createEl("div", "close-outcome-actions");
+  wrap.append(createEl("span", "close-outcome-label", "Close as"));
+  const success = createEl("button", "close-outcome success", "Success");
+  success.type = "button";
+  success.addEventListener("click", () => {
+    saveApplicationCloseOutcome(jobKey, "success").catch(showError);
+  });
+  const fail = createEl("button", "close-outcome fail", "Fail");
+  fail.type = "button";
+  fail.addEventListener("click", () => {
+    saveApplicationCloseOutcome(jobKey, "fail").catch(showError);
+  });
+  const cancel = createEl("button", "close-outcome cancel", "Cancel");
+  cancel.type = "button";
+  cancel.addEventListener("click", () => {
+    state.dashboardAction = null;
+    renderDashboard();
+  });
+  wrap.append(success, fail, cancel);
+  return wrap;
 }
 
 function eventStageType(event, currentStatus) {
@@ -1332,9 +1304,27 @@ function stageNoteSort(a, b) {
   return a.localeCompare(b);
 }
 
-function renderStageNotes(events, currentStatus) {
+function renderStageNotes(events, currentStatus, jobKey) {
   const section = createEl("details", "stage-notes");
-  section.append(createEl("summary", null, `Stage notes (${stageNoteSummaryCount(events, currentStatus)})`));
+  const noteFormActive = state.dashboardAction?.jobKey === jobKey && state.dashboardAction.type === "note";
+  section.open = noteFormActive;
+  const summary = createEl("summary", "stage-notes-summary");
+  summary.append(createEl("span", null, `Stage notes (${stageNoteSummaryCount(events, currentStatus)})`));
+  const addNote = createEl("button", "stage-note-add", "Add Note");
+  addNote.type = "button";
+  addNote.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    state.dashboardAction = nextDashboardAction(state.dashboardAction, jobKey, "note");
+    renderDashboard();
+  });
+  summary.append(addNote);
+  section.append(summary);
+
+  if (noteFormActive) {
+    section.append(renderStageNoteForm(jobKey));
+  }
+
   const groupsList = createEl("div", "stage-note-groups");
   const groupedNotes = visibleStageNoteGroups(events, currentStatus);
   if (!groupedNotes.length) {
@@ -1357,6 +1347,39 @@ function renderStageNotes(events, currentStatus) {
   }
   section.append(groupsList);
   return section;
+}
+
+function renderStageNoteForm(jobKey) {
+  const form = createEl("form", "stage-note-form");
+  const label = createEl("label", "wide");
+  label.append(createEl("span", null, "Note"));
+  const note = document.createElement("textarea");
+  note.name = "note";
+  note.placeholder = "Add stage note...";
+  note.required = true;
+  label.append(note);
+
+  const actions = createEl("div", "form-actions");
+  const save = createEl("button", null, "Save");
+  save.type = "submit";
+  save.disabled = true;
+  const cancel = createEl("button", null, "Cancel");
+  cancel.type = "button";
+  actions.append(save, cancel);
+  form.append(label, actions);
+
+  note.addEventListener("input", () => {
+    save.disabled = !note.value.trim();
+  });
+  cancel.addEventListener("click", () => {
+    state.dashboardAction = null;
+    renderDashboard();
+  });
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    saveApplicationNote(jobKey, note.value).catch(showError);
+  });
+  return form;
 }
 
 function renderLink(label, href, options = {}) {
@@ -1408,6 +1431,20 @@ function renderSelection(job) {
   const wrap = createEl("div", "selection");
   wrap.append(createEl("strong", null, "Matched: "));
   wrap.append(document.createTextNode(must.map((rule) => `${rule.id}: ${(rule.matchedTerms ?? []).join(", ")}`).join(" | ")));
+  return wrap;
+}
+
+function renderDeletedRules(job) {
+  const rules = job._deleted?.rules ?? [];
+  if (!rules.length) return null;
+  const wrap = createEl("div", "selection deleted-rules");
+  wrap.append(createEl("strong", null, "Deleted: "));
+  wrap.append(document.createTextNode(rules.map((rule) => {
+    if (rule.id === "posted_too_old") {
+      return `posted before ${String(rule.cutoff ?? "").slice(0, 10)}`;
+    }
+    return rule.id;
+  }).join(" | ")));
   return wrap;
 }
 

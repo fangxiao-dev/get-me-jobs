@@ -3,15 +3,17 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseRawFilename } from "./lib/parse-raw-filename.mjs";
 import { adaptLinkedinItem } from "./lib/adapt-linkedin.mjs";
+import { adaptStepstoneItem } from "./lib/adapt-stepstone.mjs";
 import { emptyCanonicalFile, mergeIntoCanonical } from "./lib/canonical-merge.mjs";
 import { manualLinkedinMergeInputs } from "./lib/manual-linkedin-store.mjs";
+import { manualSourceMergeInputs } from "./lib/manual-job-store.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
 const rawDir = path.join(rootDir, "data", "raw");
 const canonicalDir = path.join(rootDir, "data", "canonical");
 
-const ADAPTERS = { linkedin: adaptLinkedinItem };
+const ADAPTERS = { linkedin: adaptLinkedinItem, stepstone: adaptStepstoneItem };
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
@@ -38,7 +40,7 @@ function allRawFiles(root = rootDir, rawBase = rawDir) {
         })
         .filter(Boolean)
     : [];
-  return [...rawFiles, ...manualLinkedinMergeInputs(root)];
+  return [...rawFiles, ...manualLinkedinMergeInputs(root), ...manualSourceMergeInputs(root, "stepstone")];
 }
 
 function latestDate(files) {

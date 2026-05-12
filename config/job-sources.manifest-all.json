@@ -1,18 +1,13 @@
 {
   "version": 1,
   "channels": {
-    "apify": {
-      "enabled": true,
-      "envFile": ".env",
-      "taskEnvPrefix": "TASKID_"
-    },
     "apify_linkedin": {
       "enabled": true,
       "envFile": ".env",
       "taskEnvPrefix": "TASKID_LINKEDIN"
     },
     "localLinkedin": {
-      "enabled": false,
+      "enabled": true,
       "inputFile": "config/local/linkedin-assisted.input.json"
     }
   },

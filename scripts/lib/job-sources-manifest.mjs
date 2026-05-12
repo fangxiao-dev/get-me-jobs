@@ -26,6 +26,12 @@ function validateNoLocalLinkedinSecrets(channel) {
   if ("userAgent" in channel) throw new Error("channels.localLinkedin.userAgent must stay in ignored local input");
 }
 
+function validateApifyChannel(channel, label) {
+  assertBoolean(channel.enabled, `${label}.enabled`);
+  assertString(channel.envFile, `${label}.envFile`);
+  assertString(channel.taskEnvPrefix, `${label}.taskEnvPrefix`);
+}
+
 export function loadJobSourcesManifest(options = {}) {
   const rootDir = options.rootDir ?? process.cwd();
   const manifestPath = options.manifestPath ?? path.join(rootDir, DEFAULT_MANIFEST_PATH);
@@ -34,13 +40,13 @@ export function loadJobSourcesManifest(options = {}) {
   assertObject(manifest, "manifest");
   if (manifest.version !== 1) throw new Error("manifest.version must be 1");
   assertObject(manifest.channels, "channels");
+  if (manifest.channels.apify !== undefined) assertObject(manifest.channels.apify, "channels.apify");
   assertObject(manifest.channels.apify_linkedin, "channels.apify_linkedin");
   assertObject(manifest.channels.localLinkedin, "channels.localLinkedin");
   assertObject(manifest.review, "review");
 
-  assertBoolean(manifest.channels.apify_linkedin.enabled, "channels.apify_linkedin.enabled");
-  assertString(manifest.channels.apify_linkedin.envFile, "channels.apify_linkedin.envFile");
-  assertString(manifest.channels.apify_linkedin.taskEnvPrefix, "channels.apify_linkedin.taskEnvPrefix");
+  if (manifest.channels.apify !== undefined) validateApifyChannel(manifest.channels.apify, "channels.apify");
+  validateApifyChannel(manifest.channels.apify_linkedin, "channels.apify_linkedin");
   assertBoolean(manifest.channels.localLinkedin.enabled, "channels.localLinkedin.enabled");
   assertString(manifest.channels.localLinkedin.inputFile, "channels.localLinkedin.inputFile");
   validateNoLocalLinkedinSecrets(manifest.channels.localLinkedin);

@@ -88,9 +88,9 @@ function writeRawFile(root, task, run, taskInputValue, items, index) {
   const rawDir = path.join(root, "data", "raw");
   fs.mkdirSync(rawDir, { recursive: true });
   const dateParts = localDateParts();
-  const rawPath = path.join(rawDir, rawFilenameForRun(dateParts, index));
+  const rawPath = path.join(rawDir, rawFilenameForRun(task.source, dateParts, index));
   const raw = {
-    source: "linkedin",
+    source: task.source,
     taskKey: task.key,
     taskId: task.taskId,
     taskName: task.taskName,
@@ -134,9 +134,9 @@ async function runTask(root, task, token, index) {
 export async function runApifyReview(options = {}) {
   const root = options.rootDir ?? rootDir;
   const manifest = options.manifest ?? loadJobSourcesManifest({ rootDir: root, manifestPath: options.manifestPath });
-  const channel = manifest.channels.apify_linkedin;
+  const channel = manifest.channels.apify ?? manifest.channels.apify_linkedin;
   if (!channel.enabled) {
-    throw new Error("Apify LinkedIn channel is disabled by config/job-sources.manifest.json");
+    throw new Error("Apify channel is disabled by config/job-sources.manifest.json");
   }
 
   const envPath = path.join(root, channel.envFile);

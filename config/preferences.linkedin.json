@@ -1,23 +1,11 @@
 {
   "version": 1,
   "description": "LinkedIn job preference rules. Edit this file to tune data/selected/*.json without re-running Apify.",
+  "freshness": {
+    "maxPostedAgeMonths": 4
+  },
   "rules": {
     "must": [
-      {
-        "id": "thesis_in_title",
-        "description": "The job title should be a thesis/final-project style role.",
-        "fields": ["title.raw", "title.normalized"],
-        "terms": [
-          "硕士毕业设计",
-          "硕士论文",
-          "masterarbeit",
-          "abschlussarbeit",
-          "master thesis",
-          "master's thesis",
-          "msc thesis",
-          "m.sc. thesis"
-        ]
-      },
       {
         "id": "ai_related",
         "description": "The job content should mention AI, ML, data science, LLMs, or closely related topics.",
@@ -51,6 +39,7 @@
           "computer vision",
           "data science",
           "neural network",
+          "automation",
           "modellentwicklung"
         ]
       }

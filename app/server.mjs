@@ -4,10 +4,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { mergeCanonicalForDate } from "../scripts/merge-canonical.mjs";
 import { adaptLinkedinItem } from "../scripts/lib/adapt-linkedin.mjs";
+import { adaptStepstoneItem } from "../scripts/lib/adapt-stepstone.mjs";
 import { extractedLinkedinJobToRawItem, scrapeLinkedinJob } from "../scripts/lib/scrape-linkedin-job.mjs";
+import { extractedStepstoneJobToRawItem, scrapeStepstoneJob } from "../scripts/lib/scrape-stepstone-job.mjs";
 import { upsertManualLinkedinRawItem, writeManualLinkedinAudit } from "../scripts/lib/manual-linkedin-store.mjs";
+import { upsertManualRawItem, writeManualAudit } from "../scripts/lib/manual-job-store.mjs";
+import { readDashboardEnrichments, upsertManualImportAiEnrichment } from "../scripts/lib/manual-import-ai-enrichment.mjs";
 import { selectJobsFile } from "../scripts/select-jobs.mjs";
-import { runRejectPreferenceUpdate } from "../scripts/update-reject-preferences.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
@@ -17,9 +20,9 @@ const port = Number(process.env.PORT ?? 4173);
 const dataDir = path.join(rootDir, "data");
 const canonicalDir = path.join(dataDir, "canonical");
 const selectedDir = path.join(dataDir, "selected");
+const deletedDir = path.join(dataDir, "deleted");
 const annotationsDir = path.join(dataDir, "annotations");
 const enrichmentsDir = path.join(dataDir, "enrichments");
-const preferenceProposalsDir = path.join(rootDir, "docs", "preference-proposals");
 const acceptedJobsPath = path.join(rootDir, "data", "accepted-jobs.json");
 const applicationsPath = path.join(rootDir, "data", "applications.json");
 
@@ -165,10 +168,25 @@ function latestCanonicalFile() {
   return latestName ? path.join(canonicalDir, latestName) : null;
 }
 
+function historicalRejectedIds(annotationsBase, beforeDate) {
+  const files = fs.existsSync(annotationsBase) ? fs.readdirSync(annotationsBase) : [];
+  const rejectedIds = new Set();
+  for (const name of files) {
+    const date = path.basename(name, ".json");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date >= beforeDate) continue;
+    const annotations = readJson(path.join(annotationsBase, name), { items: [] });
+    for (const item of annotations.items ?? []) {
+      if (item.decision === "reject") rejectedIds.add(String(item.id));
+    }
+  }
+  return rejectedIds;
+}
+
 export function listBatchMetadata(options = {}) {
   const baseRoot = options.rootDir ?? rootDir;
   const canonicalBase = options.canonicalDir ?? path.join(baseRoot, "data", "canonical");
   const selectedBase = options.selectedDir ?? path.join(baseRoot, "data", "selected");
+  const deletedBase = options.deletedDir ?? path.join(baseRoot, "data", "deleted");
   const annotationsBase = options.annotationsDir ?? path.join(baseRoot, "data", "annotations");
   const acceptedPath = options.acceptedJobsPath ?? path.join(baseRoot, "data", "accepted-jobs.json");
   const accepted = readJson(acceptedPath, { items: [] });
@@ -184,12 +202,23 @@ export function listBatchMetadata(options = {}) {
       const selectedPath = path.join(selectedBase, name);
       const canonical = readJson(canonicalPath, { items: [] });
       const selected = readJson(selectedPath, { items: [] });
+      const deleted = readJson(path.join(deletedBase, name), { items: [] });
       const annotations = readJson(path.join(annotationsBase, name), { items: [] });
       const annotationMap = annotationsById(annotations);
+      const historicalRejects = historicalRejectedIds(annotationsBase, date);
+      const deletedIds = new Set((deleted.items ?? []).map(safeJobId));
       const selectedIds = new Set((selected.items ?? []).map(safeJobId));
-      const canonicalItems = canonical.items ?? [];
+      const canonicalItems = (canonical.items ?? [])
+        .filter((item) => !historicalRejects.has(safeJobId(item)))
+        .filter((item) => !deletedIds.has(safeJobId(item)));
       const selectedCount = (selected.items ?? [])
+        .filter((item) => !historicalRejects.has(safeJobId(item)))
+        .filter((item) => !deletedIds.has(safeJobId(item)))
         .filter((item) => annotationMap[safeJobId(item)]?.decision !== "reject")
+        .filter((item) => !acceptedKeys.has(jobKey(null, item)))
+        .length;
+      const deletedCount = (deleted.items ?? [])
+        .filter((item) => !historicalRejects.has(safeJobId(item)))
         .filter((item) => !acceptedKeys.has(jobKey(null, item)))
         .length;
       const rejectedCount = canonicalItems
@@ -202,6 +231,7 @@ export function listBatchMetadata(options = {}) {
         selectedFile: path.relative(baseRoot, selectedPath).replaceAll(path.sep, "/"),
         totalCount: selectedCount + rejectedCount,
         selectedCount,
+        deletedCount,
       };
     });
 }
@@ -221,6 +251,10 @@ function relativeDataPath(filePath) {
 
 function annotationPath(date) {
   return path.join(annotationsDir, `${date}.json`);
+}
+
+function deletedPath(date) {
+  return path.join(deletedDir, `${date}.json`);
 }
 
 function enrichmentPath(date) {
@@ -372,6 +406,12 @@ function normalizedWorkplaceType(value, locationText = "") {
   return "unknown";
 }
 
+function sourceDisplayName(source) {
+  if (source === "linkedin") return "LinkedIn";
+  if (source === "stepstone") return "Stepstone";
+  return source ? source[0].toUpperCase() + source.slice(1) : "Job";
+}
+
 function hydrateAcceptedJob(job) {
   if (!job.canonicalFile || ((job.description?.text || job.description?.html) && job.timing?.postedAt)) return job;
   const canonicalPath = resolveDataFile(job.canonicalFile, canonicalDir);
@@ -384,7 +424,13 @@ export function applicationEventStage(type, currentStatus) {
   return statusStageMap[currentStatus] ?? "note";
 }
 
+export function applicationStatusAfterEvent(type, currentStatus) {
+  return eventStatusMap[type] ?? currentStatus ?? "accepted";
+}
+
 export function upsertManualAcceptedApplication(stores, item, context) {
+  const source = item.identity?.source ?? "linkedin";
+  const sourceLabel = context.sourceLabel ?? sourceDisplayName(source);
   const acceptedJob = acceptedJobFromItem(item.identity?.source ?? "linkedin", item, {
     now: context.now,
     canonicalFile: context.canonicalFile ?? "",
@@ -414,7 +460,7 @@ export function upsertManualAcceptedApplication(stores, item, context) {
 
   const appIndex = applications.items.findIndex((entry) => entry.jobKey === acceptedJob.jobKey);
   const createdApplication = appIndex < 0;
-  const acceptedEvent = createEvent("accepted", "Accepted from manual LinkedIn import", context.now.slice(0, 10));
+  const acceptedEvent = createEvent("accepted", `Accepted from manual ${sourceLabel} import`, context.now.slice(0, 10));
   if (appIndex >= 0) {
     const existing = applications.items[appIndex];
     const events = existing.events ?? [];
@@ -450,8 +496,8 @@ export function upsertManualAcceptedApplication(stores, item, context) {
       message: deduped && existingDashboardRecord
         ? `Already existed (${duplicateReasons.join(", ")}), deduplicated and updated existing application.`
         : deduped
-          ? `Matched existing ${duplicateReasons.join(", ")}, added LinkedIn job to Accepted without duplicating merge data.`
-          : "Added LinkedIn job to Accepted.",
+          ? `Matched existing ${duplicateReasons.join(", ")}, added ${sourceLabel} job to Accepted without duplicating merge data.`
+          : `Added ${sourceLabel} job to Accepted.`,
     },
   };
 }
@@ -540,20 +586,59 @@ function upsertAcceptedApplication(payload, context) {
 }
 
 async function importLinkedinJobUrl(payload) {
+  return importManualJobUrl({ ...payload, source: "linkedin" });
+}
+
+function detectManualImportSource(url) {
+  const hostname = new URL(url).hostname.toLowerCase();
+  if (hostname.endsWith("linkedin.com")) return "linkedin";
+  if (hostname.endsWith("stepstone.de")) return "stepstone";
+  const error = new Error("Unsupported job URL source. Supported sources: LinkedIn, Stepstone");
+  error.statusCode = 400;
+  throw error;
+}
+
+const manualImportConfigs = {
+  linkedin: {
+    sourceLabel: "LinkedIn",
+    scrape: scrapeLinkedinJob,
+    toRawItem: extractedLinkedinJobToRawItem,
+    adapt: adaptLinkedinItem,
+    upsertRaw: upsertManualLinkedinRawItem,
+    writeAudit: writeManualLinkedinAudit,
+  },
+  stepstone: {
+    sourceLabel: "Stepstone",
+    scrape: scrapeStepstoneJob,
+    toRawItem: extractedStepstoneJobToRawItem,
+    adapt: adaptStepstoneItem,
+    upsertRaw: (baseRootDir, rawItem, now) => upsertManualRawItem(baseRootDir, "stepstone", rawItem, now),
+    writeAudit: (baseRootDir, rawItem, now) => writeManualAudit(baseRootDir, "stepstone", rawItem, now),
+  },
+};
+
+async function importManualJobUrl(payload) {
   const url = String(payload.url ?? "").trim();
   if (!url) {
     const error = new Error("url is required");
     error.statusCode = 400;
     throw error;
   }
+  const source = payload.source ?? detectManualImportSource(url);
+  const config = manualImportConfigs[source];
+  if (!config) {
+    const error = new Error(`Unsupported manual import source: ${source}`);
+    error.statusCode = 400;
+    throw error;
+  }
 
   const now = new Date().toISOString();
-  const extracted = await scrapeLinkedinJob(url);
-  const rawItem = extractedLinkedinJobToRawItem(extracted, now);
-  const auditFile = writeManualLinkedinAudit(rootDir, rawItem, now);
-  const manualStore = upsertManualLinkedinRawItem(rootDir, rawItem, now);
+  const extracted = await config.scrape(url);
+  const rawItem = config.toRawItem(extracted, now);
+  const auditFile = config.writeAudit(rootDir, rawItem, now);
+  const manualStore = config.upsertRaw(rootDir, rawItem, now);
 
-  const job = adaptLinkedinItem(rawItem, {
+  const job = config.adapt(rawItem, {
     rawFile: manualStore.manualFile,
     collectedAt: now,
     runId: "manual",
@@ -569,9 +654,14 @@ async function importLinkedinJobUrl(payload) {
     rawFile: manualStore.manualFile,
     manualDuplicate: manualStore.manualDeduped,
     canonicalDuplicate: Boolean(canonicalDuplicate),
+    sourceLabel: config.sourceLabel,
   });
   saveAcceptedJobs(next.accepted);
   saveApplications(next.applications);
+  const acceptedJob = (next.accepted.items ?? []).find((entry) => entry.jobKey === next.result.jobKey);
+  const aiEnrichment = acceptedJob
+    ? await upsertManualImportAiEnrichment({ rootDir, job: acceptedJob, now })
+    : { ok: false, error: "accepted job not found after import" };
   return {
     ...next.result,
     rawFile: manualStore.manualFile,
@@ -579,6 +669,7 @@ async function importLinkedinJobUrl(payload) {
     manualAdded: manualStore.manualAdded,
     manualDeduped: manualStore.manualDeduped,
     canonicalFile: canonicalDuplicate?.canonicalFile ?? "",
+    aiEnrichment,
   };
 }
 
@@ -592,6 +683,7 @@ function loadReviewState(options) {
     : path.join(selectedDir, `${batchIdFromFile(canonicalPath)}.json`);
   const effectiveBatchId = batchId ?? batchIdFromFile(canonicalPath);
   const annPath = annotationPath(effectiveBatchId);
+  const delPath = deletedPath(effectiveBatchId);
   const enrichments = readJson(enrichmentPath(effectiveBatchId), {});
   const accepted = loadAcceptedJobs();
   const acceptedKeys = new Set((accepted.items ?? []).map((item) => item.jobKey));
@@ -604,10 +696,15 @@ function loadReviewState(options) {
   }
 
   const selected = readJson(selectedPath, { items: [] });
+  const deleted = readJson(delPath, { items: [] });
   const annotationFile = readAnnotationFile(annPath, effectiveBatchId);
   const annotationMap = annotationsById(annotationFile);
+  const historicalRejects = historicalRejectedIds(annotationsDir, effectiveBatchId);
+  const deletedIds = new Set((deleted.items ?? []).map(safeJobId));
   const selectedIds = new Set((selected.items ?? []).map(safeJobId));
-  const canonicalItems = canonical.items ?? [];
+  const canonicalItems = (canonical.items ?? [])
+    .filter((item) => !historicalRejects.has(safeJobId(item)))
+    .filter((item) => !deletedIds.has(safeJobId(item)));
   function withReviewMeta(item) {
     const key = jobKey(null, item);
     return {
@@ -620,7 +717,13 @@ function loadReviewState(options) {
   }
 
   const selectedItems = (selected.items ?? [])
+    .filter((item) => !historicalRejects.has(safeJobId(item)))
+    .filter((item) => !deletedIds.has(safeJobId(item)))
     .filter((item) => annotationMap[safeJobId(item)]?.decision !== "reject")
+    .map(withReviewMeta)
+    .filter((item) => !item._reviewMeta.duplicateAccepted);
+  const deletedItems = (deleted.items ?? [])
+    .filter((item) => !historicalRejects.has(safeJobId(item)))
     .map(withReviewMeta)
     .filter((item) => !item._reviewMeta.duplicateAccepted);
   const rejectedItems = canonicalItems
@@ -635,17 +738,20 @@ function loadReviewState(options) {
     files: {
       canonical: path.relative(rootDir, canonicalPath),
       selected: path.relative(rootDir, selectedPath),
+      deleted: path.relative(rootDir, delPath),
       annotations: path.relative(rootDir, annPath),
     },
     counts: {
       selected: selectedItems.length,
       rejected: rejectedItems.length,
+      deleted: deletedItems.length,
       duplicateAccepted,
       annotations: Object.keys(annotationMap).length,
     },
     items: {
       selected: selectedItems,
       rejected: rejectedItems,
+      deleted: deletedItems,
     },
     annotations: annotationMap,
     enrichments,
@@ -662,6 +768,7 @@ function mergeAndSelect(date) {
   const merge = mergeCanonicalForDate(date, { rootDir });
   const canonicalFile = path.join("data", "canonical", `${date}.json`);
   const selectedFile = path.join("data", "selected", `${date}.json`);
+  const deletedFile = path.join("data", "deleted", `${date}.json`);
   const selection = selectJobsFile(canonicalFile, selectedFile, "config/preferences.linkedin.json", { cwd: rootDir });
 
   return {
@@ -669,55 +776,12 @@ function mergeAndSelect(date) {
     date,
     canonicalFile: canonicalFile.replaceAll(path.sep, "/"),
     selectedFile: selectedFile.replaceAll(path.sep, "/"),
+    deletedFile: deletedFile.replaceAll(path.sep, "/"),
     canonicalItems: merge.canonicalItems,
     selectedCount: selection.selectedCount,
+    deletedCount: selection.deletedCount,
     files: merge.files,
   };
-}
-
-function latestRejectPreferenceProposalPath() {
-  const files = fs.existsSync(preferenceProposalsDir) ? fs.readdirSync(preferenceProposalsDir) : [];
-  const latestName = files
-    .filter((name) => /^rejects-\d{4}-\d{2}-\d{2}\.md$/.test(name))
-    .sort()
-    .at(-1);
-  return latestName ? path.join(preferenceProposalsDir, latestName) : null;
-}
-
-function proposalDateFromPath(filePath) {
-  return path.basename(filePath).match(/^rejects-(\d{4}-\d{2}-\d{2})\.md$/)?.[1] ?? null;
-}
-
-function generateRejectPreferenceProposalFromPayload(payload) {
-  const date = String(payload.date ?? "");
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-    const error = new Error("date must be YYYY-MM-DD");
-    error.statusCode = 400;
-    throw error;
-  }
-  const argv = payload.overwrite ? [date, "--overwrite"] : [date];
-  return runRejectPreferenceUpdate({ cwd: rootDir, argv });
-}
-
-function applyLatestRejectPreferenceProposalFromPayload() {
-  const proposalPath = latestRejectPreferenceProposalPath();
-  if (!proposalPath) {
-    const error = new Error("No reject preference proposals found.");
-    error.statusCode = 404;
-    throw error;
-  }
-  const date = proposalDateFromPath(proposalPath);
-  if (!date) {
-    const error = new Error("Latest reject preference proposal has an invalid filename.");
-    error.statusCode = 500;
-    throw error;
-  }
-  const relativeProposalPath = path.relative(rootDir, proposalPath).replaceAll(path.sep, "/");
-  const result = runRejectPreferenceUpdate({
-    cwd: rootDir,
-    argv: [date, "--apply", relativeProposalPath],
-  });
-  return { ...result, date, proposalPath: relativeProposalPath };
 }
 
 async function readRequestJson(req) {
@@ -795,16 +859,7 @@ function loadDashboardState() {
   const applications = loadApplications();
   const appMap = new Map((applications.items ?? []).map((item) => [item.jobKey, item]));
 
-  // Merge enrichments from all batch dates referenced by accepted jobs
-  const enrichments = {};
-  const seenDates = new Set();
-  for (const job of accepted.items ?? []) {
-    const dateMatch = (job.canonicalFile ?? "").match(/(\d{4}-\d{2}-\d{2})/);
-    if (dateMatch && !seenDates.has(dateMatch[1])) {
-      seenDates.add(dateMatch[1]);
-      Object.assign(enrichments, readJson(enrichmentPath(dateMatch[1]), {}));
-    }
-  }
+  const enrichments = readDashboardEnrichments(rootDir, accepted.items ?? []);
 
   const items = (accepted.items ?? []).map((job) => ({
     job: hydrateAcceptedJob(job),
@@ -847,7 +902,7 @@ function appendApplicationEvent(payload) {
   }
 
   const current = items[index];
-  const nextStatus = eventStatusMap[type] ?? current.currentStatus ?? "accepted";
+  const nextStatus = applicationStatusAfterEvent(type, current.currentStatus);
   const event = createEvent(type, payload.note ?? "", payload.date || new Date().toISOString().slice(0, 10), {
     stage: applicationEventStage(type, current.currentStatus ?? "accepted"),
   });
@@ -1007,37 +1062,6 @@ async function handleApi(req, res, url) {
     return;
   }
 
-  if (req.method === "POST" && url.pathname === "/api/preferences/rejects/proposal") {
-    const payload = await readRequestJson(req);
-    try {
-      const result = generateRejectPreferenceProposalFromPayload(payload);
-      sendJson(res, 200, {
-        ok: true,
-        proposalPath: path.relative(rootDir, result.proposalPath).replaceAll(path.sep, "/"),
-        proposal: result.proposal,
-      });
-    } catch (error) {
-      if (/already exists/.test(error.message ?? "")) {
-        const date = String(payload.date ?? "");
-        sendJson(res, 409, {
-          ok: false,
-          needsOverwrite: true,
-          proposalPath: `docs/preference-proposals/rejects-${date}.md`,
-          error: error.message,
-        });
-        return;
-      }
-      throw error;
-    }
-    return;
-  }
-
-  if (req.method === "POST" && url.pathname === "/api/preferences/rejects/apply") {
-    const result = applyLatestRejectPreferenceProposalFromPayload();
-    sendJson(res, 200, { ok: true, ...result, state: loadReviewState({ batchId: result.date }) });
-    return;
-  }
-
   if (req.method === "GET" && url.pathname === "/api/dashboard") {
     sendJson(res, 200, loadDashboardState());
     return;
@@ -1060,6 +1084,13 @@ async function handleApi(req, res, url) {
   if (req.method === "POST" && url.pathname === "/api/applications/import-linkedin-url") {
     const payload = await readRequestJson(req);
     const imported = await importLinkedinJobUrl(payload);
+    sendJson(res, 200, { ok: true, imported, dashboard: loadDashboardState() });
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/applications/import-job-url") {
+    const payload = await readRequestJson(req);
+    const imported = await importManualJobUrl(payload);
     sendJson(res, 200, { ok: true, imported, dashboard: loadDashboardState() });
     return;
   }

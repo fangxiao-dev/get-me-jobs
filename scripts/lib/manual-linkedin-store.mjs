@@ -1,5 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
+import {
+  manualSourceFilePath,
+  manualSourceMergeInputs,
+  manualSourceRelativeFile,
+  upsertManualRawItem,
+  writeManualAudit,
+} from "./manual-job-store.mjs";
 
 function readJson(filePath, fallback = null) {
   try {
@@ -10,87 +17,20 @@ function readJson(filePath, fallback = null) {
   }
 }
 
-function writeJson(filePath, value) {
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
-}
-
-function dateFromIso(value) {
-  return String(value).slice(0, 10);
-}
-
-function timestampForFile(value = new Date()) {
-  const iso = value.toISOString();
-  return `${iso.slice(0, 10)}-${iso.slice(11, 19).replaceAll(":", "")}`;
-}
-
-function manualKey(item) {
-  return String(item?.id ?? item?.sourceJobId ?? item?.link ?? item?.url ?? "").trim();
-}
-
 export function manualLinkedinRelativeFile(date) {
-  return `data/manual/linkedin-${date}.json`;
+  return manualSourceRelativeFile("linkedin", date);
 }
 
 export function manualLinkedinFilePath(rootDir, date) {
-  return path.join(rootDir, "data", "manual", `linkedin-${date}.json`);
+  return manualSourceFilePath(rootDir, "linkedin", date);
 }
 
 export function upsertManualLinkedinRawItem(rootDir, rawItem, now) {
-  const date = dateFromIso(now);
-  const filePath = manualLinkedinFilePath(rootDir, date);
-  const current = readJson(filePath, {
-    source: "linkedin",
-    taskName: "manual-linkedin-job-imports",
-    runStatus: "MANUAL_AGGREGATE",
-    savedAt: now,
-    updatedAt: now,
-    count: 0,
-    items: [],
-  });
-
-  const key = manualKey(rawItem);
-  const items = [...(current.items ?? [])];
-  const index = items.findIndex((item) => manualKey(item) === key);
-  const manualAdded = index < 0;
-  if (index >= 0) {
-    items[index] = { ...items[index], ...rawItem };
-  } else {
-    items.push(rawItem);
-  }
-
-  const next = {
-    ...current,
-    source: "linkedin",
-    taskName: "manual-linkedin-job-imports",
-    runStatus: "MANUAL_AGGREGATE",
-    updatedAt: now,
-    count: items.length,
-    items,
-  };
-  writeJson(filePath, next);
-
-  return {
-    manualFile: manualLinkedinRelativeFile(date),
-    manualAdded,
-    manualDeduped: !manualAdded,
-    count: items.length,
-    updatedAt: now,
-  };
+  return upsertManualRawItem(rootDir, "linkedin", rawItem, now);
 }
 
 export function writeManualLinkedinAudit(rootDir, rawItem, now) {
-  const auditName = `linkedin-manual-${timestampForFile(new Date(now))}.json`;
-  const relative = `data/manual/audit/${auditName}`;
-  writeJson(path.join(rootDir, relative), {
-    source: "linkedin",
-    taskName: "manual-linkedin-job-import",
-    runStatus: "MANUAL",
-    savedAt: now,
-    count: 1,
-    items: [rawItem],
-  });
-  return relative;
+  return writeManualAudit(rootDir, "linkedin", rawItem, now);
 }
 
 function legacyManualTimestamp(filename) {
@@ -129,27 +69,5 @@ export function migrateLegacyManualLinkedinFiles(rootDir) {
 }
 
 export function manualLinkedinMergeInputs(rootDir) {
-  const manualDir = path.join(rootDir, "data", "manual");
-  if (!fs.existsSync(manualDir)) return [];
-  return fs.readdirSync(manualDir)
-    .map((name) => {
-      const match = /^linkedin-(\d{4}-\d{2}-\d{2})\.json$/.exec(name);
-      if (!match) return null;
-      const filePath = path.join(manualDir, name);
-      const raw = readJson(filePath, null);
-      if (!raw) return null;
-      const updatedAt = raw.updatedAt ?? raw.savedAt ?? fs.statSync(filePath).mtime.toISOString();
-      return {
-        name,
-        filePath,
-        relative: manualLinkedinRelativeFile(match[1]),
-        parsed: {
-          source: "linkedin",
-          date: match[1],
-          time: String(updatedAt).slice(11, 19).replaceAll(":", ""),
-        },
-        processKey: `${manualLinkedinRelativeFile(match[1])}#${updatedAt}`,
-      };
-    })
-    .filter(Boolean);
+  return manualSourceMergeInputs(rootDir, "linkedin");
 }

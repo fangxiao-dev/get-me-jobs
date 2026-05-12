@@ -41,11 +41,23 @@ export function resolveTaskEntries(env, taskList, options = {}) {
         taskId: chosen.id,
         taskName: chosen.name,
         actorId: chosen.actId,
+        source: deriveSourceFromTaskKey(entry.key),
       });
     }
   }
 
   return resolved;
+}
+
+export function deriveSourceFromTaskKey(taskKey) {
+  const key = String(taskKey ?? "").toUpperCase();
+  if (key.startsWith("TASKID_LINKEDIN")) return "linkedin";
+  if (key.startsWith("TASKID_STEPSTONE")) return "stepstone";
+  return key
+    .replace(/^TASKID_/, "")
+    .split("_")
+    .filter(Boolean)[0]
+    ?.toLowerCase() || "unknown";
 }
 
 export function localDateParts(value = new Date()) {
@@ -57,7 +69,7 @@ export function localDateParts(value = new Date()) {
   };
 }
 
-export function rawFilenameForRun(dateParts, index = 0) {
+export function rawFilenameForRun(source, dateParts, index = 0) {
   const suffix = index > 0 ? `-${String(index + 1).padStart(2, "0")}` : "";
-  return `linkedin-${dateParts.date}-${dateParts.time}${suffix}.json`;
+  return `${source}-${dateParts.date}-${dateParts.time}${suffix}.json`;
 }

@@ -15,6 +15,7 @@ export function finalizeReviewBatch(dateArg, options = {}) {
   const date = merge.date;
   const canonicalFile = relativePath("data", "canonical", `${date}.json`);
   const selectedFile = relativePath("data", "selected", `${date}.json`);
+  const deletedFile = relativePath("data", "deleted", `${date}.json`);
   const selection = (options.selectJobsFile ?? selectJobsFile)(
     canonicalFile,
     selectedFile,
@@ -37,8 +38,10 @@ export function finalizeReviewBatch(dateArg, options = {}) {
     date,
     canonicalFile,
     selectedFile,
+    deletedFile,
     canonicalItems: merge.canonicalItems,
     selectedCount: selection.selectedCount,
+    deletedCount: selection.deletedCount,
     merge,
     selection,
     enrichment,

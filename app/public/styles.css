@@ -386,24 +386,51 @@ h2 {
   margin-bottom: 16px;
 }
 
-.manual-import-form {
+.manual-imports {
   display: grid;
-  grid-template-columns: minmax(280px, 1fr) auto auto;
-  gap: 8px;
-  align-items: end;
+  gap: 12px;
   margin-bottom: 14px;
   padding: 12px 0;
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
 }
 
-.manual-import-form label {
+.manual-import-form {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) auto auto;
+  gap: 8px;
+  align-items: end;
+}
+
+.manual-entry-form {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(140px, 1fr));
+  gap: 10px;
+  align-items: end;
+  margin-top: 10px;
+}
+
+.manual-entry-panel summary {
+  cursor: pointer;
+  color: var(--text);
+  font-weight: 700;
+}
+
+.manual-import-form label,
+.manual-entry-form label {
   display: grid;
   gap: 4px;
   color: var(--muted);
 }
 
-.manual-import-form input {
+.manual-entry-form .wide {
+  grid-column: 1 / -1;
+}
+
+.manual-import-form input,
+.manual-entry-form input,
+.manual-entry-form select,
+.manual-entry-form textarea {
   width: 100%;
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -411,7 +438,13 @@ h2 {
   background: #fff;
 }
 
-.manual-import-form button {
+.manual-entry-form textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.manual-import-form button,
+.manual-entry-form button {
   border: 1px solid var(--border);
   border-radius: 6px;
   background: #fff;
@@ -419,7 +452,8 @@ h2 {
   cursor: pointer;
 }
 
-.manual-import-form button:disabled {
+.manual-import-form button:disabled,
+.manual-entry-form button:disabled {
   cursor: wait;
   color: var(--muted);
 }
@@ -633,6 +667,7 @@ h2 {
   .dashboard-filters,
   .job-filters,
   .manual-import-form,
+  .manual-entry-form,
   .application-details-form,
   .action-form {
     grid-template-columns: 1fr;

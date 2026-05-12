@@ -12,12 +12,16 @@ async function loadDashboardUiFunctions() {
   enrichmentDisplayText,
   effectiveAnnotation,
   postManualJobImport,
+  postManualEntryImport,
+  postManualEntryParse,
   postManualLinkedinImport,
   shouldReloadReviewAfterDecision,
   stageNoteGroups,
   visibleStageNoteGroups,
   stageNoteSummaryCount,
   manualLinkedinImportStatusText,
+  manualEntryInitialForm,
+  manualEntryPayloadFromFormData,
   plainDescriptionParagraphs,
   dashboardLinkModels,
   dashboardVisualStatus,
@@ -98,6 +102,68 @@ test("manual job import posts Stepstone URL to the generic dashboard import API"
   assert.equal(fetchCalls[0].options.method, "POST");
   assert.deepEqual(JSON.parse(fetchCalls[0].options.body), {
     url: "https://www.stepstone.de/stellenangebote--Embedded-Test--13904121-inline.html?rltr=1",
+  });
+});
+
+test("manual entry import posts trimmed payload to the manual dashboard import API", async () => {
+  const { postManualEntryImport, fetchCalls } = await loadDashboardUiFunctions();
+
+  await postManualEntryImport({
+    title: " AI thesis ",
+    descriptionText: " Build retrieval workflow. ",
+    companyName: " Acme GmbH ",
+    location: " Berlin ",
+    workplaceType: "hybrid",
+  });
+
+  assert.equal(fetchCalls.length, 1);
+  assert.equal(fetchCalls[0].url, "/api/applications/import-manual-job");
+  assert.equal(fetchCalls[0].options.method, "POST");
+  assert.deepEqual(JSON.parse(fetchCalls[0].options.body), {
+    title: "AI thesis",
+    descriptionText: "Build retrieval workflow.",
+    companyName: "Acme GmbH",
+    location: "Berlin",
+    workplaceType: "hybrid",
+  });
+});
+
+test("manual entry parse posts description to the AI parse API", async () => {
+  const { postManualEntryParse, fetchCalls } = await loadDashboardUiFunctions();
+
+  await postManualEntryParse(" pasted JD ");
+
+  assert.equal(fetchCalls.length, 1);
+  assert.equal(fetchCalls[0].url, "/api/applications/parse-manual-job");
+  assert.equal(fetchCalls[0].options.method, "POST");
+  assert.deepEqual(JSON.parse(fetchCalls[0].options.body), {
+    descriptionText: "pasted JD",
+  });
+});
+
+test("manual entry form data defaults unknown work mode", async () => {
+  const { manualEntryInitialForm, manualEntryPayloadFromFormData } = await loadDashboardUiFunctions();
+  const form = manualEntryInitialForm();
+  const data = new FormData();
+  data.set("title", "AI thesis");
+  data.set("descriptionText", "Build retrieval workflow.");
+  data.set("companyName", "Acme GmbH");
+  data.set("location", "");
+  data.set("workplaceType", "");
+
+  assert.deepEqual(JSON.parse(JSON.stringify(form)), {
+    title: "",
+    descriptionText: "",
+    companyName: "",
+    location: "",
+    workplaceType: "unknown",
+  });
+  assert.deepEqual(JSON.parse(JSON.stringify(manualEntryPayloadFromFormData(data))), {
+    title: "AI thesis",
+    descriptionText: "Build retrieval workflow.",
+    companyName: "Acme GmbH",
+    location: "",
+    workplaceType: "unknown",
   });
 });
 

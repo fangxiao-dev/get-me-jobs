@@ -1,6 +1,7 @@
 import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
+import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { mergeCanonicalForDate } from "../scripts/merge-canonical.mjs";
 import { adaptLinkedinItem } from "../scripts/lib/adapt-linkedin.mjs";
@@ -10,6 +11,7 @@ import { extractedStepstoneJobToRawItem, scrapeStepstoneJob } from "../scripts/l
 import { upsertManualLinkedinRawItem, writeManualLinkedinAudit } from "../scripts/lib/manual-linkedin-store.mjs";
 import { upsertManualRawItem, writeManualAudit } from "../scripts/lib/manual-job-store.mjs";
 import { readDashboardEnrichments, upsertManualImportAiEnrichment } from "../scripts/lib/manual-import-ai-enrichment.mjs";
+import { parseManualJobDescription } from "../scripts/lib/manual-job-ai-parser.mjs";
 import { selectJobsFile } from "../scripts/select-jobs.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -406,6 +408,116 @@ function normalizedWorkplaceType(value, locationText = "") {
   return "unknown";
 }
 
+function normalizeManualWorkplaceType(value) {
+  const normalized = String(value ?? "").trim().toLowerCase().replace(/[-\s]+/g, "_");
+  return ["remote", "hybrid", "on_site", "unknown"].includes(normalized) ? normalized : "unknown";
+}
+
+function compactText(value) {
+  return String(value ?? "").trim().replace(/\s+/g, " ");
+}
+
+function manualDedupeBase(payload) {
+  return [
+    compactText(payload.title).toLowerCase(),
+    compactText(payload.companyName).toLowerCase(),
+    compactText(payload.location).toLowerCase(),
+  ].join("|");
+}
+
+function manualSourceJobId(payload) {
+  return `manual_${createHash("sha1").update(manualDedupeBase(payload)).digest("hex").slice(0, 12)}`;
+}
+
+function requiredManualText(payload, field) {
+  const value = compactText(payload[field]);
+  if (!value) {
+    const error = new Error(`${field} is required`);
+    error.statusCode = 400;
+    throw error;
+  }
+  return value;
+}
+
+function requiredManualDescription(payload) {
+  const value = String(payload.descriptionText ?? "").trim();
+  if (!value) {
+    const error = new Error("descriptionText is required");
+    error.statusCode = 400;
+    throw error;
+  }
+  return value;
+}
+
+function manualRawItemFromPayload(payload, collectedAt) {
+  return {
+    id: manualSourceJobId(payload),
+    title: requiredManualText(payload, "title"),
+    companyName: requiredManualText(payload, "companyName"),
+    location: compactText(payload.location),
+    workplaceType: normalizeManualWorkplaceType(payload.workplaceType),
+    descriptionText: requiredManualDescription(payload),
+    descriptionHtml: undefined,
+    link: "",
+    applyUrl: "",
+    applyMethod: "ManualEntry",
+    collectedAt,
+  };
+}
+
+export function createManualJobFromPayload(payload, { rawFile, collectedAt = new Date().toISOString() } = {}) {
+  const rawItem = manualRawItemFromPayload(payload, collectedAt);
+  const sourceJobId = rawItem.id;
+  const jobId = `manual:${sourceJobId}`;
+  const dedupeKey = `source-id:${jobId}`;
+  const loc = String(rawItem.location ?? "").split(",").map((part) => part.trim()).filter(Boolean);
+  return {
+    schemaVersion: 1,
+    identity: {
+      jobId,
+      dedupeKey,
+      dedupeKeys: [dedupeKey],
+      source: "manual",
+      sourceJobId,
+      rawFile,
+    },
+    title: {
+      raw: rawItem.title,
+    },
+    company: {
+      name: rawItem.companyName,
+    },
+    location: {
+      raw: rawItem.location,
+      city: loc[0] || undefined,
+      state: loc[1] || undefined,
+      country: loc[2] || undefined,
+      workplaceType: rawItem.workplaceType,
+    },
+    description: {
+      text: rawItem.descriptionText,
+      html: undefined,
+    },
+    application: {
+      jobUrl: undefined,
+      applyUrl: undefined,
+      applyMethod: rawItem.applyMethod,
+    },
+    employment: {},
+    timing: {
+      collectedAt,
+    },
+    sightings: [
+      {
+        source: "manual",
+        rawFile,
+        sourceJobId,
+        seenAt: collectedAt,
+      },
+    ],
+  };
+}
+
 function sourceDisplayName(source) {
   if (source === "linkedin") return "LinkedIn";
   if (source === "stepstone") return "Stepstone";
@@ -655,6 +767,44 @@ async function importManualJobUrl(payload) {
     manualDuplicate: manualStore.manualDeduped,
     canonicalDuplicate: Boolean(canonicalDuplicate),
     sourceLabel: config.sourceLabel,
+  });
+  saveAcceptedJobs(next.accepted);
+  saveApplications(next.applications);
+  const acceptedJob = (next.accepted.items ?? []).find((entry) => entry.jobKey === next.result.jobKey);
+  const aiEnrichment = acceptedJob
+    ? await upsertManualImportAiEnrichment({ rootDir, job: acceptedJob, now })
+    : { ok: false, error: "accepted job not found after import" };
+  return {
+    ...next.result,
+    rawFile: manualStore.manualFile,
+    auditFile,
+    manualAdded: manualStore.manualAdded,
+    manualDeduped: manualStore.manualDeduped,
+    canonicalFile: canonicalDuplicate?.canonicalFile ?? "",
+    aiEnrichment,
+  };
+}
+
+async function importManualJobEntry(payload) {
+  const now = new Date().toISOString();
+  const rawItem = manualRawItemFromPayload(payload, now);
+  const auditFile = writeManualAudit(rootDir, "manual", rawItem, now);
+  const manualStore = upsertManualRawItem(rootDir, "manual", rawItem, now);
+  const job = createManualJobFromPayload(payload, {
+    rawFile: manualStore.manualFile,
+    collectedAt: now,
+  });
+  const canonicalDuplicate = findCanonicalDuplicate(job);
+  const next = upsertManualAcceptedApplication({
+    accepted: loadAcceptedJobs(),
+    applications: loadApplications(),
+  }, job, {
+    now,
+    canonicalFile: canonicalDuplicate?.canonicalFile ?? "",
+    rawFile: manualStore.manualFile,
+    manualDuplicate: manualStore.manualDeduped,
+    canonicalDuplicate: Boolean(canonicalDuplicate),
+    sourceLabel: "Manual",
   });
   saveAcceptedJobs(next.accepted);
   saveApplications(next.applications);
@@ -1092,6 +1242,20 @@ async function handleApi(req, res, url) {
     const payload = await readRequestJson(req);
     const imported = await importManualJobUrl(payload);
     sendJson(res, 200, { ok: true, imported, dashboard: loadDashboardState() });
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/applications/import-manual-job") {
+    const payload = await readRequestJson(req);
+    const imported = await importManualJobEntry(payload);
+    sendJson(res, 200, { ok: true, imported, dashboard: loadDashboardState() });
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/applications/parse-manual-job") {
+    const payload = await readRequestJson(req);
+    const parsed = await parseManualJobDescription(payload);
+    sendJson(res, 200, { ok: true, parsed });
     return;
   }
 

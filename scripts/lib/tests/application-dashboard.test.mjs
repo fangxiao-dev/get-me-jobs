@@ -6,11 +6,17 @@ import { test } from "node:test";
 import {
   applicationStatusAfterEvent,
   applicationEventStage,
+  createManualJobFromPayload,
   defaultApplication,
   enrichAcceptedJobFromCanonical,
   listBatchMetadata,
   normalizeApplicationDetails,
+  upsertManualAcceptedApplication,
 } from "../../../app/server.mjs";
+import {
+  normalizeManualJobAiFields,
+  parseManualJobDescription,
+} from "../manual-job-ai-parser.mjs";
 
 test("default application keeps a separate manual status URL", () => {
   assert.deepEqual(defaultApplication("linkedin:123"), {
@@ -21,6 +27,130 @@ test("default application keeps a separate manual status URL", () => {
     ownerNote: "",
     statusUrl: "",
     events: [],
+  });
+});
+
+test("manual entry payload creates a manual accepted job with description and empty links", () => {
+  const now = "2026-05-12T08:00:00.000Z";
+  const job = createManualJobFromPayload({
+    title: " AI thesis ",
+    descriptionText: "Build a retrieval workflow.",
+    companyName: " Acme GmbH ",
+    location: " Berlin, Germany ",
+    workplaceType: "hybrid",
+  }, {
+    rawFile: "data/manual/manual-2026-05-12.json",
+    collectedAt: now,
+  });
+
+  const next = upsertManualAcceptedApplication({
+    accepted: { version: 1, items: [] },
+    applications: { version: 1, items: [] },
+  }, job, {
+    now,
+    canonicalFile: "",
+    sourceLabel: "Manual",
+  });
+
+  assert.equal(next.accepted.items.length, 1);
+  assert.equal(next.applications.items.length, 1);
+  assert.equal(next.accepted.items[0].source, "manual");
+  assert.equal(next.accepted.items[0].title, "AI thesis");
+  assert.equal(next.accepted.items[0].companyName, "Acme GmbH");
+  assert.equal(next.accepted.items[0].location, "Berlin, Germany");
+  assert.equal(next.accepted.items[0].workplaceType, "hybrid");
+  assert.equal(next.accepted.items[0].link, null);
+  assert.equal(next.accepted.items[0].applyUrl, null);
+  assert.deepEqual(next.accepted.items[0].description, {
+    text: "Build a retrieval workflow.",
+    html: undefined,
+  });
+  assert.match(next.accepted.items[0].jobKey, /^manual:/);
+  assert.equal(next.result.message, "Added Manual job to Accepted.");
+});
+
+test("manual entry duplicates are keyed by title company and location", () => {
+  const now = "2026-05-12T08:00:00.000Z";
+  const firstJob = createManualJobFromPayload({
+    title: "AI Thesis",
+    descriptionText: "First description.",
+    companyName: "Acme GmbH",
+    location: "Berlin",
+    workplaceType: "remote",
+  }, {
+    rawFile: "data/manual/manual-2026-05-12.json",
+    collectedAt: now,
+  });
+  const secondJob = createManualJobFromPayload({
+    title: " ai thesis ",
+    descriptionText: "Updated description.",
+    companyName: " ACME GmbH ",
+    location: " Berlin ",
+    workplaceType: "on_site",
+  }, {
+    rawFile: "data/manual/manual-2026-05-12.json",
+    collectedAt: "2026-05-12T09:00:00.000Z",
+  });
+
+  const first = upsertManualAcceptedApplication({
+    accepted: { version: 1, items: [] },
+    applications: { version: 1, items: [] },
+  }, firstJob, { now, canonicalFile: "", sourceLabel: "Manual" });
+  const second = upsertManualAcceptedApplication(first, secondJob, {
+    now: "2026-05-12T09:00:00.000Z",
+    canonicalFile: "",
+    sourceLabel: "Manual",
+  });
+
+  assert.equal(second.accepted.items.length, 1);
+  assert.equal(second.applications.items.length, 1);
+  assert.equal(second.accepted.items[0].description.text, "Updated description.");
+  assert.equal(second.accepted.items[0].workplaceType, "on_site");
+  assert.equal(second.result.createdAccepted, false);
+  assert.match(second.result.message, /Already existed/);
+});
+
+test("manual AI parse normalizes fields for the same manual canonical payload", async () => {
+  const parsed = await parseManualJobDescription({
+    descriptionText: "raw JD text",
+  }, {
+    analyze: async () => ({
+      title: " AI Engineer ",
+      companyName: " Acme GmbH ",
+      location: " Berlin ",
+      workplaceType: "on-site",
+      descriptionText: " Cleaned JD text ",
+    }),
+  });
+  const job = createManualJobFromPayload(parsed, {
+    rawFile: "data/manual/manual-2026-05-12.json",
+    collectedAt: "2026-05-12T08:00:00.000Z",
+  });
+
+  assert.deepEqual(parsed, {
+    title: "AI Engineer",
+    companyName: "Acme GmbH",
+    location: "Berlin",
+    workplaceType: "on_site",
+    descriptionText: "Cleaned JD text",
+  });
+  assert.equal(job.identity.source, "manual");
+  assert.equal(job.title.raw, "AI Engineer");
+  assert.equal(job.location.workplaceType, "on_site");
+});
+
+test("manual AI parse falls back to unknown work mode and original description", () => {
+  assert.deepEqual(normalizeManualJobAiFields({
+    title: "AI Engineer",
+    companyName: "Acme GmbH",
+    location: "Berlin",
+    workplaceType: "office",
+  }, "Original JD"), {
+    title: "AI Engineer",
+    companyName: "Acme GmbH",
+    location: "Berlin",
+    workplaceType: "unknown",
+    descriptionText: "Original JD",
   });
 });
 

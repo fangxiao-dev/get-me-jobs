@@ -21,6 +21,11 @@ const state = {
   dashboardImportUrl: "",
   dashboardImportRunning: false,
   dashboardImportStatus: "",
+  dashboardManualEntry: manualEntryInitialForm(),
+  dashboardManualEntryOpen: false,
+  dashboardManualEntryRunning: false,
+  dashboardManualEntryParsing: false,
+  dashboardManualEntryStatus: "",
   mergeRunning: false,
   mergeStatus: "",
   batches: [],
@@ -430,6 +435,55 @@ async function postManualJobImport(url) {
   return response.json();
 }
 
+function manualEntryInitialForm() {
+  return {
+    title: "",
+    descriptionText: "",
+    companyName: "",
+    location: "",
+    workplaceType: "unknown",
+  };
+}
+
+function manualEntryPayloadFromFormData(data) {
+  const workplaceType = String(data.get("workplaceType") ?? "").trim();
+  return {
+    title: String(data.get("title") ?? "").trim(),
+    descriptionText: String(data.get("descriptionText") ?? "").trim(),
+    companyName: String(data.get("companyName") ?? "").trim(),
+    location: String(data.get("location") ?? "").trim(),
+    workplaceType: workplaceType || "unknown",
+  };
+}
+
+async function postManualEntryImport(payload) {
+  const response = await fetch("/api/applications/import-manual-job", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      title: String(payload.title ?? "").trim(),
+      descriptionText: String(payload.descriptionText ?? "").trim(),
+      companyName: String(payload.companyName ?? "").trim(),
+      location: String(payload.location ?? "").trim(),
+      workplaceType: String(payload.workplaceType ?? "unknown").trim() || "unknown",
+    }),
+  });
+  if (!response.ok) throw new Error((await response.json()).error ?? "Failed to import manual job");
+  return response.json();
+}
+
+async function postManualEntryParse(descriptionText) {
+  const response = await fetch("/api/applications/parse-manual-job", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      descriptionText: String(descriptionText ?? "").trim(),
+    }),
+  });
+  if (!response.ok) throw new Error((await response.json()).error ?? "Failed to parse manual job");
+  return response.json();
+}
+
 function manualLinkedinImportStatusText(result) {
   return String(result?.imported?.message ?? result?.message ?? "").trim() || "Imported";
 }
@@ -449,6 +503,49 @@ async function saveManualLinkedinImport(form) {
     await loadDashboard();
   } finally {
     state.dashboardImportRunning = false;
+    renderDashboard();
+  }
+}
+
+async function saveManualEntryImport(form) {
+  if (state.dashboardManualEntryRunning) return;
+  const payload = manualEntryPayloadFromFormData(new FormData(form));
+  state.dashboardManualEntry = payload;
+  state.dashboardManualEntryRunning = true;
+  state.dashboardManualEntryStatus = "Adding...";
+  renderDashboard();
+  try {
+    const result = await postManualEntryImport(payload);
+    state.dashboardManualEntry = manualEntryInitialForm();
+    state.dashboardManualEntryOpen = false;
+    state.dashboardManualEntryStatus = manualLinkedinImportStatusText(result);
+    await loadDashboard();
+  } finally {
+    state.dashboardManualEntryRunning = false;
+    renderDashboard();
+  }
+}
+
+async function parseManualEntry(form) {
+  if (state.dashboardManualEntryParsing) return;
+  const payload = manualEntryPayloadFromFormData(new FormData(form));
+  if (!payload.descriptionText) return;
+  state.dashboardManualEntry = payload;
+  state.dashboardManualEntryOpen = true;
+  state.dashboardManualEntryParsing = true;
+  state.dashboardManualEntryStatus = "Parsing...";
+  renderDashboard();
+  try {
+    const result = await postManualEntryParse(payload.descriptionText);
+    state.dashboardManualEntry = {
+      ...state.dashboardManualEntry,
+      ...(result.parsed ?? {}),
+      descriptionText: result.parsed?.descriptionText ?? payload.descriptionText,
+      workplaceType: result.parsed?.workplaceType ?? state.dashboardManualEntry.workplaceType ?? "unknown",
+    };
+    state.dashboardManualEntryStatus = "Parsed";
+  } finally {
+    state.dashboardManualEntryParsing = false;
     renderDashboard();
   }
 }
@@ -916,7 +1013,9 @@ function renderDashboard(focusFilter) {
   const active = total - (state.dashboard.counts.closed ?? 0);
   const summary = createEl("p", "summary", `${total} accepted · ${active} active · ${state.dashboard.counts.closed ?? 0} closed`);
   app.querySelector(".page-header").insertBefore(summary, app.querySelector(".error-banner"));
-  app.append(renderManualLinkedinImportForm());
+  const imports = createEl("section", "manual-imports");
+  imports.append(renderManualLinkedinImportForm(), renderManualEntryForm());
+  app.append(imports);
 
   const toolbar = createEl("section", "dashboard-toolbar");
   const statusTabs = createEl("div", "status-tabs");
@@ -1006,6 +1105,102 @@ function renderManualLinkedinImportForm() {
     });
   });
   return form;
+}
+
+function renderManualEntryForm() {
+  const panel = createEl("details", "manual-entry-panel");
+  panel.open = state.dashboardManualEntryOpen;
+  const summary = createEl("summary", null, "Manual JD");
+  summary.addEventListener("click", () => {
+    state.dashboardManualEntryOpen = !panel.open;
+  });
+  panel.append(summary);
+  const form = createEl("form", "manual-entry-form");
+  const title = renderManualTextField("title", "Title", "Master thesis / Working student role", state.dashboardManualEntry.title, true);
+  const company = renderManualTextField("companyName", "Company", "Company name", state.dashboardManualEntry.companyName, true);
+  const location = renderManualTextField("location", "Location", "Berlin, Germany", state.dashboardManualEntry.location, false);
+  const mode = createEl("label");
+  mode.append(createEl("span", null, "Work mode"));
+  const select = document.createElement("select");
+  select.name = "workplaceType";
+  select.disabled = state.dashboardManualEntryRunning || state.dashboardManualEntryParsing;
+  for (const [value, label] of [
+    ["unknown", "Unknown"],
+    ["remote", "Remote"],
+    ["hybrid", "Hybrid"],
+    ["on_site", "On-site"],
+  ]) {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = label;
+    option.selected = state.dashboardManualEntry.workplaceType === value;
+    select.append(option);
+  }
+  select.addEventListener("change", () => {
+    state.dashboardManualEntry.workplaceType = select.value;
+  });
+  mode.append(select);
+
+  const description = createEl("label", "wide");
+  description.append(createEl("span", null, "Job description"));
+  const textarea = document.createElement("textarea");
+  textarea.name = "descriptionText";
+  textarea.placeholder = "Paste the job description, then use AI Parse or fill the fields manually...";
+  textarea.required = true;
+  textarea.value = state.dashboardManualEntry.descriptionText;
+  textarea.disabled = state.dashboardManualEntryRunning || state.dashboardManualEntryParsing;
+  textarea.addEventListener("input", () => {
+    state.dashboardManualEntry.descriptionText = textarea.value;
+  });
+  description.append(textarea);
+
+  const actions = createEl("div", "form-actions wide");
+  const parse = createEl("button", null, state.dashboardManualEntryParsing ? "Parsing..." : "AI Parse");
+  parse.type = "button";
+  parse.disabled = state.dashboardManualEntryParsing || state.dashboardManualEntryRunning;
+  parse.addEventListener("click", () => parseManualEntry(form).catch((error) => {
+    state.dashboardManualEntryParsing = false;
+    state.dashboardManualEntryStatus = "";
+    renderDashboard();
+    showError(error);
+  }));
+  const save = createEl("button", null, state.dashboardManualEntryRunning ? "Saving..." : "Save");
+  save.type = "submit";
+  save.disabled = state.dashboardManualEntryRunning || state.dashboardManualEntryParsing;
+  actions.append(parse, save);
+  if (state.dashboardManualEntryStatus) {
+    actions.append(createEl("span", "manual-import-status", state.dashboardManualEntryStatus));
+  }
+
+  form.append(title, company, location, mode, description, actions);
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    saveManualEntryImport(form).catch((error) => {
+      state.dashboardManualEntryRunning = false;
+      state.dashboardManualEntryStatus = "";
+      renderDashboard();
+      showError(error);
+    });
+  });
+  panel.append(form);
+  return panel;
+}
+
+function renderManualTextField(name, labelText, placeholder, value, required) {
+  const label = createEl("label");
+  label.append(createEl("span", null, labelText));
+  const input = document.createElement("input");
+  input.name = name;
+  input.type = "text";
+  input.placeholder = placeholder;
+  input.value = value ?? "";
+  input.required = required;
+  input.disabled = state.dashboardManualEntryRunning || state.dashboardManualEntryParsing;
+  input.addEventListener("input", () => {
+    state.dashboardManualEntry[name] = input.value;
+  });
+  label.append(input);
+  return label;
 }
 
 function dashboardBaseItems() {

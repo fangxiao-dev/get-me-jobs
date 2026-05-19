@@ -1,0 +1,12 @@
+{
+  "manual:manual_5b202d104df9": {
+    "aufgaben": "AI applications for robotics perception, control, and learning",
+    "techReqs": "Python or C++, TensorFlow/PyTorch/OpenAI Gym, machine learning concepts",
+    "enrichedAt": "2026-05-17T13:55:47.580Z"
+  },
+  "manual:manual_d753dbe71777": {
+    "aufgaben": "robotics software development across GUI, platform, applications, and control systems",
+    "techReqs": "C++/Python/Java programming, software development tools and CI/CD, robotics GUI/platform/control systems",
+    "enrichedAt": "2026-05-17T14:02:01.130Z"
+  }
+}

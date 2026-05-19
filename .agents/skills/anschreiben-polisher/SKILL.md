@@ -46,24 +46,29 @@ Treat profile facts as available facts, not as mandatory content. Include them o
 
 Before drafting or rewriting an adapted letter, first align with the user on the positioning. Summarize the role focus you identified from the job description, the applicant facts you plan to emphasize, and the facts or claims you plan to avoid because they are unsupported or strategically undesirable.
 
+As a required pre-check, judge the information density of the job description before choosing the writing strategy. If the JD is sparse, generic, or mostly lists broad tasks and qualification requirements without concrete projects, tools, team context, or domain details, do not make the letter sound like a point-by-point response to the JD. In that case, lead from the applicant's own relevant experience, working style, and learning direction, then connect back to the role only where the connection is natural. Sparse JDs make repeated role-language sound especially mechanical.
+
 Ask the user to confirm this positioning before writing the final German letter. Do not proceed to the full letter until the user confirms or corrects the positioning. This matters because the strongest Anschreiben depends on choosing a clear main line, not simply mentioning every plausible detail from the CV.
 
 If the user asks only for grammar or style correction without role adaptation, still briefly state that you will preserve the original factual scope before editing.
 
 ## Adaptation Workflow
 
-1. Identify the real center of the role: domain, tasks, tools, seniority, and what the employer seems to need.
+1. Identify the real center of the role: domain, tasks, tools, seniority, and what the employer seems to need. Also classify the JD as high-information or low-information.
 2. Extract the applicant facts that are directly relevant to that role.
-3. Decide what must be avoided because it is unsupported by the CV or user-provided context.
-4. Present the positioning to the user and wait for confirmation or correction.
-5. Rewrite the letter around the role's tasks instead of reusing a generic AI/software paragraph.
-6. Check German grammar, spelling, punctuation, capitalization, degree naming, and idiomatic phrasing.
-7. Remove leftover references from other applications, including wrong company names, wrong industries, and mismatched tool claims.
-8. Keep the final letter concise, usually 5 to 6 short paragraphs.
+3. For roles involving process analysis, workflow digitization, quality assurance, data flows, requirements, or technical evaluation, explicitly consider whether the applicant's fachlicher Schwerpunkt from `profile.md` should appear before project examples or working-style claims. This often makes the fit sound grounded instead of jumping straight from JD task to personal habit.
+4. Decide what must be avoided because it is unsupported by the CV or user-provided context.
+5. Present the positioning to the user and wait for confirmation or correction.
+6. Choose the draft strategy. For high-information JDs, rewrite the letter around the role's concrete tasks. For low-information JDs, write primarily from the applicant's relevant experience and only lightly anchor the text to the role.
+7. Check German grammar, spelling, punctuation, capitalization, degree naming, and idiomatic phrasing.
+8. Remove leftover references from other applications, including wrong company names, wrong industries, and mismatched tool claims.
+9. Keep the final letter concise, usually 5 to 6 short paragraphs.
 
 ## Job Description Rephrasing
 
 Do not copy the job description's phrasing too closely. A letter sounds stiff when it mirrors the employer's wording, even if the copied terms are technically relevant. Translate the job description into the applicant's own experience language.
+
+When the JD has little content, avoid extracting every visible phrase into the letter. A short JD often contains only broad labels, so repeating them can dominate the text and make it sound generated. Use the JD to set direction, but let the applicant's supported projects, habits, and motivations carry the paragraphs.
 
 Avoid repeating JD phrases mechanically, especially when they are formal task labels such as:
 
@@ -89,7 +94,7 @@ Prefer natural phrases such as:
 - In meinem Studium und in aktuellen Projekten beschäftige ich mich mit ...
 - Die ausgeschriebene Position spricht mich an, weil ...
 - Gerne möchte ich meine Erfahrungen in ... bei Ihnen einbringen
-- Über die Gelegenheit, mich persönlich vorzustellen, freue ich mich sehr
+- Ich freue mich auf ein persönliches Gespräch
 
 Avoid or use carefully:
 
@@ -181,10 +186,11 @@ Use this structure unless the user asks for something else:
 
 When first responding to an adaptation request, provide only:
 
-1. The identified role focus
-2. The applicant facts to emphasize
-3. The facts, terms, or claims to avoid
-4. A direct request for confirmation before drafting
+1. The identified role focus and whether the JD is high-information or low-information
+2. The draft strategy this implies, especially whether the letter should be JD-led or applicant-experience-led
+3. The applicant facts to emphasize
+4. The facts, terms, or claims to avoid
+5. A direct request for confirmation before drafting
 
 After the user confirms the positioning, provide:
 
@@ -210,7 +216,9 @@ Meine bisherige Erfahrung in [CV EXPERIENCE] hilft mir, Anforderungen strukturie
 
 Die ausgeschriebene Position spricht mich an, weil sie [JOB-SPECIFIC COMBINATION] verbindet. Gleichzeitig bietet sie mir die Möglichkeit, meine Kenntnisse in [RELEVANT FIELD] gezielt einzubringen und weiter zu vertiefen.
 
-Gerne möchte ich meine Erfahrungen in [RELEVANT AREAS] bei Ihnen einbringen. Über die Gelegenheit, mich persönlich vorzustellen, freue ich mich sehr.
+Gerne möchte ich meine Erfahrungen in [RELEVANT AREAS] bei Ihnen einbringen.
+
+Ich freue mich auf ein persönliches Gespräch.
 
 Mit freundlichen Grüßen
 
@@ -223,6 +231,7 @@ Before returning the final version, verify:
 
 - Every claim is supported by the CV, current context, or user-provided details.
 - The role focus is clear within the first two paragraphs.
+- The text does not repackage a long JD task as a long German sentence, especially in constructions like "Die Aufgabe, ..., passt gut zu ...". If a sentence starts by restating a role task in detail, shorten it to a compact thematic bridge such as "Besonders reizvoll finde ich den praktischen Bezug zur Qualitätssicherung", then continue with the applicant's own working style, experience, or motivation.
 - The company name appears no more than once in the main body unless there is a specific reason; repeated mentions have been replaced with "bei Ihnen", "in Ihrem Team", "die ausgeschriebene Position", or "diese Aufgabe".
 - There are no leftover references from another application.
 - Missing tools or domain knowledge are phrased honestly.

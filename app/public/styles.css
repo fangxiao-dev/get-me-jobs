@@ -287,6 +287,18 @@ h2 {
   color: var(--accent);
 }
 
+.action-button.danger {
+  border-color: #f4b4ad;
+  color: var(--danger);
+}
+
+.action-button.danger.active,
+.action-button.danger:focus-visible {
+  border-color: var(--danger);
+  background: #fff0ee;
+  color: var(--danger);
+}
+
 .links,
 .selection,
 .description,
@@ -326,6 +338,34 @@ h2 {
   margin-top: 8px;
   max-height: 260px;
   overflow: auto;
+}
+
+.description-summary {
+  cursor: pointer;
+}
+
+.description-edit-button {
+  margin-left: 8px;
+  padding: 3px 8px;
+  font-size: 13px;
+}
+
+.description-edit-form label {
+  display: grid;
+  gap: 6px;
+}
+
+.description-edit-form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 180px;
+  resize: vertical;
+}
+
+.description-edit-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .description-body :is(p, div, section) {

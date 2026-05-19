@@ -8,9 +8,11 @@ import {
   applicationEventStage,
   createManualJobFromPayload,
   defaultApplication,
+  deleteDashboardJobFromStores,
   enrichAcceptedJobFromCanonical,
   listBatchMetadata,
   normalizeApplicationDetails,
+  updateDashboardJobDescriptionInStores,
   upsertManualAcceptedApplication,
 } from "../../../app/server.mjs";
 import {
@@ -173,6 +175,90 @@ test("application details patch updates the manual status URL only", () => {
   assert.equal(next.ownerNote, "keep this");
   assert.equal(next.currentStatus, "applied_waiting");
   assert.deepEqual(next.events, current.events);
+});
+
+test("dashboard delete removes accepted and application records without rejection metadata", () => {
+  const next = deleteDashboardJobFromStores({
+    accepted: {
+      version: 1,
+      items: [
+        { jobKey: "linkedin:1", annotationFile: "data/annotations/2026-05-16.json", sourceJobId: "1" },
+        { jobKey: "linkedin:2", annotationFile: "data/annotations/2026-05-16.json", sourceJobId: "2" },
+      ],
+    },
+    applications: {
+      version: 1,
+      items: [
+        { ...defaultApplication("linkedin:1"), events: [{ type: "accepted", note: "keep out of annotations" }] },
+        { ...defaultApplication("linkedin:2") },
+      ],
+    },
+  }, "linkedin:1");
+
+  assert.deepEqual(next.deleted, { jobKey: "linkedin:1", sourceJobId: "1" });
+  assert.deepEqual(next.accepted.items.map((item) => item.jobKey), ["linkedin:2"]);
+  assert.deepEqual(next.applications.items.map((item) => item.jobKey), ["linkedin:2"]);
+  assert.equal("annotations" in next, false);
+});
+
+test("dashboard description update stores trimmed plain text on the accepted job only", () => {
+  const next = updateDashboardJobDescriptionInStores({
+    accepted: {
+      version: 1,
+      items: [
+        {
+          jobKey: "linkedin:1",
+          title: "Role",
+          description: { text: "Old", html: "<p>Old</p>" },
+          link: "https://example.test/job",
+        },
+        { jobKey: "linkedin:2", description: { text: "Other" } },
+      ],
+    },
+    applications: {
+      version: 1,
+      items: [{ ...defaultApplication("linkedin:1"), statusUrl: "https://portal.test" }],
+    },
+  }, {
+    jobKey: "linkedin:1",
+    descriptionText: "  New description.  ",
+  });
+
+  assert.deepEqual(next.accepted.items[0], {
+    jobKey: "linkedin:1",
+    title: "Role",
+    description: { text: "New description." },
+    link: "https://example.test/job",
+  });
+  assert.deepEqual(next.accepted.items[1], { jobKey: "linkedin:2", description: { text: "Other" } });
+  assert.deepEqual(next.applications.items, [{ ...defaultApplication("linkedin:1"), statusUrl: "https://portal.test" }]);
+  assert.equal(next.job.jobKey, "linkedin:1");
+});
+
+test("dashboard description update allows clearing text", () => {
+  const next = updateDashboardJobDescriptionInStores({
+    accepted: {
+      version: 1,
+      items: [{ jobKey: "linkedin:1", description: { text: "Bad scrape", html: "<p>Bad scrape</p>" } }],
+    },
+    applications: { version: 1, items: [] },
+  }, {
+    jobKey: "linkedin:1",
+    descriptionText: "   ",
+  });
+
+  assert.deepEqual(next.accepted.items[0].description, { text: "" });
+});
+
+test("dashboard description update rejects missing and unknown jobs", () => {
+  assert.throws(
+    () => updateDashboardJobDescriptionInStores({ accepted: { items: [] } }, { descriptionText: "x" }),
+    /jobKey is required/,
+  );
+  assert.throws(
+    () => updateDashboardJobDescriptionInStores({ accepted: { items: [] } }, { jobKey: "linkedin:404", descriptionText: "x" }),
+    /Accepted job not found: linkedin:404/,
+  );
 });
 
 test("application notes are assigned to the current stage when saved", () => {

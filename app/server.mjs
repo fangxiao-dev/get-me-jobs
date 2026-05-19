@@ -1004,6 +1004,59 @@ export function normalizeApplicationDetails(current, payload) {
   };
 }
 
+export function deleteDashboardJobFromStores(stores, jobKey) {
+  const acceptedItems = stores.accepted?.items ?? [];
+  const job = acceptedItems.find((item) => item.jobKey === jobKey);
+  return {
+    accepted: {
+      version: stores.accepted?.version ?? 1,
+      items: acceptedItems.filter((item) => item.jobKey !== jobKey),
+    },
+    applications: {
+      version: stores.applications?.version ?? 1,
+      items: (stores.applications?.items ?? []).filter((item) => item.jobKey !== jobKey),
+    },
+    deleted: {
+      jobKey,
+      sourceJobId: job?.sourceJobId,
+    },
+  };
+}
+
+export function updateDashboardJobDescriptionInStores(stores, payload) {
+  const jobKey = String(payload.jobKey ?? "").trim();
+  if (!jobKey) {
+    const error = new Error("jobKey is required");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const acceptedItems = stores.accepted?.items ?? [];
+  const index = acceptedItems.findIndex((item) => item.jobKey === jobKey);
+  if (index < 0) {
+    const error = new Error(`Accepted job not found: ${jobKey}`);
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const items = [...acceptedItems];
+  items[index] = {
+    ...items[index],
+    description: {
+      text: String(payload.descriptionText ?? "").trim(),
+    },
+  };
+
+  return {
+    accepted: {
+      version: stores.accepted?.version ?? 1,
+      items,
+    },
+    applications: stores.applications ?? { version: 1, items: [] },
+    job: items[index],
+  };
+}
+
 function loadDashboardState() {
   const accepted = loadAcceptedJobs();
   const applications = loadApplications();
@@ -1153,6 +1206,39 @@ function rejectDashboardJob(payload) {
   return { jobKey, sourceJobId: job.sourceJobId };
 }
 
+function deleteDashboardJob(payload) {
+  const { jobKey } = payload;
+  if (!jobKey) {
+    const error = new Error("jobKey is required");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const accepted = loadAcceptedJobs();
+  if (!(accepted.items ?? []).some((item) => item.jobKey === jobKey)) {
+    const error = new Error(`Accepted job not found: ${jobKey}`);
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const next = deleteDashboardJobFromStores({
+    accepted,
+    applications: loadApplications(),
+  }, jobKey);
+  saveAcceptedJobs(next.accepted);
+  saveApplications(next.applications);
+  return next.deleted;
+}
+
+function updateDashboardJobDescription(payload) {
+  const next = updateDashboardJobDescriptionInStores({
+    accepted: loadAcceptedJobs(),
+    applications: loadApplications(),
+  }, payload);
+  saveAcceptedJobs(next.accepted);
+  return next.job;
+}
+
 function serveStatic(req, res, pathname) {
   if (pathname === "/favicon.ico") {
     res.writeHead(204);
@@ -1231,6 +1317,13 @@ async function handleApi(req, res, url) {
     return;
   }
 
+  if (req.method === "POST" && url.pathname === "/api/applications/description") {
+    const payload = await readRequestJson(req);
+    const job = updateDashboardJobDescription(payload);
+    sendJson(res, 200, { ok: true, job, dashboard: loadDashboardState() });
+    return;
+  }
+
   if (req.method === "POST" && url.pathname === "/api/applications/import-linkedin-url") {
     const payload = await readRequestJson(req);
     const imported = await importLinkedinJobUrl(payload);
@@ -1263,6 +1356,13 @@ async function handleApi(req, res, url) {
     const payload = await readRequestJson(req);
     const rejected = rejectDashboardJob(payload);
     sendJson(res, 200, { ok: true, rejected, dashboard: loadDashboardState() });
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/applications/delete") {
+    const payload = await readRequestJson(req);
+    const deleted = deleteDashboardJob(payload);
+    sendJson(res, 200, { ok: true, deleted, dashboard: loadDashboardState() });
     return;
   }
 

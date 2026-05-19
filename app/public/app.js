@@ -26,6 +26,7 @@ const state = {
   dashboardManualEntryRunning: false,
   dashboardManualEntryParsing: false,
   dashboardManualEntryStatus: "",
+  dashboardDescriptionEditJobKey: null,
   mergeRunning: false,
   mergeStatus: "",
   batches: [],
@@ -56,6 +57,7 @@ const actionLabels = {
   employer_agreed: "Mark Employer Agreed",
   closed: "Close",
   reject: "Reject",
+  delete: "Delete",
   note: "Add Note",
 };
 
@@ -415,6 +417,24 @@ async function rejectDashboardJob(jobKey, note) {
   await loadDashboard();
 }
 
+async function postDashboardDelete(jobKey) {
+  const response = await fetch("/api/applications/delete", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ jobKey }),
+  });
+  if (!response.ok) throw new Error((await response.json()).error ?? "Failed to delete application");
+  return response.json();
+}
+
+async function deleteDashboardJob(jobKey) {
+  state.dashboardAction = { jobKey, type: "delete" };
+  renderDashboard();
+  await postDashboardDelete(jobKey);
+  state.dashboardAction = null;
+  if (typeof document.querySelector === "function") await loadDashboard();
+}
+
 async function postManualLinkedinImport(url) {
   const response = await fetch("/api/applications/import-linkedin-url", {
     method: "POST",
@@ -563,6 +583,30 @@ async function saveApplicationDetails(jobKey, form) {
     body: JSON.stringify(payload),
   });
   if (!response.ok) throw new Error((await response.json()).error ?? "Failed to save application details");
+  await loadDashboard();
+}
+
+function dashboardDescriptionText(job) {
+  return String(job.description?.text ?? job.descriptionText ?? "");
+}
+
+async function postDashboardDescription(jobKey, descriptionText) {
+  const response = await fetch("/api/applications/description", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      jobKey,
+      descriptionText: String(descriptionText ?? "").trim(),
+    }),
+  });
+  if (!response.ok) throw new Error((await response.json()).error ?? "Failed to save description");
+  return response.json();
+}
+
+async function saveDashboardDescription(jobKey, form) {
+  const data = new FormData(form);
+  await postDashboardDescription(jobKey, data.get("descriptionText") ?? "");
+  state.dashboardDescriptionEditJobKey = null;
   await loadDashboard();
 }
 
@@ -1289,9 +1333,7 @@ function renderApplicationCard({ job, application }) {
 
   article.append(renderEnrichment(job.jobKey, state.dashboard?.enrichments));
 
-  const description = createEl("details", "description");
-  description.append(createEl("summary", null, "Description"), renderDescriptionBody(job));
-  article.append(description);
+  article.append(renderEditableDashboardDescription(job));
 
   article.append(renderApplicationDetailsForm(job.jobKey, application));
   article.append(renderApplicationActions(job.jobKey, application.currentStatus));
@@ -1304,6 +1346,54 @@ function renderApplicationCard({ job, application }) {
 
   article.append(renderStageNotes(application.events ?? [], application.currentStatus, job.jobKey));
   return article;
+}
+
+function renderEditableDashboardDescription(job) {
+  if (state.dashboardDescriptionEditJobKey === job.jobKey) {
+    return renderDashboardDescriptionEditForm(job);
+  }
+
+  const description = createEl("details", "description");
+  const summary = createEl("summary", "description-summary");
+  summary.append(createEl("span", null, "Description"));
+  const edit = createEl("button", "description-edit-button", "Edit");
+  edit.type = "button";
+  edit.addEventListener("click", (event) => {
+    event.preventDefault();
+    state.dashboardDescriptionEditJobKey = job.jobKey;
+    renderDashboard();
+  });
+  summary.append(edit);
+  description.append(summary, renderDescriptionBody(job));
+  return description;
+}
+
+function renderDashboardDescriptionEditForm(job) {
+  const form = createEl("form", "description description-edit-form");
+  const label = createEl("label", null);
+  label.append(createEl("span", null, "Description"));
+  const textarea = document.createElement("textarea");
+  textarea.name = "descriptionText";
+  textarea.value = dashboardDescriptionText(job);
+  textarea.placeholder = "Paste or write the job description...";
+  label.append(textarea);
+
+  const actions = createEl("div", "description-edit-actions");
+  const save = createEl("button", null, "Save");
+  save.type = "submit";
+  const cancel = createEl("button", null, "Cancel");
+  cancel.type = "button";
+  cancel.addEventListener("click", () => {
+    state.dashboardDescriptionEditJobKey = null;
+    renderDashboard();
+  });
+  actions.append(save, cancel);
+  form.append(label, actions);
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    saveDashboardDescription(job.jobKey, form).catch(showError);
+  });
+  return form;
 }
 
 function dashboardVisualStatus(application, selectedAction = state.dashboardAction) {
@@ -1357,11 +1447,20 @@ function renderApplicationDetailsForm(jobKey, application) {
 function renderApplicationActions(jobKey, currentStatus) {
   const group = createEl("div", "application-actions");
   for (const { type, label, active } of applicationActionModels(jobKey, currentStatus, state.dashboardAction)) {
-    const button = createEl("button", active ? "action-button active" : "action-button", label);
+    const buttonClasses = ["action-button"];
+    if (type === "delete") buttonClasses.push("danger");
+    if (active) buttonClasses.push("active");
+    const button = createEl("button", buttonClasses.join(" "), label);
     button.type = "button";
     button.setAttribute("aria-pressed", active ? "true" : "false");
     button.addEventListener("click", () => {
-      if (isImmediateDashboardStageAction(type)) {
+      if (type === "delete") {
+        deleteDashboardJob(jobKey).catch((error) => {
+          state.dashboardAction = null;
+          renderDashboard();
+          showError(error);
+        });
+      } else if (isImmediateDashboardStageAction(type)) {
         state.dashboardAction = { jobKey, type };
         renderDashboard();
         saveApplicationStage(jobKey, type).catch(showError);

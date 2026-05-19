@@ -15,6 +15,8 @@ async function loadDashboardUiFunctions() {
   postManualEntryImport,
   postManualEntryParse,
   postManualLinkedinImport,
+  postDashboardDelete,
+  postDashboardDescription,
   shouldReloadReviewAfterDecision,
   stageNoteGroups,
   visibleStageNoteGroups,
@@ -260,6 +262,42 @@ test("dashboard stage buttons persist stage immediately", async () => {
   assert.match(payload.date, /^\d{4}-\d{2}-\d{2}$/);
   assert.equal(payload.note, "");
   assert.equal(payload.nextActionAt, null);
+});
+
+test("dashboard delete posts only the job key to the delete API", async () => {
+  const { postDashboardDelete, fetchCalls } = await loadDashboardUiFunctions();
+
+  await postDashboardDelete("linkedin:1");
+
+  assert.equal(fetchCalls[0].url, "/api/applications/delete");
+  assert.equal(fetchCalls[0].options.method, "POST");
+  assert.deepEqual(JSON.parse(fetchCalls[0].options.body), {
+    jobKey: "linkedin:1",
+  });
+});
+
+test("dashboard description save posts trimmed text to the description API", async () => {
+  const { postDashboardDescription, fetchCalls } = await loadDashboardUiFunctions();
+
+  await postDashboardDescription("linkedin:1", "  First paragraph.\n\nSecond paragraph.  ");
+
+  assert.equal(fetchCalls[0].url, "/api/applications/description");
+  assert.equal(fetchCalls[0].options.method, "POST");
+  assert.deepEqual(JSON.parse(fetchCalls[0].options.body), {
+    jobKey: "linkedin:1",
+    descriptionText: "First paragraph.\n\nSecond paragraph.",
+  });
+});
+
+test("dashboard description save allows empty text", async () => {
+  const { postDashboardDescription, fetchCalls } = await loadDashboardUiFunctions();
+
+  await postDashboardDescription("linkedin:1", "   ");
+
+  assert.deepEqual(JSON.parse(fetchCalls[0].options.body), {
+    jobKey: "linkedin:1",
+    descriptionText: "",
+  });
 });
 
 test("close is an expandable action, not an immediately persisted stage", async () => {

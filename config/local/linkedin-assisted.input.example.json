@@ -1,6 +1,6 @@
 {
-  "searchPageUrl": "https://www.linkedin.com/jobs/search/?keywords=example",
-  "cookiesPath": "C:/Users/Xiao/secure/linkedin-cookies.json",
+  "searchPageUrl": "https://www.linkedin.com/jobs/search/?currentJobId=4408884962&f_TPR=r604800&geoId=101282230&keywords=abschlussarbeit&origin=JOB_SEARCH_PAGE_LOCATION_AUTOCOMPLETE&refresh=true",
+  "cookiesPath": "D:/CodeSpace/configs/linkedin-cookies.json.json",
   "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
   "maxJobs": 25,
   "batchSize": 5,

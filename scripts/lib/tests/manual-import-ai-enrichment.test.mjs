@@ -28,10 +28,15 @@ test("manual import AI enrichment writes today's enrichment keyed by jobKey", as
       description: { text: "Linux, Qt, C++ and Python tasks." },
     },
     now: "2026-05-08T10:00:00.000Z",
-    analyze: async ({ title, descriptionText }) => ({
-      aufgaben: `analyze ${title}`,
-      techReqs: descriptionText.includes("Qt") ? "Linux, Qt, C++" : "unknown",
-    }),
+    analyze: async ({ title, descriptionText, job }) => {
+      assert.equal(title, undefined);
+      assert.equal(job, undefined);
+      return {
+        aufgaben: descriptionText.includes("tasks") ? "analyze description" : "unknown",
+        techReqs: descriptionText.includes("Qt") ? "Linux, Qt, C++" : "unknown",
+        title: "AI should not write this",
+      };
+    },
   });
 
   assert.deepEqual(result, {
@@ -40,12 +45,13 @@ test("manual import AI enrichment writes today's enrichment keyed by jobKey", as
     jobKey: "stepstone:13904121",
   });
   const stored = readJson(path.join(rootDir, "data", "enrichments", "2026-05-08.json"));
-  assert.equal(stored["stepstone:13904121"].aufgaben, "analyze Embedded Systems Thesis");
+  assert.equal(stored["stepstone:13904121"].aufgaben, "analyze description");
   assert.equal(stored["stepstone:13904121"].techReqs, "Linux, Qt, C++");
   assert.equal(typeof stored["stepstone:13904121"].enrichedAt, "string");
+  assert.equal(stored["stepstone:13904121"].title, undefined);
 });
 
-test("manual import AI enrichment records failed state without throwing", async () => {
+test("manual import AI enrichment skips writing enrichment when AI fails", async () => {
   const rootDir = tempRoot();
 
   const result = await upsertManualImportAiEnrichment({
@@ -62,9 +68,9 @@ test("manual import AI enrichment records failed state without throwing", async 
   });
 
   assert.equal(result.ok, false);
-  const stored = readJson(path.join(rootDir, "data", "enrichments", "2026-05-08.json"));
-  assert.equal(stored["stepstone:13904121"].failed, true);
-  assert.equal(stored["stepstone:13904121"].reason, "manual_import_ai_error");
+  assert.equal(result.skipped, true);
+  assert.equal(result.reason, "manual_import_ai_unavailable");
+  assert.equal(fs.existsSync(path.join(rootDir, "data", "enrichments", "2026-05-08.json")), false);
 });
 
 test("manual import AI enrichment skips existing successful analysis", async () => {

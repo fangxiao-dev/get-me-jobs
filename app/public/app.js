@@ -24,7 +24,6 @@ const state = {
   dashboardManualEntry: manualEntryInitialForm(),
   dashboardManualEntryOpen: false,
   dashboardManualEntryRunning: false,
-  dashboardManualEntryParsing: false,
   dashboardManualEntryStatus: "",
   dashboardDescriptionEditJobKey: null,
   mergeRunning: false,
@@ -492,18 +491,6 @@ async function postManualEntryImport(payload) {
   return response.json();
 }
 
-async function postManualEntryParse(descriptionText) {
-  const response = await fetch("/api/applications/parse-manual-job", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      descriptionText: String(descriptionText ?? "").trim(),
-    }),
-  });
-  if (!response.ok) throw new Error((await response.json()).error ?? "Failed to parse manual job");
-  return response.json();
-}
-
 function manualLinkedinImportStatusText(result) {
   return String(result?.imported?.message ?? result?.message ?? "").trim() || "Imported";
 }
@@ -542,30 +529,6 @@ async function saveManualEntryImport(form) {
     await loadDashboard();
   } finally {
     state.dashboardManualEntryRunning = false;
-    renderDashboard();
-  }
-}
-
-async function parseManualEntry(form) {
-  if (state.dashboardManualEntryParsing) return;
-  const payload = manualEntryPayloadFromFormData(new FormData(form));
-  if (!payload.descriptionText) return;
-  state.dashboardManualEntry = payload;
-  state.dashboardManualEntryOpen = true;
-  state.dashboardManualEntryParsing = true;
-  state.dashboardManualEntryStatus = "Parsing...";
-  renderDashboard();
-  try {
-    const result = await postManualEntryParse(payload.descriptionText);
-    state.dashboardManualEntry = {
-      ...state.dashboardManualEntry,
-      ...(result.parsed ?? {}),
-      descriptionText: result.parsed?.descriptionText ?? payload.descriptionText,
-      workplaceType: result.parsed?.workplaceType ?? state.dashboardManualEntry.workplaceType ?? "unknown",
-    };
-    state.dashboardManualEntryStatus = "Parsed";
-  } finally {
-    state.dashboardManualEntryParsing = false;
     renderDashboard();
   }
 }
@@ -1167,7 +1130,7 @@ function renderManualEntryForm() {
   mode.append(createEl("span", null, "Work mode"));
   const select = document.createElement("select");
   select.name = "workplaceType";
-  select.disabled = state.dashboardManualEntryRunning || state.dashboardManualEntryParsing;
+  select.disabled = state.dashboardManualEntryRunning;
   for (const [value, label] of [
     ["unknown", "Unknown"],
     ["remote", "Remote"],
@@ -1189,29 +1152,20 @@ function renderManualEntryForm() {
   description.append(createEl("span", null, "Job description"));
   const textarea = document.createElement("textarea");
   textarea.name = "descriptionText";
-  textarea.placeholder = "Paste the job description, then use AI Parse or fill the fields manually...";
+  textarea.placeholder = "Paste the job description and fill the fields manually...";
   textarea.required = true;
   textarea.value = state.dashboardManualEntry.descriptionText;
-  textarea.disabled = state.dashboardManualEntryRunning || state.dashboardManualEntryParsing;
+  textarea.disabled = state.dashboardManualEntryRunning;
   textarea.addEventListener("input", () => {
     state.dashboardManualEntry.descriptionText = textarea.value;
   });
   description.append(textarea);
 
   const actions = createEl("div", "form-actions wide");
-  const parse = createEl("button", null, state.dashboardManualEntryParsing ? "Parsing..." : "AI Parse");
-  parse.type = "button";
-  parse.disabled = state.dashboardManualEntryParsing || state.dashboardManualEntryRunning;
-  parse.addEventListener("click", () => parseManualEntry(form).catch((error) => {
-    state.dashboardManualEntryParsing = false;
-    state.dashboardManualEntryStatus = "";
-    renderDashboard();
-    showError(error);
-  }));
   const save = createEl("button", null, state.dashboardManualEntryRunning ? "Saving..." : "Save");
   save.type = "submit";
-  save.disabled = state.dashboardManualEntryRunning || state.dashboardManualEntryParsing;
-  actions.append(parse, save);
+  save.disabled = state.dashboardManualEntryRunning;
+  actions.append(save);
   if (state.dashboardManualEntryStatus) {
     actions.append(createEl("span", "manual-import-status", state.dashboardManualEntryStatus));
   }
@@ -1239,7 +1193,7 @@ function renderManualTextField(name, labelText, placeholder, value, required) {
   input.placeholder = placeholder;
   input.value = value ?? "";
   input.required = required;
-  input.disabled = state.dashboardManualEntryRunning || state.dashboardManualEntryParsing;
+  input.disabled = state.dashboardManualEntryRunning;
   input.addEventListener("input", () => {
     state.dashboardManualEntry[name] = input.value;
   });

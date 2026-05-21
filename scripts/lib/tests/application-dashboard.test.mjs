@@ -156,6 +156,13 @@ test("manual AI parse falls back to unknown work mode and original description",
   });
 });
 
+test("manual entry save is the only dashboard route for manual JD intake", () => {
+  const serverSource = fs.readFileSync("app/server.mjs", "utf8");
+
+  assert.equal(serverSource.includes("/api/applications/import-manual-job"), true);
+  assert.equal(serverSource.includes("/api/applications/parse-manual-job"), false);
+});
+
 test("application details patch updates the manual status URL only", () => {
   const current = {
     jobKey: "linkedin:123",

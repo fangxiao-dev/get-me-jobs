@@ -13,7 +13,6 @@ async function loadDashboardUiFunctions() {
   effectiveAnnotation,
   postManualJobImport,
   postManualEntryImport,
-  postManualEntryParse,
   postManualLinkedinImport,
   postDashboardDelete,
   postDashboardDescription,
@@ -130,17 +129,13 @@ test("manual entry import posts trimmed payload to the manual dashboard import A
   });
 });
 
-test("manual entry parse posts description to the AI parse API", async () => {
-  const { postManualEntryParse, fetchCalls } = await loadDashboardUiFunctions();
+test("manual entry UI no longer exposes separate AI parse flow", () => {
+  const source = readFileSync("app/public/app.js", "utf8");
 
-  await postManualEntryParse(" pasted JD ");
-
-  assert.equal(fetchCalls.length, 1);
-  assert.equal(fetchCalls[0].url, "/api/applications/parse-manual-job");
-  assert.equal(fetchCalls[0].options.method, "POST");
-  assert.deepEqual(JSON.parse(fetchCalls[0].options.body), {
-    descriptionText: "pasted JD",
-  });
+  assert.equal(source.includes("/api/applications/parse-manual-job"), false);
+  assert.equal(source.includes("postManualEntryParse"), false);
+  assert.equal(source.includes("parseManualEntry"), false);
+  assert.equal(source.includes("AI Parse"), false);
 });
 
 test("manual entry form data defaults unknown work mode", async () => {

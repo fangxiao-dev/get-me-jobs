@@ -11,7 +11,6 @@ import { extractedStepstoneJobToRawItem, scrapeStepstoneJob } from "../scripts/l
 import { upsertManualLinkedinRawItem, writeManualLinkedinAudit } from "../scripts/lib/manual-linkedin-store.mjs";
 import { upsertManualRawItem, writeManualAudit } from "../scripts/lib/manual-job-store.mjs";
 import { readDashboardEnrichments, upsertManualImportAiEnrichment } from "../scripts/lib/manual-import-ai-enrichment.mjs";
-import { parseManualJobDescription } from "../scripts/lib/manual-job-ai-parser.mjs";
 import { selectJobsFile } from "../scripts/select-jobs.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -1342,13 +1341,6 @@ async function handleApi(req, res, url) {
     const payload = await readRequestJson(req);
     const imported = await importManualJobEntry(payload);
     sendJson(res, 200, { ok: true, imported, dashboard: loadDashboardState() });
-    return;
-  }
-
-  if (req.method === "POST" && url.pathname === "/api/applications/parse-manual-job") {
-    const payload = await readRequestJson(req);
-    const parsed = await parseManualJobDescription(payload);
-    sendJson(res, 200, { ok: true, parsed });
     return;
   }
 

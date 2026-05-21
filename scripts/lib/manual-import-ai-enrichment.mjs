@@ -23,14 +23,12 @@ function relativePath(rootDir, filePath) {
   return path.relative(rootDir, filePath).replaceAll(path.sep, "/");
 }
 
-function buildPrompt(title, descriptionText) {
+function buildPrompt(descriptionText) {
   return `Analyze this job posting. Output ONLY a JSON object with exactly these two keys:
 - "aufgaben": a short English phrase (not a full sentence) summarizing the main tasks/responsibilities
 - "techReqs": exactly 3 core technical requirements as short English phrases, comma-separated
 
 No markdown, no explanation, no code blocks. Output only the raw JSON.
-
-Job title: ${title}
 
 Description:
 ${descriptionText}
@@ -44,6 +42,14 @@ function parseEnrichment(text) {
   const data = JSON.parse(match[0]);
   if (!data.aufgaben || !data.techReqs) throw new Error("missing required keys");
   return { aufgaben: String(data.aufgaben), techReqs: String(data.techReqs) };
+}
+
+function normalizeEnrichment(value) {
+  if (!value?.aufgaben || !value?.techReqs) throw new Error("missing required keys");
+  return {
+    aufgaben: String(value.aufgaben),
+    techReqs: String(value.techReqs),
+  };
 }
 
 function callCodex(prompt) {
@@ -84,8 +90,8 @@ function callClaude(prompt) {
   return { text: result.stdout.trim() };
 }
 
-async function defaultAnalyze({ title, descriptionText }) {
-  const prompt = buildPrompt(title, descriptionText.slice(0, 3000));
+async function defaultAnalyze({ descriptionText }) {
+  const prompt = buildPrompt(descriptionText.slice(0, 3000));
   const codex = callCodex(prompt);
   if (codex.text) return parseEnrichment(codex.text);
   const claude = callClaude(prompt);
@@ -102,7 +108,6 @@ export async function upsertManualImportAiEnrichment({ rootDir, job, now, analyz
   const enrichmentPath = path.join(rootDir, "data", "enrichments", `${date}.json`);
   const existing = readJson(enrichmentPath, {});
   const jobKey = job.jobKey;
-  const title = job.title ?? "";
   const descriptionText = job.description?.text ?? "";
 
   if (existing[jobKey] && !existing[jobKey].failed) {
@@ -110,19 +115,19 @@ export async function upsertManualImportAiEnrichment({ rootDir, job, now, analyz
   }
 
   try {
-    const data = await analyze({ title, descriptionText, job });
+    const data = normalizeEnrichment(await analyze({ descriptionText }));
     existing[jobKey] = { ...data, enrichedAt: new Date().toISOString() };
     writeJson(enrichmentPath, existing);
     return { ok: true, enrichmentFile: relativePath(rootDir, enrichmentPath), jobKey };
   } catch (error) {
-    existing[jobKey] = {
-      failed: true,
-      reason: "manual_import_ai_error",
-      detail: String(error.message ?? error).slice(0, 200),
-      enrichedAt: new Date().toISOString(),
+    return {
+      ok: false,
+      skipped: true,
+      reason: "manual_import_ai_unavailable",
+      enrichmentFile: relativePath(rootDir, enrichmentPath),
+      jobKey,
+      error: error.message ?? String(error),
     };
-    writeJson(enrichmentPath, existing);
-    return { ok: false, enrichmentFile: relativePath(rootDir, enrichmentPath), jobKey, error: error.message ?? String(error) };
   }
 }
 

@@ -28,7 +28,7 @@ Both channels write parseable `data/raw/linkedin-YYYY-MM-DD-HHMMSS.json` files. 
 - Keep preferences data-driven in `config/preferences.linkedin.json`.
 - Do not hide selection logic inside skills or frontend code.
 - Do not update preferences from annotations without user confirmation.
-- Treat `data/*` as local runtime data unless the user explicitly asks to commit a data snapshot.
+- Treat `data/*` as versioned workflow output by default; include relevant data changes in commits unless the user explicitly asks to exclude them.
 
 ## Current Files
 
